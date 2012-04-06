@@ -1,0 +1,399 @@
+html {
+	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	text-align: left;
+	width: 960px;
+	margin: 0 auto;
+	padding: 0;
+	font-size: 1em;
+	font-family:"Lucida Grande","Lucida Sans Unicode",geneva,verdana,sans-serif;
+}
+
+a {
+	color: #286571;
+}
+
+th, td {
+    vertical-align: top;
+}
+
+#header {
+}
+
+#header h1 {
+	padding: 0;
+	margin: 0;
+	padding-top: 30px;
+	padding-left: 180px;
+	color: #fff;
+	position: relative;
+	font-size: 36px;
+}
+
+#header h1 .subtitle {
+	font-size: 60%;
+	position: absolute;
+	left: 240px;
+	top: 70px;
+}
+
+#content {
+    margin : 1em 0;
+    padding: 1em;
+    overflow: hidden;
+    border: 1px solid #cce;
+	box-shadow: 4px 4px 8px #cce;
+	-o-box-shadow: 4px 4px 8px #cce;
+	-webkit-box-shadow: 4px 4px 8px #cce;
+	-moz-box-shadow: 4px 4px 8px #cce;
+}
+
+#content .currentpage {
+	margin-top: 0;
+}
+
+/* Login form*/
+
+#loginform
+{
+    text-align: center;
+}
+
+form.loginfields
+{
+    text-align: left;
+    width: 270px;
+    background: url('../images/loginbg.png') top left no-repeat;
+    padding: 0;
+    margin: 0 auto;
+    border: 0;
+}
+
+form.loginfields h2
+{
+    font-size: 16px;
+    float: left;
+    padding: 0;
+    margin: 5px;
+    margin-top: 0;
+    background: url('../images/loginheader-left.png') top left no-repeat;
+}
+
+* html form.loginfields h2
+{
+    margin-left: 3px;
+    width: 80px;
+    text-align: center;
+}
+
+form.loginfields h2 span
+{
+    background: url('../images/loginheader-right.png') right top no-repeat;
+    height: 30px;
+    line-height: 30px;
+    display: block;
+    font-size: 100%;
+    font-weight: normal;
+    color: #fff;
+    padding: 0 10px;
+}
+
+*+html form.loginfields h2 span
+{
+    padding: 0 20px;
+}
+
+form.loginfields label
+{
+    clear: left;
+    float: left;
+    margin-top: 5px;
+    margin-left: 10px;
+    width: 65px;
+    line-height: 31px;
+    vertical-align: middle;
+}
+
+form.loginfields input.text
+{
+    float: left;
+    margin-left: 10px;
+    margin-top: 5px;
+    width: 165px;
+    height: 21px;
+    padding: 5px;
+    border: 0;
+    background: url('../images/inputbg.png') top left no-repeat;
+    color: #fff;
+}
+
+form.loginfields #loginremember
+{
+    float:right;
+    vertical-align: middle;
+    height: 26px;
+}
+
+form.loginfields #labelremember 
+{
+    float: right;
+    width: auto;
+    margin:0;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
+form.loginfields input#submit
+{
+    background: url('../images/loginbottombg.png') bottom left no-repeat;
+    width: 270px;
+    height: 61px;
+    border: 0;
+    margin-top: 10px;
+    color: #fff;
+    padding: 10px 140px 20px 10px;
+}
+
+* html form.loginfields input#submit
+{
+    clear: both;
+    margin-left: -10px;
+}
+
+/* Sidebar */
+.sidebar {
+  border: 1px solid #cce;
+  background-color: #eee;
+  margin: 0.5em;
+  margin-left: 1.5em;
+  padding: 1em;
+  float: right;
+  width: 200px;
+  font-size: 88%;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  color: black;
+}
+
+.sidebar ul {
+  margin-left: 1.5em;
+  padding-left: 0;
+}
+
+
+
+#sb_top {
+  clear: right;
+}
+
+#sb_bottom {
+  clear: right;
+}
+
+#getting_started {
+  margin-left: 20px;
+}
+
+#getting_started_steps a {
+  text-decoration: none;
+}
+
+#getting_started_steps a:hover {
+  text-decoration: underline;
+}
+
+#getting_started_steps li {
+  margin-bottom: 0.5em;
+}
+
+/* Other and footer */
+#footer {
+	background: #fff;
+	padding: 10px;
+	color:#888888;
+	font-size:90%;
+}
+.flogo {
+	float:left;
+	margin-bottom:0px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-top:0px;
+}
+.foottext p {
+	margin: 0; padding: 0;
+}
+.code {
+font-family:monospace;
+font-size:127%;
+}
+span.code {
+background:#EEEEEE none repeat scroll 0% 0%;
+font-weight:bold;
+}
+#flash, .notice {
+font-size:120%;
+font-weight:bolder;
+margin:0pt auto 0.5em;
+width:680px;
+}
+#flash div, .notice {
+padding:20px 15px 20px 65px;
+}
+#flash .ok {
+background:#d8ecd8 url(../images/ok.png) no-repeat scroll 10px center;
+}
+#flash .warning {
+background:#fff483 url(../images/warning.png) no-repeat scroll 10px center;
+}
+#flash .error {
+background:#f9c5c1 url(../images/error.png) no-repeat scroll 10px center;
+}
+#flash .alert,
+#flash .info {
+background:#EEEEFF url(../images/info.png) no-repeat scroll 10px center;
+}
+.notice {
+background:#EEEEFF url(../images/info.png) no-repeat scroll 10px center;
+}
+.fielderror {
+color:red;
+font-weight:bold;
+}
+div.clearingdiv {
+clear:both;
+}
+
+#arwd_logo {
+    position:relative;
+    top:-10px;
+}
+
+.topnote {
+  border: 1px solid #cce;
+  background-color: #eee;
+  padding: 0 1em;
+}
+
+.round_corners {
+      -moz-border-radius: 15px;
+      border-radius: 15px;
+      -webkit-background-clip: padding;
+      -moz-background-clip: padding;
+      background-clip: padding-box;
+}
+
+
+#contract_summary {
+	margin-top: 1em;
+}
+#contract_summary td:first-child {
+    text-align: right;
+    padding-right: 1em;
+    font-weight: bold;
+    width: 9em;
+}
+
+.fineprint {
+	font-size: 80%;
+	margin-left: 7em;
+	margin-top: 1em;
+}
+
+/* grid.css */
+
+.grid { 
+      background-color:#e3e3e3;
+      font-size:12px;
+      font-family:verdana,sans-serif;
+      border:none;
+      width:100%;
+      -moz-border-radius: 15px;
+      border-radius: 15px;
+      -webkit-background-clip: padding;
+      -moz-background-clip: padding;
+      background-clip: padding-box;
+}
+.grid td, .grid th {padding:3px 3px 3px 8px;border:none}
+.grid .action_cell { text-align:right; }
+.grid THEAD { text-align:left;color:#333;}
+.grid .heading img { float:right;margin-left:2px;margin-right:3px; } 
+.grid .heading a { text-decoration:none;color:#333; }
+.grid td a { text-decoration:none;color:#333}
+.grid .odd{background-color:#edf3fe}
+.grid .even{background-color:#fff}
+.grid .pointer {cursor:pointer}
+.grid .column_chooser_link {position:relative;background-color:#e3e3e3;}
+.grid .column_chooser_link ul {position:absolute;display:none;top:0px;right:-20px;}
+.grid .column_chooser_list a {width:200px;display:block;padding:3px;background-color:#e3e3e3;}
+.grid .column_chooser_list a:hover {background-color:#cdcdcd;}
+.grid .column_chooser_list { padding:0;margin:0;list-style:none;background-color:#e3e3e3; }
+#work_done_grid_container td:first-child {
+    width: 80px;
+}
+.grid tr:first-child td:first-child,
+.grid tr:first-child td:last-child,
+.grid tr:last-child td:first-child,
+.grid tr:last-child td:last-child {
+    -webkit-background-clip: padding;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+/* top row */
+.grid tr:first-child {
+    border-radius-topleft:15px;
+    border-radius-topright:15px;
+    -moz-border-radius-topleft:15px;
+    border-top-left-radius:15px;
+    -moz-border-radius-topright:15px;
+    border-top-right-radius:15px;
+    -webkit-border-top-left-radius:15px;
+    -webkit-border-top-right-radius:15px;
+    -webkit-background-clip: padding;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+.grid tr:first-child th:first-child {
+    border-radius-topleft:15px;
+    -moz-border-radius-topleft:15px;
+    border-top-left-radius:15px;
+    -webkit-border-top-left-radius:15px;
+}
+.grid tr:first-child th:last-child {
+    border-radius-topright:15px;
+    -moz-border-radius-topright:15px;
+    border-top-right-radius:15px;
+    -webkit-border-top-right-radius:15px;
+}
+/* bottom row */
+.grid tr:last-child {
+    border-radius-bottomleft:15px;
+    border-radius-bottomright:15px;
+    -moz-border-radius-bottomleft:15px;
+    border-bottom-left-radius:15px;
+    -moz-border-radius-bottomright:15px;
+    border-bottom-right-radius:15px;
+    -webkit-border-bottom-left-radius:15px;
+    -webkit-border-bottom-right-radius:15px;
+    -webkit-background-clip: padding;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+}
+.grid tr:last-child td:first-child {
+    border-radius-bottomleft:15px;
+    -moz-border-radius-bottomleft:15px;
+    border-bottom-left-radius:15px;
+    -webkit-border-bottom-left-radius:15px;
+}
+.grid tr:last-child td:last-child {
+    border-radius-bottomright:15px;
+    -moz-border-radius-bottomright:15px;
+    border-bottom-right-radius:15px;
+    -webkit-border-bottom-right-radius:15px;
+}
