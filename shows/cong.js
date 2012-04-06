@@ -4,4 +4,5 @@ function(doc, req) {
 }
 // TODO: Move .couchapprc to ~/.couchapp.conf
 // TODO: One way to do versioning in CouchDB:  http://blog.couchbase.com/simple-document-versioning-couchdb
-
+// TODO: Merge tg_index.html structure into index.html
+// TODO: Create templates for the main content of index.html
