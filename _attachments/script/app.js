@@ -30,7 +30,7 @@ $(function() {
                 var them = $.mustache($("#recent-messages").html(), {
                     items : data.rows.map(function(r) {return r.value;})
                 });
-                $("#content").html(them);
+                $("#content_div").html(them);
             }
         });
     };
