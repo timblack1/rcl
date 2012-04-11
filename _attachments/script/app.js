@@ -21,4 +21,11 @@ $(function() {
         design = path[3],
         db = $.couch.db(path[1]);
     $("#account").couchLogin({});
+   
+    // TODO: Put custom evently code here
+    
+    $.couch.app(function(app) {
+        $("#map").evently("map", app);
+        $("#search_container").evently("search", app);
+	});
  });
