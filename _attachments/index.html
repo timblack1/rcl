@@ -6,22 +6,23 @@
   </head>
   <body>
     <div id="header">
-    <h2 style="text-align:center">
-        <b>Reformed Churches Locator</b> <br> <br>
-        <span class="subtitle">The Ultimate Directory of Reformed Churches Worldwide</span>
-    </h2>
-  </div>
-  <ul id="mainmenu">
-    <li class="first"><a href="index.html" class="active">Find a church</a></li>
-    <li><a href="import_directory.html">Import a directory</a></li>
-    <li id="login" class="loginlogout"><a href="login.html">Login</a></li>
-  </ul>
+	    <h2 style="text-align:center">
+	        <b>Reformed Churches Locator</b> <br> <br>
+	        <span class="subtitle">The Ultimate Directory of Reformed Churches Worldwide</span>
+	    </h2>
+    </div>
+      <ul id="mainmenu">
+	    <li class="first"><a href="index.html" class="active">Find a church</a></li>
+	    <li><a href="import_directory.html">Import a directory</a></li>
+      </ul>
+
   <div id="content">
       <div id="congregations">
+        <div id="account" style="float:right"></div>
         <h2>Congregations</h2>
         <div class="ui-widget ui-widget-content ui-corner-all">
             <div>
-            <div id="map_canvas" style="width: 900px; height: 500px;"></div>
+            <div id="map_canvas" style="width: 918px; height: 500px;"></div>
             <form action="TODO: write this!">
             <span class="watermark_container" style="display: inline-block; position: relative; "><span class="watermark" style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none; ">Enter location</span><input class="jq_watermark" title="Enter location" type="text" name="location" id="search_the_map"></span>
                 Search within
@@ -131,39 +132,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
 	<script src="script/search_the_map.js"></script>
 
-<!-- templates used by app.js -->
-  <script id="new-message" type="text/x-mustache" charset="utf-8">
-      <div class="avatar">
-        {{#gravatar_url}}<img src="{{gravatar_url}}"/>{{/gravatar_url}}
-        <div class="name">
-          {{name}}
-        </div>
-      </div>
-      <form id="create-message">
-        <label>New message from {{nickname}}: <input type="text" name="message" size=60 value=""></label>
-      </form>
-      <div style="clear:left;"></div>
-  </script>
 
-  <script id="recent-messages" type="text/x-mustache" charset="utf-8">
-        <h3>Recent Messages</h3>
-        <ul id="items">
-          {{#items}}
-            <li>
-              <div class="avatar">
-                {{#gravatar_url}}<img src="{{gravatar_url}}" alt="{{name}}"/>{{/gravatar_url}}
-                <div class="name">
-                  {{nickname}}
-                </div>
-              </div>
-              <p>{{message}}</p>
-              <div style="clear:left;"></div>
-            </li>
-          {{/items}}
-        </ul>
-        <p><em>Protip:</em> If you setup continuous replication between this database and a remote one, this list will reflect remote changes in near real-time.</p>
-        <p>This would be a good place to add pagination.</p>
-  </script>
   <script src="script/app.js"></script>
 
 </html>

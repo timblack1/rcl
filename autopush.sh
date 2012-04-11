@@ -7,3 +7,4 @@
 # TODO: The watchdog command is like this:  watchmedo shell-command --patterns="*.py;*.txt" --recursive --command='nosetests' .
 couchapp browse . desktopcouch://rcl
 couchapp autopush --update-delay 1 desktopcouch://rcl
+
