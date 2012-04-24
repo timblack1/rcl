@@ -1,6 +1,4 @@
 function() {
-	// TODO: For some reason this doesn't run when I click the #search button
-	console.log('running codeAddress');
 	var address = document.getElementById("search_the_map").value;
 	geocoder.geocode( { 'address': address}, function(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
