@@ -1,0 +1,96 @@
+        <div id="congregations">
+            <h1>Congregations - configure downloading congregation data from one directory</h1>
+            <p>If you make a mistake, just <a href='/cong/test_regex'>reload this page</a> and start over.</p>
+            
+            <div id='url_or_rss'>
+                <h2>Step 1:  Please enter the URL of the church directory page or RSS feed</h2>
+                <input type='text' name='url' id='url' value='http://opc.org/locator.html'/>
+                <div id='rss_feed' style='display:none'>
+                    <h2>RSS feed - Does the data below look correct?</h2>
+                    <div id='rss_data_formatted'></div>
+                    <input type='radio' name='rss_data_correct' value='yes' />Yes<br />
+                    <input type='radio' name='rss_data_correct' value='no' />No
+                </div>
+                <p>Please enter the name of this directory's denomination or group of congregations</p>
+                <input type='text' name='directory_name' id='directory_name' value='Orthodox Presbyterian Church'/>
+                <p>Please enter an abbreviation for this denomination or group of congregations</p>
+                <input type='text' name='abbreviation' id='abbreviation' value='OPC'/>
+            </div>
+            
+            <div id='directory_type' style='display:none'>
+                <h2>Step 2:  Are all the congregations on:</h2>
+                <input type='radio' name='type' value='one page' />one page, or<br />
+                <input type='radio' name='type' value='one state per page' />one state per page?
+            </div>
+            <div id='state_page' style='display:none'>
+                <h2>Step 3:  Click the drop-down box that lets you pick a state</h2>
+                <div id='state_drop_down_selector' class='content_frame'></div>
+            </div>
+    
+            <div id='cong_details_url' style='display:none'>
+                <h2>Step 4:  Click the link that leads to the page that displays the details of one congregation</h2>
+                <div id='cong_details_url_selector' class='content_frame'></div>
+            </div>
+            <div id='cong_details_fields' style='display:none'>
+                <h2>Step 5:  Select congregation details</h2>
+                <p>
+                    <ul>
+                        <li>
+                            The interface below allows you to tell us where each piece of data about this congregation is located 
+                            in the HTML of the page.
+                        </li>
+                        <li>
+                            For each field listed below, please click in the field's text box, then highlight that field's content where
+                            it appears in the page below.
+                        </li>
+                        <li>
+                            Behind the scenes, this page will use your selected text to create a regular expression that will attempt to 
+                            extract that field's data from the web page.  Then it will display the data it extracted in that field's text box.
+                        </li>
+                        <li>
+                            Once that data displays in the text box, please confirm whether the data is correct.  If it is correct, simply 
+                            move on to the next text box.  If it is not correct, please click the button that says "No, this isn't right" 
+                            and our code will modify the regular expression and try again.  You may click the "No, this isn't right button 
+                            more than once.  Every time you click it, our code expands the regular expression to include more context around 
+                            the data you have selected, to attempt to help the regular expression better recognize the specific piece of data
+                            you have selected.
+                        </li>
+                        <li>
+                            If you would like to modify the regular expression yourself, you may do so in the "Regular Expression" box at the 
+                            bottom of the page.  We encourage you to do so.  You can read documentation about the regular expression syntax at
+                            <a href='http://docs.python.org/library/re.html#regular-expression-syntax' target='_blank'>Python Regular Expression Syntax</a>.
+                        </li> 
+                    </ul>
+                </p>
+                <table id='fields_table'>
+                    <tr py:for="f in fields">
+                        <td>
+                            ${f['pretty_name']}
+                        </td>
+                        <td>
+                            <input type='text' name='${f["db_name"]}' id='${f["db_name"]}' />
+                            <br />
+                            <button id='${f["db_name"]}_button' style='display:none'>No, this isn't right</button>
+                        </td>
+                    </tr>
+                </table>
+                <div id='cong_details_fields_selector' class='content_frame content_frame_narrow'></div>
+                <h2>Edit regex here</h2>
+                <p>
+                    Please replace text that should NOT be part of the regex 
+                    (because it is data that should go into another field)
+                    with this expression:  <code>.*?</code>
+                </p>
+                <p>
+                    For example, if you are choosing the mailing state, change this:<br />
+                    &nbsp; &nbsp;<code>P\\\.O\\\. Box 873741&lt;br&gt;Wasilla, (?P&lt;mailing_state&gt;.+) 99687-3741</code><br />
+                    into this:<br />
+                    &nbsp; &nbsp;<code>.*?&lt;br&gt;.*?, (?P&lt;mailing_state&gt;.+) .*?</code>
+                </p>
+                <textarea cols="67" rows="2" id="details_regex" ></textarea>
+                
+                <h2>Result:</h2>
+                <div id="result_div"></div>
+            </div>
+                
+        </div>

@@ -1,61 +1,59 @@
-$(document).ready(function() {
-	
-	// ----------------- DEFINE UTILITY FUNCTIONS --------------------------------
+// Apache 2.0 J Chris Anderson 2011
+$(function() {   
+    // friendly helper http://tinyurl.com/6aow6yn
+    $.fn.serializeObject = function() {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
 
-	function hide_subform(){
-		$("#directory_type, #rss_feed, #cong_details, #state_page, #church_directory_page").hide(1000);
-	}
-	hide_subform();
-	
-	function test_regex_ajax(el){
-		$.ajax({
-			type: "POST",
-			url: "/cong/test_regex_ajax",
-			data: ({regex : el.val()}),
-            success: function(msg){
-              $("#result_div").innerHTML = msg;
-            },
-            error: function(xhr, ajaxOptions, thrownError){
-              $("#result_div").innerHTML = xhr.responseText;
-            },
-			statusCode: {
-				500: function(data, textStatus, jqXHR){
-					// TODO: Handle 500 errors here
-					//alert(data);
-					//alert(data.responseText)
-				}
-			}
-		});
-	}
+    var path = unescape(document.location.pathname).split('/'),
+        design = path[3],
+        db = $.couch.db(path[1]);
+    $("#account").couchLogin({});
+   
+    // TODO: Put custom evently code here
+    
+    $.couch.app(function(app) {
+        $("#download").evently("download", app);
+	});
+    
 	
 	// TODO: We are trying to get the AJAX request to work on the "on key up" event; but no luck so far. 
 	// attach this AJAX call to the form element with an event
 	$('#details_regex').keyup(function() {
-		// TODO: Don't post the textarea's value to the server on keyup
-		// test_regex_ajax($('#details_regex'));
-		// TODO: Instead, write the textarea's value to the global selections variable, so it can be saved 
-		//		in the database later
-		// TODO: If selections[selected_field] doesn't exist, this returns:
-		//		Uncaught TypeError: Cannot set property 'field_regex' of undefined
-		if (!selections[selected_field]){
-			selections[selected_field] = {};
+		if (!directory.fields[selected_field]){
+			directory.fields[selected_field] = {};
 		}
-		selections[selected_field].field_regex = $('#details_regex').val();
+		directory.fields[selected_field].regex = $('#details_regex').val();
+		store_directory();
 	});
 	
-	function store_selection_data(selection,element,element_xpath_local,element_xpath,s){
-		field_regex = $('#details_regex').val();
-		// Put an object in the array under the selected_field (field name) as its array key
-		// TODO: Fix this.  For some reason the array ends up being empty after this call.
-		selections[selected_field] = {
-				'selection':selection,
-				'element':element,
-				'element_xpath_local':element_xpath_local,
-				'element_xpath':element_xpath,
-				'string':s,
-				'regex':field_regex
-		};
-		console.log(selections);
+	function store_directory(){
+		// Write the directory to the database
+		directory.name = $('#directory_name').val();
+		directory.abbreviation = $('#abbreviation').val();
+		$.post(
+				'/cong/store_directory_regex',
+				// Convert the directory object into json before sending it to the server.
+				{'dir_json': JSON.stringify({
+												'directory':directory
+											})
+				},
+				function(data){
+					// TODO: Handle an error response - if this returns an error, then notify the user
+				}
+		);
 	}
 
 	function getXPath( element ){
@@ -92,21 +90,40 @@ $(document).ready(function() {
 			var element_xpath = element_xpath_local.replace(rcl_xpath_prefix, '/html');
 			// Get the string that was selected
 			var s = new String(selection);
+			// Escape periods so they aren't interpreted as regular expressions
+			var s_escaped = s.replace(/\./g,'\\.');
 
+			// Regex escape and unescape functions
+			// TODO: Move these functions out into a shared library
+			RegExp.escape = function(text) {
+			    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+			}
+			RegExp.unescape = function(text){
+				// All this does is remove all backslashes from its input
+				return text.replace(/\\+/g, "");
+			}
 			// Create a regular expression using the above data.
-			var selection_parent_html = $.trim(element.parent().html());
+			var selection_parent_html = $.trim(element.html()).replace(/\./g,'\\.');
 			// example selection_parent_html:  "<h2>GRACE - Wasilla, AK</h2>"
 			// We want to get just "GRACE" out of the string
 			// Like this:  "<h2>(.+?) - Wasilla, AK</h2>"
 			// We already know s = 'GRACE'
-			var field_regex = selection_parent_html.replace(s,"(?P<" + selected_field + ">.+?)");
+			// Note this is Python's named group regex syntax.
+			// If we re-write this in JavaScript's regex syntax, we cannot use named groups.
+			var field_regex = selection_parent_html.replace(s_escaped,"(?P<" + selected_field + ">.+)").replace(/\\\./g,'\\\\.');
 			// Put regex in textarea to allow the user to edit it
 			$('#details_regex').val(field_regex);
+			// Put an object in the directory.fields object under the selected_field (field name) as its property name
+			directory.fields[selected_field] = {
+					'element_xpath_local':element_xpath_local,
+					'element_xpath':element_xpath,
+					'regex':field_regex
+			};
 			// Run the regular expression in Python and return the resulting match
 			$.post(
 					'/cong/test_single_regex',
 					{
-						'regex':field_regex,
+						'regex':field_regex, // double-escape this value
 						'string':selection_parent_html
 					},
 					function(data){
@@ -116,16 +133,16 @@ $(document).ready(function() {
 						//		[tag_begin] 1 character + "GRACE" + 1 character [tag_end] to give the regex 
 						//		enough context to get the correct data out of the string.
 						//		This is what the "No, this isn't right" button is for.
-						if (data.match == s){
+						if (data.match != s){
 							// TODO: Expand regular expression to include surrounding parent tags
 						}
 						// Insert the regex's match into the appropriate text box to allow 
-						//		the user to confirm that the regex matched the right data
-						$('#' + selected_field).val(data.match);
-						// Store the current settings into the selections array
-						store_selection_data(selection,element,element_xpath_local,element_xpath,s);
-						
-						// TODO: Write the selections array to the database for this directory
+						//		the user to confirm that the regex matched the right data.
+						// 		Unescape this to remove slashes
+						$('#' + selected_field).val(RegExp.unescape(data.match));
+						// Store the current settings into directory.fields
+						// Write directory to the database
+						store_directory();
 					}
 			);
 		});
@@ -137,15 +154,15 @@ $(document).ready(function() {
 		// Show this field's "No, this isn't right" button, and hide all others
 		$('#fields_table button').hide();
 		$('#' + selected_field + '_button').show();
-		// Create global selections array if it doesn't already exist
-		if (typeof variable === 'undefined') {
-			selections = [];
+		// Create global directory.fields object if it doesn't already exist
+		if (typeof directory.fields === 'undefined') {
+			directory.fields = {};
 		}
 		// TODO:  This doesn't actually work yet, for some reason
-		// If this field's settings have already been stored in the selections 
-		//		array, load it in the textarea
-		if (selections[selected_field]!=undefined){
-			$('#details_regex').val(selections[selected_field].regex);
+		// If this field's settings have already been stored in directory.fields, 
+		//		load it in the textarea
+		if (directory.fields[selected_field]!=undefined){
+			$('#details_regex').val(directory.fields[selected_field].regex);
 		}
 		// Listen for and handle a selection event
 		$('#cong_details_fields_selector').mouseup(create_regular_expression());
@@ -154,11 +171,13 @@ $(document).ready(function() {
 		// Disable the links in the new content we have loaded
 		e.preventDefault();
 		// Get the base_url of the directory site
-		var base_url = $('#url').val().split('/')[2];
+		directory.base_url = $('#url').val().split('/')[2];
+		// Get the URL of the cong page
+		directory.cong_page_url = $(el).attr('href');
 		$.get(
 				'/cong/get_page_content',
 				// Load the URL of the link that was clicked into a div
-				{url:'http://' + base_url + '/' + $(el).attr('href')},
+				{url:'http://' + directory.base_url + '/' + directory.cong_page_url},
 				function(msg){
 					$('#cong_details_fields_selector').html(msg);
 					// Hide divs we don't need now
@@ -177,17 +196,24 @@ $(document).ready(function() {
 		// So, I think we need a regular expression editor here.
 		// TODO: Create a regular expression to find this select box
 		// TODO: Get the user to confirm that this select box is found by that regular expression
-		// TODO: Disable the select box immediately after the user clicks on it, so they can't click on one of its options and fire a page load event.
+		// TODO: Disable the select box immediately after the user clicks on it, so they can't 
+		//			click on one of its options and fire a page load event.
 		var options = $(el).children();
 		var values = [];
 		for (var i=0; i<options.length; i++){
 			values[i] = $(options[i]).val();
 		}
+		directory.state_page_values = values;
 		// Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
-		// TODO: But, this URL only works for the OPC site, so we'll have to generalize this code to work for other sites too.
-		// TODO: Maybe the way to do that is to ask the user to confirm or enter what the URL is for an example state page ("To what URL does this link normally lead? <input type='text' />")
-		// 			and to enter what other URL or POST parameters are necessary to make that page load a state correctly,
-		//			and ask the user what the parameter name is for which the state drop-down box provides a value.
+		// TODO: But, this URL only works for the OPC site, so we'll have to generalize this code
+		//			to work for other sites too.
+		// TODO: Maybe the way to do that is to ask the user to confirm or enter what the URL is
+		//			for an example state page ("To what URL does this link normally lead? 
+		//			<input type='text' />")
+		// 			and to enter what other URL or POST parameters are necessary to make that page
+		//			load a state correctly,
+		//			and ask the user what the parameter name is for which the state drop-down box
+		//			provides a value.
 		for (var i=0; i<values.length; i++){
 			if (values[i] !== ""){
 				var state_name = values[i];
@@ -212,56 +238,9 @@ $(document).ready(function() {
 		);		
 		//TODO else notify user that they did not click into a select element
 	}
-	function get_church_dir_from_url(el){
-		$.ajax({
-			type: "POST",
-			url: "/cong/get_page_type",
-			data: ({url : el.val()}),
-            success: function(msg){
-				// TODO: In the controller & output to form, handle whether this is an RSS feed or an HTML page
-            	$("#url_result_div").innerHTML = msg;
-            	if (msg == 'html'){
-            		$("#directory_type").show(1000);
-            		$("#rss_feed").hide(1000);
-            	} else if (msg == 'rss'){
-            		// TODO: Start here:  Display the right form controls for an RSS page
-            		$("#directory_type").hide(1000);
-            		$("#rss_feed").show(1000);
-            	} else { // We got an error code
-            		// Hide the form controls.
-            		hide_subform();
-            	}
-            },
-            error: function(xhr, ajaxOptions, thrownError){
-              $("#url_result_div").innerHTML = xhr.responseText;
-            },
-			statusCode: {
-				500: function(data, textStatus, jqXHR){
-					// TODO: Handle 500 errors here
-					//alert(data);
-					//alert(data.responseText)
-					// TODO: Even though Chrome's developer tools says the server is returning a 500 error,
-					//			This code does not seem to be running.
-					console.log("The 500 error handler is running.");
-					hide_subform();
-				},
-				404: function(data, textStatus, jqXHR){
-					// TODO: Handle 404 errors here
-					hide_subform();
-				}
-			}
-		});
-	}
 	
 	// ------------------- MAIN CODE --------------------------
 	
-	$('#url').keyup(function() {
-		// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
-		// TODO: Don't fire on every key event, but only once after delay.
-		//setTimeout(function(){
-		      get_church_dir_from_url($('#url'));
-		//},2000);
-	});
 	/* attempt to find a text selection */
 	function getSelected() {
 		if (window.getSelection) { return window.getSelection(); }
@@ -281,11 +260,13 @@ $(document).ready(function() {
 		if (type=='one page'){
 			// Show the one page divs
 			$("#state_page").hide(1000);
+			directory.type = 'one page';
 		}
 		//  If "One state per page" is selected, then drop down box showing state options.
-		if (type=='state pages'){
+		if (type=='one state per page'){
 			// Show the state page divs
 			$("#state_page").show(1000);this
+			directory.type = 'one state per page';
 			// Populate state_drop_down_selector div with contents of church directory page, maybe in a scrollable div
 			$.post(
 					'/cong/get_page_content',
@@ -301,4 +282,6 @@ $(document).ready(function() {
 		}
 	});
 
-});
+
+    
+ });
