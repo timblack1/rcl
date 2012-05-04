@@ -38,5 +38,6 @@ curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; 
 # Launch the application in the browser
 couchapp browse . http://localhost:$PORT/rcl
 # Start watching the filesystem for changes, and push new changes into the database
-couchapp autopush --update-delay 1 http://timblack1:hegel1@localhost:$PORT/rcl
+# TODO: This is asking for authorization
+couchapp autopush --update-delay 1 http://localhost:$PORT/rcl
 
