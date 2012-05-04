@@ -5,10 +5,10 @@
 
 // TODO:  When called from the commandline, this throws:
 // Error: Cannot find module 'cradle'
-var cradle = require('cradle'),
+var cradle = require('../node_modules/cradle'),
 	child = require('child_process'),
 	path = require('path'),
-	sys = require('sys'),
+	sys = require('util'),
 	vm = require('vm'),
 	fs = require('fs');
 
@@ -25,11 +25,14 @@ function start_child_process(){
 		});
 	}
 	// Spawn changes listener process
-	p = child.spawn(process.execPath, [changes_listeners_filename]);
+	// TODO: This is throwing errors
+	//p = child.spawn(process.execPath, [changes_listeners_filename]);
+	p = child.fork(changes_listeners_filename);
 	// Log errors to stderr
 	p.stderr.on("data", function (chunk) {sys.error(chunk.toString());});
+	return p;
 }
-start_child_process();
+p = start_child_process();
 
 feed.on('change', function (change) {
 	db.get(change.id, function(err, doc){
@@ -43,12 +46,12 @@ feed.on('change', function (change) {
 				fs.unlinkSync(changes_listeners_filename);
 				// start up the process with the new design doc
 				fs.writeFileSync(changes_listeners_filename, doc.changes_listeners);
-				start_child_process();
+				p = start_child_process();
 			}
 		} else {
 			// Feed the new doc into the changes listeners
 			console.log('A non-design document changed');
 			p.stdin.write(JSON.stringify(["ddoc", doc])+'\n');
 		}
-	})
+	});
 });
