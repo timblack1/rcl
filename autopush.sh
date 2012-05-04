@@ -24,7 +24,7 @@ trap control_c INT
 PORT=$(dbus-send --session --dest=org.desktopcouch.CouchDB    --print-reply --type=method_call /    org.desktopcouch.CouchDB.getPort | sed -e 's/^.* //' | tail -1)
 
 # Start the Node.js changes listener
-curl -s 'http://localhost:$PORT/rcl/_design/rcl' | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node &
+curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node
 # TODO: Kill the Node.js process when killing this file's process.  The kill command above doesn't work.
 
 # sleep 20
@@ -38,5 +38,5 @@ curl -s 'http://localhost:$PORT/rcl/_design/rcl' | python -c "import json, sys; 
 # Launch the application in the browser
 couchapp browse . http://localhost:$PORT/rcl
 # Start watching the filesystem for changes, and push new changes into the database
-couchapp autopush --update-delay 1 http://localhost:$PORT/rcl
+couchapp autopush --update-delay 1 http://timblack1:***REMOVED***@localhost:$PORT/rcl
 
