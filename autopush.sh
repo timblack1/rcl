@@ -23,7 +23,7 @@ trap control_c INT
 # Get the randomly-generated port for desktopcouch
 PORT=$(dbus-send --session --dest=org.desktopcouch.CouchDB    --print-reply --type=method_call /    org.desktopcouch.CouchDB.getPort | sed -e 's/^.* //' | tail -1)
 
-# Start the Node.js changes listener
+echo "Starting the Node.js changes listener..."
 curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node
 # TODO: Kill the Node.js process when killing this file's process.  The kill command above doesn't work.
 

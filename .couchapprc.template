@@ -1,0 +1,14 @@
+{
+    "extensions": [
+        "couchapp:#autopush"
+    ],
+    "env" : {
+        "default" : {
+          "db" : "http://username:password@localhost:60434/rcl"
+        },
+        "prod" : {
+          "db" : "http://admin:password@myhost.com/rcl"
+        }
+    }
+}
+
