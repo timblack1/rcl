@@ -3,22 +3,22 @@
 // Call this file like this:
 // node http://localhost:41002/rcl/_design/changes
 
-var cradle = require('../node_modules/cradle'),
-	child = require('child_process'),
+var child = require('child_process'),
 	path = require('path'),
 	sys = require('util'),
 	vm = require('vm'),
-	fs = require('fs');
-
-//TODO: Get port from command line args
-var db = new(cradle.Connection)('http://localhost', 60816).database('rcl');
-var feed = db.changes();
-var changes_listeners_filename = './changes_listeners_temp.js';
+	fs = require('fs'),
+	db = require('./db.js').db,
+	feed = db.changes(),
+	changes_listeners_filename = './changes_listeners_temp.js';
 
 function start_child_process(){
 	// Write to the temp file if it doesn't exist yet
+	console.log('before getting changes_listeners.js')
 	if (!path.existsSync(changes_listeners_filename)){
+		console.log('after checking if file exists')
 		db.get('_design/rcl', function(err, doc){
+			console.log('before writing changes_listeners_temp.js')
 			fs.writeFileSync(changes_listeners_filename, doc.changes_listeners);
 		});
 	}
@@ -30,7 +30,7 @@ function start_child_process(){
 		console.log('before spawning child process the first time')
 		p = child.spawn(process.execPath, [changes_listeners_filename]);
 		console.log('after spawning child process the first time')
-		// Log errors to stderr
+		// Log errors to stderr of this process (not the child process)
 		p.stderr.on("data", function (chunk) {sys.error(chunk.toString());});
 		console.log('after setting up child process stderr handler callback')
 	}else if (mode=='fork'){
@@ -39,40 +39,57 @@ function start_child_process(){
 	return p;
 }
 p = start_child_process();
-console.log('after function that starts child process the first time')
-// TODO: Start here - Here is where the error is thrown
+console.log('after function that starts child process the first time');
+// TODO:  Start here - sometimes this error is thrown here:  "node.js:201
+//throw e; // process.nextTick error, or 'error' event on first tick
+//^
+//Error: connect EINVAL
+//at errnoException (net.js:646:11)
+//at connect (net.js:525:18)
+//at net.js:584:9
+//at asyncCallback (dns.js:84:16)
+//at Object.onanswer [as oncomplete] (dns.js:137:9)"
 
 it = 0;
 
 feed.on('change', function (change) {
 	it++;
-	console.log('1.' + it)
+	console.log('1.' + it); // 1 refers to which log message this is
+	console.log('before requesting doc from db asynchronously')
 	db.get(change.id, function(err, doc){
 		console.log('2.' + it)
 		if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
 			console.log('3.' + it)
+			// This is a change to the design document
 			// If the rcl design document changed, then reload the changes listeners.
 			console.log('A design document changed');
 			// Get the new design doc
 			if (doc.changes) {
 				// take down the process with the old design doc
+				console.log('before killing child process')
 				p.kill();
+				console.log('before unlinking changes_listener_temp.js')
 				fs.unlinkSync(changes_listeners_filename);
+				console.log('before writing new changes_listener_temp.js')
 				// start up the process with the new design doc
 				// TODO: Does this cause the error?  Is it trying to execute two 
 				//			writes to the same file at the same time? 
 				fs.writeFileSync(changes_listeners_filename, doc.changes_listeners);
-				console.log('before spawning child process another')
+				console.log('before spawning another child process')
 				p = start_child_process();
-				console.log('after spawning child process another')
+				console.log('after spawning another child process')
 			}
 		} else {
+			// This is a change to a data document
 			console.log('4.' + it)
 			// Feed the new doc into the changes listeners
 			console.log('A non-design document changed');
 			// TODO: This throws the following error:
 			// Error: This socket is closed.
+			// TODO: Start here - the error is thrown right after the log statement above
 			p.stdin.write(JSON.stringify(["ddoc", doc])+'\n');
+			console.log('after writing the changed non-design doc to the child process stdin');
 		}
 	});
+	console.log('after requesting doc from db asynchronously');
 });

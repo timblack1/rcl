@@ -24,10 +24,11 @@ trap control_c INT
 PORT=$(dbus-send --session --dest=org.desktopcouch.CouchDB    --print-reply --type=method_call /    org.desktopcouch.CouchDB.getPort | sed -e 's/^.* //' | tail -1)
 
 echo "Starting the Node.js changes listener..."
-curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node
+curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node --debug-brk
 # TODO: Kill the Node.js process when killing this file's process.  The kill command above doesn't work.
+# You can run node-inspector like this:  node-inspector &
 
-# sleep 20
+# sleep 5
 # exit
 
 # TODO: If I start nosetests from this file too, and run autopush in the background, I can use this example to kill the autopush process before killing this process:  http://hacktux.com/bash/control/c

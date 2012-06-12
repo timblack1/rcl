@@ -3,8 +3,10 @@ var stdin = process.openStdin();
 stdin.setEncoding('utf8');
 
 var buffer = '',
-	var cradle = require('../node_modules/cradle'),
-	db = new(cradle.Connection)('http://localhost', 50103).database('rcl');
+	cradle = require('../node_modules/cradle'),
+	port = require('./port').port,
+	db_old = new(cradle.Connection)('http://localhost', port).database('rcl'),
+	db = require('./db.js').db;
 
 // TODO: This doesn't print yet
 console.log('in changes_listeners.js');
