@@ -40,15 +40,6 @@ function start_child_process(){
 }
 p = start_child_process();
 console.log('after function that starts child process the first time');
-// TODO:  Start here - sometimes this error is thrown here:  "node.js:201
-//throw e; // process.nextTick error, or 'error' event on first tick
-//^
-//Error: connect EINVAL
-//at errnoException (net.js:646:11)
-//at connect (net.js:525:18)
-//at net.js:584:9
-//at asyncCallback (dns.js:84:16)
-//at Object.onanswer [as oncomplete] (dns.js:137:9)"
 
 it = 0;
 
@@ -89,6 +80,7 @@ feed.on('change', function (change) {
 			// TODO: Start here - the error is thrown right after the log statement above
 			p.stdin.write(JSON.stringify(["ddoc", doc])+'\n');
 			console.log('after writing the changed non-design doc to the child process stdin');
+			// TODO: Here we get this error:  "Error: write EPIPE"
 		}
 	});
 	console.log('after requesting doc from db asynchronously');

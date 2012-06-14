@@ -1,15 +1,11 @@
-var stdin = process.openStdin();
+var buffer = '',
+	db = require('./db.js').db,
+	stdin = process.openStdin();
 
 stdin.setEncoding('utf8');
 
-var buffer = '',
-	cradle = require('../node_modules/cradle'),
-	port = require('./port').port,
-	db_old = new(cradle.Connection)('http://localhost', port).database('rcl'),
-	db = require('./db.js').db;
-
 // TODO: This doesn't print yet
-console.log('in changes_listeners.js');
+//console.log('in changes_listeners.js');  // This throws "This socket is closed."
 stdin.on('data', function (chunk) {
 	buffer += chunk.toString();
 	while (buffer.indexOf('\n') !== -1) {
@@ -18,10 +14,11 @@ stdin.on('data', function (chunk) {
 		var obj = JSON.parse(line);
 		if (obj[0] === "change") {
 			var doc = obj[1];
-			console.log(doc);
+			//console.log(doc);
 			// Handle all other changes
 			// TODO: Get the changed document from the database
 			doc = db.get(obj._id);
+			
 			// TODO: Watch for requests to get the contents of a URL
 			if (doc.type = 'cgroup' && doc.get_url_contents==true && doc.url){
 				// Like when a user enters "opc.org/locator.html" into the church directory configuration page,
@@ -32,6 +29,7 @@ stdin.on('data', function (chunk) {
 				//	the html variable back to the database from here.
 				db.write(doc);
 			}
+			
 		}
 	}
 });

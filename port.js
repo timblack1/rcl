@@ -8,7 +8,7 @@ var execSync = function(cmd) {
     //for linux use ; instead of &&
     //execute your command followed by a simple echo 
     //to file to indicate process is finished
-    exec(cmd + " > stdout.txt && echo done > sync.txt");
+    exec(cmd + " > stdout.txt ; echo done > sync.txt");
 
     while (true) {
         //consider a timeout option to prevent infinite loop

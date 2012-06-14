@@ -24,7 +24,10 @@ trap control_c INT
 PORT=$(dbus-send --session --dest=org.desktopcouch.CouchDB    --print-reply --type=method_call /    org.desktopcouch.CouchDB.getPort | sed -e 's/^.* //' | tail -1)
 
 echo "Starting the Node.js changes listener..."
-curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node --debug-brk
+# Uncomment for debugging
+#curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node --debug-brk
+# Uncomment when not debugging
+curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node
 # TODO: Kill the Node.js process when killing this file's process.  The kill command above doesn't work.
 # You can run node-inspector like this:  node-inspector &
 
@@ -32,7 +35,7 @@ curl -s "http://localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; 
 # exit
 
 # TODO: If I start nosetests from this file too, and run autopush in the background, I can use this example to kill the autopush process before killing this process:  http://hacktux.com/bash/control/c
-# TODO: Here is how to start the forked process and kill it afterward:  1
+# TODO: Here is how to start the forked process and kill it afterward:  http://hacktux.com/bash/ampersand
 #couchapp autopush http://local:local@localhost:45773/rcl
 # TODO: The watchdog command is like this:  watchmedo shell-command --patterns="*.py;*.txt" --recursive --command='nosetests' .
 
