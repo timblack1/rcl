@@ -27,4 +27,4 @@ var execSync = function(cmd) {
 
 };
 
-exports.port = execSync("./get_port.sh");
+exports.port = execSync("./get_port.sh").trim();

@@ -1,18 +1,23 @@
 // Get the CouchDB port synchronously, and only then create a Cradle db connection
-var cradle = require('../node_modules/cradle');
+var cradle = require('../node_modules/cradle'),
+    fs = require('fs');
 
 var get_db_sync = function() {
 
-	var port = '';
-	port = require('./port').port;
+	var port = require('./port').port,
+		auth = fs.readFileSync('./auth.txt', 'ascii').trim(),
+		username = auth.split(':')[0],
+		password = auth.split(':')[1];
 
 	while (true) {
         //consider a timeout option to prevent infinite loop
         //NOTE: this will max out your cpu too!
-        try {
+		try {
             if (port != ''){
             	// Here is the main line that this whole file is for
-            	db = new(cradle.Connection)('http://localhost', 57122).database('rcl');
+            	db = new(cradle.Connection)('http://localhost:' + port, {
+                          auth: { username: username, password: password }
+                      }).database('rcl');
             	return db;
             }else{
             	throw e; // the port number has not yet been discovered
