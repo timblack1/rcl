@@ -23,7 +23,7 @@ process.on('message', function(doc){
 	}
 });
 
-
+// This is commented out because it is replaced by the process.on() code above.
 //stdin.on('data', function (chunk) {
 //	buffer += chunk.toString();
 //	while (buffer.indexOf('\n') !== -1) {
