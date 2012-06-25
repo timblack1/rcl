@@ -10,7 +10,15 @@ var child = require('child_process'),
 	fs = require('fs'),
 	db = require('./db.js').db,
 	feed = db.changes(),
-	changes_listeners_filename = './changes_listeners_temp.js';
+	changes_listeners_filename = './changes_listeners_temp.js',
+	debug = true; // turn console.log() on or off
+
+// Overwrite the console.log() function with a new one that only outputs if var debug=='true'
+var console.log = function(msg){
+	if (debug==true){
+		console.log(msg);
+	}
+}
 
 console.log('before declaring function')
 function start_child_process(){
@@ -94,6 +102,8 @@ feed.on('change', function (change) {
 				p.send(doc);
 			}
 			console.log('after sending the changed non-design doc to the child process');
+			// TODO: The code stops working here, on the 8th (last? it's the 8th on Tim's 
+			//	computer) change in the database
 		}
 	});
 	console.log('after requesting doc from db asynchronously');
