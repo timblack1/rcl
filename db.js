@@ -1,5 +1,5 @@
 // Get the CouchDB port synchronously, and only then create a Cradle db connection
-var cradle = require('../node_modules/cradle'),
+var cradle = require('cradle'),
     fs = require('fs');
 
 var get_db_sync = function() {
