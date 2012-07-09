@@ -56,4 +56,3 @@ fi
 couchapp browse . http://$AUTH@localhost:$PORT/rcl
 # Start watching the filesystem for changes, and push new changes into the database
 couchapp autopush --update-delay 1 http://$AUTH@localhost:$PORT/rcl
-
