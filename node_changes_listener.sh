@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # Get the randomly-generated port for desktopcouch
-PORT=$(./get_port.sh)
+./get_port.sh
+PORT=$(cat port.txt)
 # Get the admin username and password for couchdb
 AUTH=$(cat auth.txt)
 

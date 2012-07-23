@@ -1,7 +1,8 @@
-var longjohn = require('longjohn')
+var longjohn = require('./rcl/node_modules/longjohn')
 var buffer = '',
-	db = require('./db.js').db,
-	log = require('./lib').log;
+	config = require('./rcl/config'),
+	db = config.db,
+	log = require('./rcl/lib').log;
 	//stdin = process.openStdin();
 
 //stdin.setEncoding('utf8');

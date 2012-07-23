@@ -7,7 +7,8 @@
 . ../bin/activate
 
 # Get the randomly-generated port for desktopcouch
-PORT=$(./get_port.sh)
+./get_port.sh
+PORT=$(cat port.txt)
 # Get the admin username and password for couchdb
 AUTH=$(cat auth.txt)
 
@@ -58,4 +59,4 @@ couchapp browse . http://$AUTH@localhost:$PORT/rcl &
 #couchapp autopush --update-delay 1 http://$AUTH@localhost:$PORT/rcl
 # TODO: Try using watchmedo
 # TODO: The --ignore-patterns parameter doesn't seem to work in watchmedo, because the ignored files are the only ones that are changing, yet watchmedo doesn't ignore them.  Consider posting at https://groups.google.com/forum/?fromgroups#!forum/watchdog-python
-watchmedo shell-command --wait --ignore-patterns='changes_listeners_temp.js;stdout.txt;sync.txt' --recursive --command="couchapp push http://$AUTH@localhost:$PORT/rcl" .
+watchmedo shell-command --wait --ignore-pattern="changes_listeners_temp.js" --recursive --command="couchapp push http://$AUTH@localhost:$PORT/rcl" .

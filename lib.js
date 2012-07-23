@@ -1,8 +1,9 @@
 var cradle = require('cradle'),
-    fs = require('fs');
+    fs = require('fs'),
+    config = require('./config');
     
 var get_db = function(port) {
-	var auth = fs.readFileSync('./auth.txt', 'ascii').trim(),
+	var auth = config.auth;
 	username = auth.split(':')[0],
 	password = auth.split(':')[1];
 
@@ -15,7 +16,7 @@ var get_db = function(port) {
 
 //Create log() function that only outputs if var debug==true
 function log(msg){
-	if (require('./config').debug==true){
+	if (config.debug==true){
 		console.log(msg);
 	}
 }
