@@ -4,5 +4,7 @@
   ".*~$",
   // ".*\\.swp$"
   ".*\\.bak$",
-  "changes_listeners_temp.js"
+  "changes_listeners_temp.js",
+  "node_modules/*",
+  "sync.txt"
 ]
