@@ -1,5 +1,7 @@
+var longjohn = require('longjohn')
 var buffer = '',
-	db = require('./db.js').db;
+	db = require('./db.js').db,
+	log = require('./lib').log;
 	//stdin = process.openStdin();
 
 //stdin.setEncoding('utf8');
@@ -7,7 +9,8 @@ var buffer = '',
 // TODO: This doesn't print yet
 //console.log('in changes_listeners.js');  // Any output from this file throws "This socket is closed."
 process.on('message', function(doc){
-	console.log('Child got message:', doc);
+	log('In process.on')
+	log('Child got message:', doc);
 
 	// Handle all changes
 
@@ -15,11 +18,14 @@ process.on('message', function(doc){
 	if (doc.type = 'cgroup' && doc.get_url_contents==true && doc.url){
 		// Like when a user enters "opc.org/locator.html" into the church directory configuration page,
 		// 	then go get the contents of that URL.
-		doc.url_html = http.get(doc.url);
-		doc.get_url_contents = false;
-		// TODO: Decide whether to process the data more here, or just write the contents of 
-		//	the html variable back to the database from here.
-		db.write(doc);
+		http.get(doc.url, function(res){
+			doc.url_html = res;
+			doc.get_url_contents = false;
+			// TODO: Decide whether to process the data more here, or just write the contents of 
+			//	the html variable back to the database from here.
+			log('Before writing the doc to the db in changes_listener.js')
+			db.write(doc);
+		});
 	}
 });
 
