@@ -23,7 +23,7 @@ fi
 # Push app into database in case this has not been done yet
 couchapp push http://$AUTH@localhost:$PORT/rcl
 
-echo "Starting the Node.js changes listener as a forked child process..."
+#echo "Starting the Node.js changes listener as a forked child process..."
 #( ./node_changes_listener.sh & )
 
 # You can run node-inspector like this:  node-inspector &
@@ -57,6 +57,4 @@ couchapp browse . http://$AUTH@localhost:$PORT/rcl &
 # TODO: This loops--it pushes every second, regardless of whether a file changed.  I'd rather
 #   have it only push when a file changes.
 #couchapp autopush --update-delay 1 http://$AUTH@localhost:$PORT/rcl
-# TODO: Try using watchmedo
-# TODO: The --ignore-patterns parameter doesn't seem to work in watchmedo, because the ignored files are the only ones that are changing, yet watchmedo doesn't ignore them.  Consider posting at https://groups.google.com/forum/?fromgroups#!forum/watchdog-python
-watchmedo shell-command --wait --ignore-pattern="changes_listeners_temp.js" --recursive --command="couchapp push http://$AUTH@localhost:$PORT/rcl" .
+watchmedo shell-command --wait --recursive --command="couchapp push http://$AUTH@localhost:$PORT/rcl" .

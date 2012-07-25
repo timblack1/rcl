@@ -19,21 +19,19 @@ $(function() {
 
     var path = unescape(document.location.pathname).split('/'),
         design = path[3],
+        // TODO: Why is my username and password showing up in the URL of db requests in 
+        //			Chrome's Developer Tools Network panel?  Shouldn't authentication be handled 
+        //			by a cookie after it is initialized?
         db = $.couch.db(path[1]);
     $("#account").couchLogin({});
    
     // TODO: Put custom evently code here
     
     $.couch.app(function(app) {
+        $("#mainmenu").evently("mainmenu", app);
         $("#download").evently("download", app);
 	});
     
-    // TODO: Set up node.js listener to _changes using https://github.com/mikeal/node.couch.js
-    //			or http://dominicbarnes.us/node-couchdb-api/api/database/changes.html
-    // TODO: Have it monitor when requests are submitted to:
-    //	(when configuring a directory's settings) get a url in general
-    //	(when a directory is already configured) download all cong data for a directory
-	
 	// TODO: We are trying to get the AJAX request to work on the "on key up" event; but no luck so far. 
 	// attach this AJAX call to the form element with an event
 	$('#details_regex').keyup(function() {
