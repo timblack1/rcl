@@ -25,6 +25,7 @@ $(function() {
     // TODO: Put custom evently code here
     
     $.couch.app(function(app) {
+    	$("#mainmenu").evently("mainmenu", app);
         $("#map").evently("map", app);
         $("#search_container").evently("search", app);
 	});
