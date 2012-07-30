@@ -86,6 +86,8 @@ var CouchObject = {
         // Save the doc to the database
         // TODO: Test to make sure this doesn't save this object's functions
         // TODO: Figure out how to handle the callback options object
+        // TODO: Make sure to use the previous _rev when needed to guarantee that this 
+        //  saves a new revision.
         db.saveDoc(this, options);
     },
     // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
