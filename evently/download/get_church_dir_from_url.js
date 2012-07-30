@@ -3,6 +3,8 @@ function(){
 	// TODO: Is elem needed?
 	var elem = $(this),
 		db = $$(this).app.require('db').db
+		// TODO: Get model working
+		//var model = $$(this).app.require('model').model
 	
 	// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
 	// TODO: Don't fire on every key event, but only once after delay.
@@ -79,7 +81,7 @@ function(){
 	// If the associated cgroup exists in the db, get it
 	var cgroup = ''
 	// Query database by cgroup.abbreviation
-	db.view('rcl/cgroup-abbreviation', {
+	db.view('rcl/cgroup-by-abbreviation', {
 		keys:[$('#abbreviation').val()],
 		include_docs:true,
 		success:function(data){
