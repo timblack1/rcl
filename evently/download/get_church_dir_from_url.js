@@ -1,6 +1,5 @@
 function(){
 
-	// TODO: Is elem needed?
 	var elem = $(this),
 		db = $$(this).app.require('db').db
 		// TODO: Get model working
@@ -62,6 +61,9 @@ function(){
 					if (data.rows.length>1){
 						// TODO: Throw an error or handle the problem that this directory has multiple entries
 						console.log("Error:  More than one copy of this directory's settings are found in the database.")
+						// TODO: When I refresh http://localhost:37470/rcl/_design/rcl/import_directory.html,
+						//	I get this error in an alert box: "The document could not be saved: Document update conflict."
+						//  I think this is because I'm not using the previous _rev in the saveDoc command.
 					}else if (data.rows.length==1){
 						// We found the right directory
 						dir = data.rows[0]
