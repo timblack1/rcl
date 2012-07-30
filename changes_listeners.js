@@ -33,6 +33,9 @@ process.on('message', function(doc){
 				// Write the contents of the html variable back to the database
 				console.log(doc)
 				// TODO: Start here.  Debug Node error:  TypeError: Object.keys called on non-object
+				// TODO: It seems this code isn't writing the doc fields to their correct locations;
+				//	instead, it writes them all to a new field named 'doc'
+				// TODO: Also, it doesn't write the pageData variable's HTML contents to the url_html field. 
 				db.merge(doc._id, doc._rev, {
 					url_html:pageData,
 					get_url_contents:false
