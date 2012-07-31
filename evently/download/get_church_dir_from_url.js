@@ -31,7 +31,7 @@ function(){
 		//			Or is it because we are not using the _rev when we save?
 		db.saveDoc(dir, {
 			success:function(msg){
-				console.log(msg)
+				// Set the local copy of the directory's new _rev
 				dir._rev = msg.rev
 				// Watch for Node changes listener's response
 				var changes = db.changes()
