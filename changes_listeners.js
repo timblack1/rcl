@@ -14,6 +14,7 @@ var buffer = '',
 	db = config.db,
 	log = require('./rcl/lib').log;
 	//$ = require('jquery');
+//var model = require('model.js').model
 	//stdin = process.openStdin();
 if (config.debug)
 	var longjohn = require('./rcl/node_modules/longjohn')
