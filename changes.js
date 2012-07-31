@@ -11,6 +11,7 @@ var child_process = require('child_process'),
 	feed = db.changes(),
 	changes_listeners_filename = '../changes_listeners_temp.js',
 	log = require('./lib').log;
+	//$ = require('jquery');
 if (config.debug)
 	var longjohn = require('longjohn') // for printing long stacktraces
 
