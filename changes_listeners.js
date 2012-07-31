@@ -28,10 +28,11 @@ process.on('message', function(doc){
 			var pageData = ''
 			res.on('data', function(chunk){
 				pageData += chunk
+				console.log(pageData)
 			})
 			res.on('end', function(){
 				// Write the contents of the html variable back to the database
-				console.log(doc)
+				console.log(pageData)
 				// TODO: Start here.  Debug Node error:  TypeError: Object.keys called on non-object
 				// TODO: It seems this code isn't writing the doc fields to their correct locations;
 				//	instead, it writes them all to a new field named 'doc'
