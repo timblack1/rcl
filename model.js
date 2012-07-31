@@ -149,6 +149,8 @@ $.extend(true, CouchObject, {
 //  1) have the CouchObject base object as their prototype
 //  2) allow you to document your schema
 //  3) allow you to define views in one place
+//  4) auto-create (and auto-load on attribute access) default views and relationship views
+//  5) auto-persist data to CouchDB when the object changes, and auto-load data from the database when the object's underlying documents change in CouchDB.
 var Cong = CouchObject.sub()
 $.extend(true, Cong, {
     // Cong object using the prototype method of inheritance
