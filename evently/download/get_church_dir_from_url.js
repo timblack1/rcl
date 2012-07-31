@@ -23,34 +23,37 @@ function(){
 		dir.name = $('#directory_name').val()
 		dir.abbreviation = $('#abbreviation').val()
 		// TODO: Should we do a fuzzy search or autocomplete, to get the user to pick the right cgroup?
+
 		// Save request to get contents of URL to database
-		console.log(dir)
-		// TODO: This saveDoc call causes a "Document update conflict."
+		// TODO: This saveDoc call sometimes causes a "Document update conflict."
 		//			Is this because the changes listener has already changed the document?
 		//			It does happen only on the second modification of the doc, so maybe.
+		//			Or is it because we are not using the _rev when we save?
 		db.saveDoc(dir, {
 			success:function(msg){
+				console.log(msg)
+				dir._rev = msg.rev
 				// Watch for Node changes listener's response
 				var changes = db.changes()
-				changes.onChange = function(change){
+				changes.onChange(function(change){
 					console.log(change)
 					// Get document by id
 					db.openDoc(change.id, {
-						success:function(msg){
-							// Determine if the changed document is the one we are editing, and if it has a value for url_html		
+						success:function(doc){
+							// Determine if the changed document is the one we are editing, and if it has 
+							//	a value for url_html		
 							// Get the document's url_html
 							// Is msg the full doc?
-							console.log(msg)
+							console.log(doc)
 						}
 					})
-				}
+				})
 				changes.stop();
 			}
 		})
 	}
 		
 	function create_dir(cgroup){
-		
 		// Create directory if it does not exist in the browser's memory
 		if (typeof dir === 'undefined'){
 			// Get directory doc from db if it exists there
@@ -66,7 +69,7 @@ function(){
 						//  I think this is because I'm not using the previous _rev in the saveDoc command.
 					}else if (data.rows.length==1){
 						// We found the right directory
-						dir = data.rows[0]
+						dir = data.rows[0].doc
 					}else{
 						// Create new directory document from here
 						dir = {type:'directory'};
@@ -76,6 +79,9 @@ function(){
 			})
 		}else{
 			// Use existing directory object in browser's memory
+			// Problem herer is that when I try to update the db using the directory object existing in
+			//	memory, I get an update conflict, because the dir in memory has an out of date revision 
+			//	number.
 			populate_dir(cgroup)
 		}
 	}
