@@ -4,6 +4,18 @@ function(){
 		db = $$(this).app.require('db').db
 		// TODO: Get model working
 		//var model = $$(this).app.require('model').model
+		// Example usage of CouchObject model
+//		// Create a cong
+//		var cong = model.types.Cong.init({
+//		    name:'Caney OPC',
+//		    mailing_state:'KS'
+//		})
+//		// Or create first, then populate second
+//		var cong = model.types.Cong.init()
+//		// Retrieve a cong from the database
+//		var cong = model.types.Cong.init(id)
+//		groups = cong.groups
+//		
 	
 	// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
 	// TODO: Don't fire on every key event, but only once after delay.
