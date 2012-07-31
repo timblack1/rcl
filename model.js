@@ -70,12 +70,12 @@ $.extend(true, model, {
     },
     // Define model's changes handlers
     changes_handlers:{
-        client:{
-            
-        },
-        server:{
-            
-        }
+        client:[
+                
+        ],
+        server:[
+                
+        ]
     }
 })
 

@@ -23,6 +23,7 @@
 // I don't have to write that access code in more than one place.)  Is there any
 // standard or recommended way to do this?
 
+// TODO: Make CouchObject an npm-installable module, host on Github
 // TODO: Is this problem still present?
 // TODO: There is a problem here:  I would expect to be able to write
 // new attributes to this function's return value like this:
@@ -48,7 +49,8 @@ if (require=='undefined'){
 	var require = $$(this).app.require
 }
 //Define database access variable
-var db = require('db').db
+var db = require('db').db,
+	config = require('config')
 
 //Base object
 var CouchObjectBase = {
@@ -128,7 +130,9 @@ $.extend(true, CouchObjectType, {
 // Base object
 var CouchObjectModel = CouchObjectBase.sub()
 $.extend(true, CouchObjectModel, {
-	run_migrations:function(doc){
+	// TODO: Set db changes listener somewhere that listens for db changes, and calls run_changes_handlers(doc)
+	//	Probably in this.init, which will need to be called after creating var model.
+	run_migrations:function(doc, mode){
         // See example in Python at http://stackoverflow.com/questions/130092/couchdb-document-model-changes/410840#410840
         // TODO: Decide whether to store migration_version in every object and run this code on 
         //          every document access, or store migration_version in just one document, and
@@ -137,15 +141,25 @@ $.extend(true, CouchObjectModel, {
         //          replicate to other RCL instances without redeploying those instances.  Maybe this
         //          code could be run from the changes_listener file, then.  If the code will be run
         //          only once on all docs, it shouldn't be run from a CouchObjectType instance, but 
-    	//			should be moved elsewhere.  It seems that running it on document read would make 
-    	//			some views fail, because they wouldn't expect the right schema.
+    	//			should be moved elsewhere (CouchObjectModel).  It seems that running it on 
+		//			document read would make some views fail, because they wouldn't expect the right schema.
         // TODO: Filter this.migrations by doc.migrations_version using
         //          array.filter(callback[, thisObject]);
     	// TODO: Save doc named _migration_version
-    	// TODO: Rewrite this to iterate through migration versions
-        if (doc.migration_version == 1){
-            // Run migrations here
-        }
+		// TODO: Get changed doc
+		// TODO: Get var db_version = _migration_version from db
+    	// Iterate through migration versions, running them in order
+		for (var version=0;version<this.migrations.length;version++){
+			if (version>db_version){
+				this.migrations[version][mode](doc)
+			}
+		}
+    },
+    run_changes_handlers:function(doc){
+    	// TODO: Is this the right method of iteration?
+    	for (handler in this.changes_handlers[config.env]){
+    		handler(doc)
+    	}
     }
 })
 

@@ -2,8 +2,8 @@
 
 // Use Node's require() function if we are running this in Node
 if (require=='undefined'){
-	// We're running in the browser (under Evently) rather than on the server in Node
-	var env = 'browser',
+	// We're running in the client/browser (under Evently) rather than on the server in Node
+	var env = 'client',
 		require = $$(this).app.require
 }else{
 	var env = 'server'
@@ -13,7 +13,7 @@ if (require=='undefined'){
 exports.require = require
 exports.env = env
 exports.debug = true; // true or false; turns log() on or off
-if (env=='browser'){
+if (env=='client'){
 	// TODO: Get db
 	exports.db = require('db').db
 }else if (env=='server'){
