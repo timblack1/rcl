@@ -22,24 +22,22 @@ process.on('message', function(doc){
 
 	// Watch for requests to get the contents of a URL for a church directory
 	if (doc.type == 'directory' && doc.get_url_contents==true && doc.url){
-		// Like when a user enters "opc.org/locator.html" into the church directory configuration page,
+		// E.g., when a user enters "opc.org/locator.html" into the church directory configuration page,
 		// 	then go get the contents of that URL.
 		http.get(doc.url, function(res){
 			var pageData = ''
 			res.on('data', function(chunk){
 				pageData += chunk
-				console.log(pageData)
 			})
 			res.on('end', function(){
 				// Write the contents of the html variable back to the database
-				console.log(pageData)
 				// TODO: Start here.  Debug Node error:  TypeError: Object.keys called on non-object
-				// TODO: It seems this code isn't writing the doc fields to their correct locations;
-				//	instead, it writes them all to a new field named 'doc'
 				// TODO: Also, it doesn't write the pageData variable's HTML contents to the url_html field. 
 				db.merge(doc._id, doc._rev, {
 					url_html:pageData,
 					get_url_contents:false
+				}, function(err, res){
+					// TODO: Do anything more that needs to be done here
 				});
 			})
 		});

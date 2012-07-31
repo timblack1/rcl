@@ -1,4 +1,6 @@
 // Use cradle to watch the database's changes and stream them in
+// TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
+//	CouchObject model here?
 
 var child_process = require('child_process'),
 	util = require('util'),
