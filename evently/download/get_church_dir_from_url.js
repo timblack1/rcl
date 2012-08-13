@@ -62,7 +62,8 @@ function(){
 						db.openDoc(change.id, {
 							success:function(doc){
 								// Put new dir from db into memory
-								// TODO: This should set dir._rev to the rev in the db, but doesn't
+								// TODO: This should set dir._rev to the rev in the db, but doesn't,
+								//	so it causes a doc update conflict in the browser
 								// start here
 								dir = doc
 								// if the new doc has a value for url_html
