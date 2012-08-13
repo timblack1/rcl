@@ -69,10 +69,10 @@ function(){
 								// if the new doc has a value for url_html
 								if (dir.url_html){
 									// Determine whether url_html contains HTML or RSS
-							        if ("</html>" in dir.url_html){
+							        if (dir.url_html.indexOf("</html>") > -1){
 							        	dir.pagetype = 'html'
 							        }
-							        elseif ("</rss>" in dir.url_html){
+							        else if (dir.url_html.indexOf("</rss>") > -1){
 							        	dir.pagetype = 'rss'
 							        }
 						        	console.log(dir.pagetype)
