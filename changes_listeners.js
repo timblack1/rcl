@@ -6,7 +6,7 @@
 //	(when configuring a directory's settings) get a url in general
 //	(when a directory is already configured) download all cong data for a directory
 // TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
-//	CouchObject model here?
+//	CouchAppObject model here?
 
 var buffer = '',
 	http = require('http'),
@@ -37,17 +37,11 @@ process.on('message', function(doc){
 			res.on('end', function(){
 				// TODO: Check to see if we got a 404 response
 				// Write the contents of the html variable back to the database
-				console.log(doc)
-				db.merge(doc._id, doc._rev, {
-					url_html:pageData,
-					get_url_contents:false
-				}, function(err, res){
+				console.log(doc._rev)
+				doc.url_html = pageData
+				doc.get_url_contents = false
+				db.save(doc._id, doc._rev, doc, function(err, res){
 					// TODO: Do anything more that needs to be done here
-					// TODO: Start here:  This doesn't write the pageData variable's HTML contents 
-					//	to the url_html field,
-					//	because it returns this error:  { error: 'not_found', reason: 'missing' }
-					console.log(err)
-					console.log(res)
 				});
 			})
 		});

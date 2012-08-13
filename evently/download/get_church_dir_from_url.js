@@ -41,26 +41,48 @@ function(){
 		//			Is this because the changes listener has already changed the document?
 		//			It does happen only on the second modification of the doc, so maybe.
 		//			Or is it because we are not using the _rev when we save?
+		// TODO: Problem here is that when I try to update the db using the directory object existing in
+		//	memory, I get an update conflict (in the client or on the server?), because 
+		//	the dir in memory has an out of date revision 
+		//	number.  So I need to update the rev (and maybe other attributes) of the dir in memory 
+		//	from the db
+		// TODO: Move the rev-checking and object syncing code below into CouchAppObject.js
 		db.saveDoc(dir, {
 			success:function(msg){
 				// Set the local copy of the directory's new _rev
 				dir._rev = msg.rev
+				console.log(dir._rev)
 				// Watch for Node changes listener's response
 				var changes = db.changes()
 				changes.onChange(function(change){
 					console.log(change)
-					// Get document by id
-					db.openDoc(change.id, {
-						success:function(doc){
-							// Determine if the changed document is the one we are editing, and if it has 
-							//	a value for url_html		
-							// Get the document's url_html
-							// Is msg the full doc?
-							console.log(doc)
-						}
-					})
+					// Determine if the changed document is the one we are editing 
+					if (change.id == dir._id){
+						// Get document by id
+						db.openDoc(change.id, {
+							success:function(doc){
+								// Put new dir from db into memory
+								// TODO: This should set dir._rev to the rev in the db, but doesn't
+								// start here
+								dir = doc
+								// if the new doc has a value for url_html
+								if (dir.url_html){
+									// Determine whether url_html contains HTML or RSS
+							        if ("</html>" in dir.url_html){
+							        	dir.pagetype = 'html'
+							        }
+							        elseif ("</rss>" in dir.url_html){
+							        	dir.pagetype = 'rss'
+							        }
+						        	console.log(dir.pagetype)
+								}
+							}
+						})
+					}
 				})
-				changes.stop();
+				// TODO:  I'm a little confused.  Because changes.onChange is asynchronous, do we need
+				//	changes.stop() here?
+				//changes.stop();
 			}
 		})
 	}
@@ -69,6 +91,7 @@ function(){
 		// Create directory if it does not exist in the browser's memory
 		if (typeof dir === 'undefined'){
 			// Get directory doc from db if it exists there
+			// TODO: Move this into model.cgroup
 			db.view('rcl/directories', {
 				keys:[$('#abbreviation').val()],
 				include_docs:true,
@@ -91,9 +114,6 @@ function(){
 			})
 		}else{
 			// Use existing directory object in browser's memory
-			// Problem herer is that when I try to update the db using the directory object existing in
-			//	memory, I get an update conflict, because the dir in memory has an out of date revision 
-			//	number.
 			populate_dir(cgroup)
 		}
 	}
@@ -101,6 +121,7 @@ function(){
 	// If the associated cgroup exists in the db, get it
 	var cgroup = ''
 	// Query database by cgroup.abbreviation
+	// TODO: Turn this into a view in model.cgroup
 	db.view('rcl/cgroup-by-abbreviation', {
 		keys:[$('#abbreviation').val()],
 		include_docs:true,

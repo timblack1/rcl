@@ -49,7 +49,7 @@ var it = 0;
 
 feed.on('change', function (change) {
 	it++;
-	db.get(change.id, function(err, doc){
+	db.get(change.id, change.changes[0].rev, function(err, doc){
 		if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
 			// This is a change to the design document
 			// If the rcl design document changed, then reload the changes listeners.
