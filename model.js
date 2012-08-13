@@ -1,137 +1,127 @@
-// I want to use objects to model my data and get related items;
-// basically I want a very simple ORM.  I've got documents like this:
-//	{
-//		_id:'123',
-//		type:'congregation'
-//	}
-//	{
-//		_id:'124',
-//		type:'congregation_group'
-//	}
-//	{
-//		_id:'125',
-//		type:'congregation_group_relation',
-//		congregation_id:'123',
-//		group_id:'124'
-//	}
-
-// So the document's 'type' attribute functions like a table in a relational database.
-
-// I want a set of objects that do two things:  1) document what attributes each type
-// of document contains, and 2) gives me easy access to the list of congregations in
-// one group, or the list of groups to which one congregation belongs ("easy" means
-// I don't have to write that access code in more than one place.)  Is there any
-// standard or recommended way to do this?
-
-// TODO: Is this problem still present?
-// TODO: There is a problem here:  I would expect to be able to write
-// new attributes to this function's return value like this:
-// cong.new_attribute_name, AND call cong.save().  But I don't want
-// to save the save() function itself to the database!
-// Maybe I need some getter/setter magic like
-// http://ejohn.org/blog/javascript-getters-and-setters or
-// http://stackoverflow.com/a/813332 or http://stackoverflow.com/a/1749537
-// Can JavaScript notice a new (previously undefined) attribute's creation
-// and handle it with a setter method?
-
-// db.js contains:
-// var path = unescape(document.location.pathname).split('/'),
-//     db = $.couch.db(path[1]);
-// 
-// exports.db = db
-
-// Define database access variable
-var db = $$(this).app.require('db').db
-
-// Base object
-var CouchObject = {
-    // TODO: Is init actually called automatically when a new instance is created via Object.create() or extend?
-    // Initialize the object
-    init : function(params) {
-        // Get this object's data if an instance with this id exists in the database
-        if (params._id !== undefined) {
-            db.view(this.__view_get, {
-                keys : [params._id],
-                include_docs : true,
-                success : function(data) {
-                    // TODO: Does this overwrite existing fields, as it should?
-                    // TODO: Do I need the deep copy?
-                    // TODO: Run migrations here if we are running on read
-                    var doc = this.run_migrations(data.rows[0])
-                    $.extend(true, this, doc)
-                }
-            })
-        }
-        // Else, populate this object
-        else{
-            $.extend(true, this, params)
-        }
-        // TODO: Automate the save, like is done in
-        //          https://github.com/bcoe/endtable/blob/master/lib/endtable-object.js and
-        //          https://github.com/bcoe/endtable/blob/master/lib/monitored-object.js
-        // TODO: Set up self-monitoring object code here
-
-        // Create views if they are not yet defined
-        this.create_views()
-        // TODO: Consider setting up a filtered changes listener that updates the local cache 
-        //          of the object in memory if it changes in the database.  But will this cause
-        //          conflicts in a problematic way? 
-    },
-    sub: function(){
-        // Return a sub-instance of this object, like a subclass (technically, return an object
-        // which has this object as its prototype.)
-        return Object.create(this)
-    },
-    save:function(options){
-        // Save the doc to the database
-        // TODO: Test to make sure this doesn't save this object's functions
-        // TODO: Figure out how to handle the callback options object
-        // TODO: Make sure to use the previous _rev when needed to guarantee that this 
-        //  saves a new revision.
-        db.saveDoc(this, options);
-    },
-    // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
-    // identical to the ones defined in the CouchObject:  https://github.com/bcoe/endtable
-    create_views:function(){
-        // TODO: Write code here!
-        // TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
-        // TODO: How can I keep this code from running every time a new object is created?  What if 
-        //          the view already exists in the database?  It seems create_views needs to run 
-        //          only at the time when the model is first loaded into the application (Or 
-        //          maybe only at deployment.)  Does it make sense to run it when the browser first
-        //          loads the application?  That seems like overkill.
-        for (view in this.views){
-            // Code here
-            // TODO: Check to see if the view is a function, or is truly a view, avoiding functions
-            //          that are default parts of JavaScript objects
-            // TODO: Create relationship views in objType-relatedObjType syntax, with optional _by_attr
-            //  suffixes for keys
-            // TODO: Populate relationship arrays with data from those views, on access (getters)
-            // TODO: Save new items in relationship arrays to database using setters
-        }
-    },
-    run_migrations:function(doc){
-        // See example in Python at http://stackoverflow.com/questions/130092/couchdb-document-model-changes/410840#410840
-        // TODO: Decide whether to store migration_version in every object and run this code on 
-        //          every document access, or store migration_version in just one document, and
-        //          run all migrations on application load (or at some other time--deployment?)
-        //          It seems deployment time is not sufficient, because the design doc will 
-        //          replicate to other RCL instances without redeploying those instances.  Maybe this
-        //          code could be run from the changes_listener file, then.  If the code will be run
-        //          only once on all docs, it shouldn't be run from a CouchObject instance, but should
-        //          be moved elsewhere.  It seems that running it on document read would make some
-        //          views fail, because they wouldn't expect the right schema.
-        // TODO: Filter this.migrations by doc.migrations_version using
-        //          array.filter(callback[, thisObject]);
-        if (doc.migration_version == 1){
-            // Put first migrations here
-        }
-    }
+// Use Node's require() function if we are running this in Node
+if (require=='undefined'){
+	// We're running in the browser (under Evently) rather than on the server in Node
+	var require = $$(this).app.require
+}else{
+	// TODO: Load jQuery
+	var $ = require('jquery')
 }
+var CouchAppObject = require('CouchAppObject').CouchAppObject,
+	config = require('config'),
+	db = config.db
 
-// Define model's migrations
-$.extend(true, CouchObject, {
-    migration_version : 1,
+// ---------------------------------------------------------------------
+// Define model's sub-objects that 
+//  1) have the CouchObject base object as their prototype
+//  2) allow you to document your schema
+//  3) allow you to define views in one place
+//  4) auto-create (and auto-load on attribute access) default views and relationship views
+//  5) auto-persist data to CouchDB when the object changes, and auto-load data from the database when the object's underlying documents change in CouchDB
+//	6) allow you to add convenience methods to your model objects
+
+// Set migration_version for all new types created
+CouchAppObject.Type.migration_version = 0
+
+var Cong = CouchAppObject.Type.sub()
+$.extend(true, Cong, {
+    // Cong object using the prototype method of inheritance
+    type : 'congregation', // Required. Name the document type (else you won't have any relations!)
+    groups: {
+    	many_to_many:['congregation','cgroup'] // Declare many_to_many relation by listing the two 
+											   // doc types involved in the relation.  The backref on
+											   // the other type must be explicitly created.  Note
+											   // that the order of the type names is significant.
+    },
+    name : '',
+    meeting_address1 : '',
+    meeting_address2:'',
+    meeting_city:'',
+    meeting_state:'',
+    meeting_zip:'',
+    meeting_country:'',
+    lat:'',
+    lng:'',
+    mailing_address1:'',
+    mailing_address2:'',
+    mailing_city:'',
+    mailing_state:'',
+    mailing_zip:'',
+    mailing_country:'',
+    phone:'',
+    fax:'',
+    email:'',
+    website:'',
+    service_info:'',
+    people:{many_to_many:['congregation','person']},
+    date_founded:'', // date
+    number_of_members:'', // integer
+    range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+    							   // 	permitted/preferred or the only available data
+    organized:'', // boolean, defines whether this is a mission work or an organized congregation
+    source:'', // Foreign key:  Which source this cong's data came from
+    source_cong_id:'', // The ID of this cong in the source's database
+    
+    // Relations and other views in this format:
+    //	view_name: { map:function(doc){}, reduce:function(keys, values){} }, ...
+    views : {
+    }
+    // Optionally write other convenience functions here
+})
+
+var CGroup = CouchAppObject.Type.sub()
+$.extend(true, CGroup, {
+	// CGroup object using the prototype method of inheritance
+	type : 'cgroup', // Required. Name the document type (else you won't have any relations!)
+	name:'',
+	abbreviation:'',
+	people:{many_to_many:['cgroup','person']},
+	website:'',
+	congs:{many_to_many:['congregation','cgroup']}
+})
+var Person = CouchAppObject.Type.sub()
+$.extend(true, Person, {
+    // Person object using the prototype method of inheritance
+    type : 'person', // Required. Name the document type (else you won't have any relations!)
+    prefix:'',
+    firstname:'',
+    lastname:'',
+    suffix:'',
+    phone:'',
+    email:'',
+    congs:{many_to_many:['person','congregation']},
+    groups:{many_to_many:['person','cgroup']},
+    roles:{many_to_many:['person','role']},
+    office:{many_to_many:['person','office']}
+})
+var Office = CouchAppObject.Type.sub()
+$.extend(true, Office, {
+    // Office object using the prototype method of inheritance
+    type : 'office', // Required. Name the document type (else you won't have any relations!)
+    name:'',
+    people:{many_to_many:['office','person']}
+})
+var Role = CouchAppObject.Type.sub()
+$.extend(true, Role, {
+    // Role object using the prototype method of inheritance
+    type : 'role', // Required. Name the document type (else you won't have any relations!)
+    name:'',
+    people:{many_to_many:['role','person']}
+})
+
+
+//---------------------------------------------------------------------
+
+// TODO: Consider making this model object have a prototype that has a function which feeds changes 
+//  into its changes handlers.  Divide the changes handlers into two sections:  client and server-side
+//  code.
+var model = CouchAppObject.Model.sub()
+$.extend(true, model, {
+	// Declare model's types
+	types:{
+	    Cong:Cong
+	},
+	//Define model's migrations
+	migration_version : 1,
     migrations : {
         1 : {
             upgrade : function() {
@@ -141,53 +131,16 @@ $.extend(true, CouchObject, {
 
             }
         }
+    },
+    // Define model's changes handlers
+    changes_handlers:{
+        client:[
+                
+        ],
+        server:[
+                
+        ]
     }
 })
 
-
-// Define model's sub-objects that 
-//  1) have the CouchObject base object as their prototype
-//  2) allow you to document your schema
-//  3) allow you to define views in one place
-var Cong = CouchObject.sub()
-$.extend(true, Cong, {
-    // Cong object using the prototype method of inheritance
-    __view_get : 'db/cong',
-    _id : '',
-    type : 'congregation',
-    groups : [],
-    other_field_1 : '',
-    other_field_2 : '',
-    // Relations and other views
-    views : {
-        // TODO: Can a default view be created by default?
-        // Default view
-        cong : function() {
-            if (doc.type == 'congregation') {
-                emit(doc._id, null)
-            }
-            // TODO: Should I add something like this?
-            if (doc.type == 'congregation_group') {
-                emit(doc._id, null)
-            }
-        },
-        // Relationship view
-        groups: function(){}
-       
-    },
-})
-
-exports.model = {
-    Cong:Cong
-}
-
-// Create a cong
-var cong = Cong.init({
-    name:'Caney OPC',
-    mailing_state:'KS'
-})
-// Or create first, then populate second
-var cong = Cong.init()
-// Retrieve a cong from the database
-var cong = Cong.init(id)
-groups = cong.groups
+exports.model = model
