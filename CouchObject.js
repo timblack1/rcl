@@ -23,7 +23,7 @@
 // I don't have to write that access code in more than one place.)  Is there any
 // standard or recommended way to do this?
 
-// TODO: Make CouchObject an npm-installable module, host on Github
+// TODO: Make CouchAppObject an npm-installable module, host on Github
 // TODO: Is this problem still present?
 // TODO: There is a problem here:  I would expect to be able to write
 // new attributes to this function's return value like this:
@@ -53,7 +53,7 @@ var db = require('db').db,
 	config = require('config')
 
 //Base object
-var CouchObjectBase = {
+var Base = {
     sub: function(){
         // Return a sub-instance of this object, like a subclass (technically, return an object
         // which has this object as its prototype.) We're using prototypal inheritance to save on
@@ -62,15 +62,18 @@ var CouchObjectBase = {
     }
 }
 // Base object
-var CouchObjectType = CouchObjectBase.sub()
-$.extend(true, CouchObjectType, {
+var Type = Base.sub()
+$.extend(true, Type, {
     // TODO: Is init actually called automatically when a new instance is created via 
 	//	Object.create() or extend?
     // Initialize the object
     init : function(params) {
+        // Create views if they are not yet defined
+        this.create_views()
+
         // Get this object's data if an instance with this id exists in the database
         if (params._id !== undefined) {
-            db.view(this._view_get, {
+            db.view(this._default_view, {
                 keys : [params._id],
                 include_docs : true,
                 success : function(data) {
@@ -91,8 +94,6 @@ $.extend(true, CouchObjectType, {
         //          https://github.com/bcoe/endtable/blob/master/lib/monitored-object.js
         // TODO: Set up self-monitoring object code here
 
-        // Create views if they are not yet defined
-        this.create_views()
         // TODO: Consider setting up a filtered changes listener that updates the local cache 
         //          of the object in memory if it changes in the database.  But will this cause
         //          conflicts in a problematic way? 
@@ -106,16 +107,48 @@ $.extend(true, CouchObjectType, {
         db.saveDoc(this, options);
     },
     // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
-    // identical to the ones defined in the CouchObject:  https://github.com/bcoe/endtable
+    // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
     create_views:function(){
         // TODO: Write code here!
-        // TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
+    	// TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
         // TODO: How can I keep this code from running every time a new object is created?  What if 
         //          the view already exists in the database?  It seems create_views needs to run 
         //          only at the time when the model is first loaded into the application (Or 
         //          maybe only at deployment.)  Does it make sense to run it when the browser first
         //          loads the application?  That seems like overkill.
-        for (view in this.views){
+        // TODO: Create the default view if it doesn't exist yet
+        // Default view
+        this._default_view = function(parent) {
+        	// TODO: Maybe make this string different based on whether we're in cradle or 
+        	//	jquery.couch.js
+        	parent._default_view_name = 'db/' + parent.type
+            if (doc.type == this.type) {
+                emit(doc._id, null)
+            }
+        }
+        // TODO: How do I create this view in the database?  It should not be written to execute here,
+        //			but simply be declared here.  So does it need to be a string?  Can I get the string
+        //			programmatically?  Yes, with function.toString()
+    	// TODO: Create relation views
+
+        // TODO: Isn't it easier to simply get cgroup.congs.length() from the client side?
+		//	Maybe I could create a many_to_many.length() method which would get the value 
+		//	from CouchDB without getting all the CouchAppObject objects.
+
+        this.relations = []
+        var num_relations = '' // TODO: Count how many attributes contain a .many_to_many or .one_to_many sub-attribute, and register them in a list
+        
+        for (var i=0;i<num_relations;i++){
+            this.relations.push(function(){
+            	// TODO: Dynamically create the type below for the join type
+            	if (doc.type == 'congregation_cgroup') {
+                    emit(doc._id, null)
+                }
+            })
+        }
+        // TODO: Create user-defined views
+        
+    	for (view in this.views){
             // Code here
             // TODO: Check to see if the view is a function, or is truly a view, avoiding functions
             //          that are default parts of JavaScript objects
@@ -128,8 +161,8 @@ $.extend(true, CouchObjectType, {
 })
 
 // Base object
-var CouchObjectModel = CouchObjectBase.sub()
-$.extend(true, CouchObjectModel, {
+var Model = Base.sub()
+$.extend(true, Model, {
 	// TODO: Set db changes listener somewhere that listens for db changes, and calls run_changes_handlers(doc)
 	//	Probably in this.init, which will need to be called after creating var model.
 	run_migrations:function(doc, mode){
@@ -140,9 +173,10 @@ $.extend(true, CouchObjectModel, {
         //          It seems deployment time is not sufficient, because the design doc will 
         //          replicate to other RCL instances without redeploying those instances.  Maybe this
         //          code could be run from the changes_listener file, then.  If the code will be run
-        //          only once on all docs, it shouldn't be run from a CouchObjectType instance, but 
-    	//			should be moved elsewhere (CouchObjectModel).  It seems that running it on 
-		//			document read would make some views fail, because they wouldn't expect the right schema.
+        //          only once on all docs, it shouldn't be run from a CouchAppObject.Type instance, but 
+    	//			should be moved elsewhere (CouchAppObject.Model).  It seems that running it on 
+		//			document read would make some views fail, because they wouldn't expect the right 
+		//			schema.
         // TODO: Filter this.migrations by doc.migrations_version using
         //          array.filter(callback[, thisObject]);
     	// TODO: Save doc named _migration_version
@@ -163,7 +197,7 @@ $.extend(true, CouchObjectModel, {
     }
 })
 
-exports.CouchObject = {
+exports.CouchAppObject = {
 	Base:Base,
 	Type:Type,
 	Model:Model
