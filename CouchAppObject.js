@@ -52,7 +52,12 @@ if (require=='undefined'){
 var db = require('db').db,
 	config = require('config')
 
-//Base object
+// TODO: Make it so the values returned by the object are returned synchronously, or the object
+//	takes a callback function on success.  I prefer making the object return synchronously, and
+//	hiding its asynchronous nature inside the object, but perhaps this is unwise, since it might
+//	block the UI.
+
+// Base object
 var Base = {
     sub: function(){
         // Return a sub-instance of this object, like a subclass (technically, return an object

@@ -27,76 +27,91 @@ function(){
 		if (typeof dir.cgroup_id === 'undefined') {
 			dir.cgroup_id = cgroup.id
 		}
-		// TODO: We should check to see whether any directory already uses the URL the user is entering, 
-		//			and if it is present, say something like:
-		//			"This URL is already in the database.  Would you like to edit its settings?"
+		// Check to see whether any directory already uses the URL the user is entering, 
+		//	and if it is present, load its settings from the database and enter them into the form.
+		// TODO: Later, instantiate the CouchAppObject instance here, and have it load data from
+		//	the db automatically.
 		dir.url = $('#url').val();
 		dir.get_url_contents = true // triggers changes_listener.js
-		dir.name = $('#directory_name').val()
-		dir.abbreviation = $('#abbreviation').val()
 		// TODO: Should we do a fuzzy search or autocomplete, to get the user to pick the right cgroup?
 
 		// Save request to get contents of URL to database
-		// TODO: This saveDoc call sometimes causes a "Document update conflict."
-		//			Is this because the changes listener has already changed the document?
-		//			It does happen only on the second modification of the doc, so maybe.
-		//			Or is it because we are not using the _rev when we save?
-		// TODO: Problem here is that when I try to update the db using the directory object existing in
-		//	memory, I get an update conflict (in the client or on the server?), because 
-		//	the dir in memory has an out of date revision 
-		//	number.  So I need to update the rev (and maybe other attributes) of the dir in memory 
-		//	from the db
 		// TODO: Move the rev-checking and object syncing code below into CouchAppObject.js
-		db.saveDoc(dir, {
-			success:function(msg){
-				// Set the local copy of the directory's new _rev
-				dir._rev = msg.rev
-				console.log(dir._rev)
-				// Watch for Node changes listener's response
-				var changes = db.changes()
-				changes.onChange(function(change){
-					console.log(change)
-					// Determine if the changed document is the one we are editing 
-					if (change.id == dir._id){
-						// Get document by id
-						db.openDoc(change.id, {
-							success:function(doc){
-								// Put new dir from db into memory
-								// TODO: This should set dir._rev to the rev in the db, but doesn't,
-								//	so it causes a doc update conflict in the browser
-								// start here
-								dir = doc
-								// if the new doc has a value for url_html
-								if (dir.url_html){
-									// Determine whether url_html contains HTML or RSS
-							        if (dir.url_html.indexOf("</html>") > -1){
-							        	dir.pagetype = 'html'
-							        }
-							        else if (dir.url_html.indexOf("</rss>") > -1){
-							        	dir.pagetype = 'rss'
-							        }
-						        	console.log(dir.pagetype)
-								}
+		// Get current object from db
+		db.openDoc(dir._id, {
+			success:function(doc){
+				// Save rev for after merge
+				var rev = doc._rev
+				// Merge browser's copy of dir with db copy, retaining URL from browser
+				$.extend(doc, dir)
+				// restore rev
+				doc._rev = rev
+				dir = doc
+				// Save new doc to db
+				db.saveDoc(dir, {
+					success:function(msg){
+						// Set the local copy of the directory's new _rev
+						dir._rev = msg.rev
+						// Watch for Node changes listener's response
+						var changes = db.changes();
+						changes.onChange(function(change){
+							// Determine if the changed document is the one we are editing 
+							var change_id = change.results[0].id
+							if (change_id == dir._id){
+								// Get document by id
+								db.openDoc(change_id, {
+									success:function(doc){
+										// Put new dir from db into memory
+										// TODO: This should set dir._rev to the rev in the db, but doesn't,
+										//	so it causes a doc update conflict in the browser
+										dir = doc;
+										// if the new doc has a value for url_html
+										if (dir.url_html){
+											// In the controller & output to form, handle whether this is an RSS feed or an HTML page
+											// Determine whether url_html contains HTML or RSS
+											if (dir.url_html.indexOf("</html>") > -1){
+												$("#directory_type").show(1000);
+												$("#rss_feed").hide(1000);
+												dir.pagetype = 'html';
+											}
+											else if (dir.url_html.indexOf("</rss>") > -1){
+												// TODO: Display the right form controls for an RSS page
+												$("#directory_type").hide(1000);
+												$("#rss_feed").show(1000);
+												dir.pagetype = 'rss';
+											}
+											else { // We got an error code
+												// Hide the form controls.
+												elem.trigger('hide_subform');
+											}
+											$("#url_result_div").innerHTML = dir.pagetype;
+										}
+									}
+								});
 							}
-						})
+						});
+						// TODO:  I'm a little confused.  Because changes.onChange is asynchronous, do we need
+						//	changes.stop() here?
+						//changes.stop();
 					}
 				})
-				// TODO:  I'm a little confused.  Because changes.onChange is asynchronous, do we need
-				//	changes.stop() here?
-				//changes.stop();
 			}
 		})
 	}
+	
 		
 	function create_dir(cgroup){
 		// Create directory if it does not exist in the browser's memory
 		if (typeof dir === 'undefined'){
 			// Get directory doc from db if it exists there
+			var url = $('#url').val()
 			// TODO: Move this into model.cgroup
-			db.view('rcl/directories', {
-				keys:[$('#abbreviation').val()],
+			db.view('rcl/directories-by-url', {
+				startkey:url,
+				endkey:url,
 				include_docs:true,
 				success:function(data){
+					dir = {}
 					if (data.rows.length>1){
 						// TODO: Throw an error or handle the problem that this directory has multiple entries
 						console.log("Error:  More than one copy of this directory's settings are found in the database.")
@@ -105,11 +120,13 @@ function(){
 						//  I think this is because I'm not using the previous _rev in the saveDoc command.
 					}else if (data.rows.length==1){
 						// We found the right directory
+						// Populate dir object from db
 						dir = data.rows[0].doc
 					}else{
 						// Create new directory document from here
 						dir = {type:'directory'};
 					}
+					dir.url = url
 					populate_dir(cgroup)
 				}
 			})
@@ -123,13 +140,17 @@ function(){
 	var cgroup = ''
 	// Query database by cgroup.abbreviation
 	// TODO: Turn this into a view in model.cgroup
+	// TODO: Run this when the abbreviation changes, rather than when the URL changes
 	db.view('rcl/cgroup-by-abbreviation', {
 		keys:[$('#abbreviation').val()],
 		include_docs:true,
 		success:function(data){
 			if (data.rows.length==1){
 				// Get this cgroup from the db
-				var cgroup = data.rows[0]
+				var cgroup = data.rows[0].doc
+				// Populate page with this cgroup's data
+				$('#cgroup_name').val(cgroup.name)
+				$('#abbreviation').val(cgroup.abbreviation);
 				create_dir(cgroup)
 			}else if (data.rows.length > 1){
 				// Report error
@@ -138,7 +159,7 @@ function(){
 				// Otherwise, create that cgroup
 				var cgroup = {
 						type:	'cgroup',
-						name:	$('#directory_name').val(),
+						name:	$('#cgroup_name').val(),
 						abbreviation:	$('#abbreviation').val()
 				}
 				db.saveDoc(cgroup,{
@@ -150,50 +171,4 @@ function(){
 			}
 		}
 	})
-	
-	
-
-//	$.ajax({
-//		type: "POST",
-//		url: "/cong/get_page_type",
-//		data: ({url : directory.url}),
-//        success: function(msg){
-//			// TODO: In the controller & output to form, handle whether this is an RSS feed or an HTML page
-//        	$("#url_result_div").innerHTML = msg;
-//        	if (msg == 'html'){
-//        		$("#directory_type").show(1000);
-//        		$("#rss_feed").hide(1000);
-//        		directory.page_type = 'html';
-//        	} else if (msg == 'rss'){
-//        		// TODO: Display the right form controls for an RSS page
-//        		$("#directory_type").hide(1000);
-//        		$("#rss_feed").show(1000);
-//        		directory.page_type = 'rss';
-//        	} else { // We got an error code
-//        		// Hide the form controls.
-//        		elem.trigger('hide_subform');
-//        	}
-//        },
-//        error: function(xhr, ajaxOptions, thrownError){
-//          $("#url_result_div").innerHTML = xhr.responseText;
-//        },
-//		statusCode: {
-//			500: function(data, textStatus, jqXHR){
-//				// TODO: Handle 500 errors here
-//				//alert(data);
-//				//alert(data.responseText)
-//				// TODO: Even though Chrome's developer tools says the server is returning a 500 error,
-//				//			This code does not seem to be running.
-//				console.log("The 500 error handler is running.");
-//				elem.trigger('hide_subform');
-//			},
-//			404: function(data, textStatus, jqXHR){
-//				// TODO: Handle 404 errors here
-//				elem.trigger('hide_subform');
-//			}
-//		}
-//	});
-
-	//},2000);
-	
 }
