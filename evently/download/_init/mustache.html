@@ -1,8 +1,8 @@
         <div id="congregations">
             <h1>Congregations - configure downloading congregation data from one directory</h1>
-            <p>If you make a mistake, just <a href='/cong/test_regex'>reload this page</a> and start over.</p>
+            <p>If you make a mistake, just <a href='/rcl/_design/rcl/import_directory.html'>reload this page</a> and start over.</p>
             
-            <div id='url_or_rss'>
+            <div id='dir_and_display_type'>
                 <h2>Step 1:  Please enter the URL of the church directory page or RSS feed</h2>
                 <input type='text' name='url' id='url' value='http://opc.org/locator.html'/>
                 <div id='rss_feed' style='display:none'>
@@ -12,7 +12,7 @@
                     <input type='radio' name='rss_data_correct' value='no' />No
                 </div>
                 <p>Please enter the name of this directory's denomination or group of congregations</p>
-                <input type='text' name='directory_name' id='directory_name' value='Orthodox Presbyterian Church'/>
+                <input type='text' name='cgroup_name' id='cgroup_name' value='Orthodox Presbyterian Church'/>
                 <p>Please enter an abbreviation for this denomination or group of congregations</p>
                 <input type='text' name='abbreviation' id='abbreviation' value='OPC'/>
             </div>

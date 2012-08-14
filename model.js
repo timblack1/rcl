@@ -30,7 +30,9 @@ $.extend(true, Cong, {
     	many_to_many:['congregation','cgroup'] // Declare many_to_many relation by listing the two 
 											   // doc types involved in the relation.  The backref on
 											   // the other type must be explicitly created.  Note
-											   // that the order of the type names is significant.
+											   // that the order of the type names is not significant,
+											   // because default view names are created by sorting 
+											   // type names alphabetically.
     },
     name : '',
     meeting_address1 : '',
@@ -76,7 +78,24 @@ $.extend(true, CGroup, {
 	abbreviation:'',
 	people:{many_to_many:['cgroup','person']},
 	website:'',
-	congs:{many_to_many:['congregation','cgroup']}
+	congs:{many_to_many:['congregation','cgroup']},
+    roles:{many_to_many:['person','role']},
+	directories:{many_to_one:'directory', backref:'cgroup'}
+})
+var Directory = CouchAppObject.Type.sub()
+$.extend(true, Directory, {
+    // Directory object using the prototype method of inheritance
+    type : 'directory', // Required. Name the document type (else you won't have any relations!)
+    // Declare one_to_many relation by declaring the foreign key's doc type, and the backref.
+    //	The backref on the other type must be explicitly created.
+    cgroup:{one_to_many:'cgroup', backref:'directories'},
+    get_url_contents:'', // true or false
+    pagetype:'', // html or rss
+    url:'', // url of directory's main page
+    url_html:'', // HTML of directory's main page
+    state_url:'', // URL of state page
+    state_url_html:'', // HTML of state page
+    state_page_values:[] // list of select box options for this directory's states
 })
 var Person = CouchAppObject.Type.sub()
 $.extend(true, Person, {
@@ -88,8 +107,8 @@ $.extend(true, Person, {
     suffix:'',
     phone:'',
     email:'',
-    congs:{many_to_many:['person','congregation']},
-    groups:{many_to_many:['person','cgroup']},
+    congs:{many_to_many:['congregation','person']},
+    groups:{many_to_many:['cgroup','person']},
     roles:{many_to_many:['person','role']},
     office:{many_to_many:['person','office']}
 })
