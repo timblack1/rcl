@@ -1,11 +1,11 @@
 // Configure application-wide configuration settings here
 
-// Use Node's require() function if we are running this in Node
-if (require=='undefined'){
-	// We're running in the client/browser (under Evently) rather than on the server in Node
-	var env = 'client',
-		require = $$(this).app.require
+// Determine whether we're running in the browser or in Node.js
+if (typeof window !== 'undefined'){
+	// We're running in the client/browser (under Evently) rather than on the server in Node.js
+	var env = 'client'
 }else{
+	// We're running in Node.js
 	var env = 'server'
 }
 

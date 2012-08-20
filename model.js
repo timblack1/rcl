@@ -1,14 +1,12 @@
-// Use Node's require() function if we are running this in Node
-if (require=='undefined'){
-	// We're running in the browser (under Evently) rather than on the server in Node
-	var require = $$(this).app.require
-}else{
-	// TODO: Load jQuery
-	var $ = require('jquery')
-}
 var CouchAppObject = require('CouchAppObject').CouchAppObject,
 	config = require('config'),
-	db = config.db
+	db = config.db, // db should be a jquery.couch.js database object
+	// Get jQuery from global namespace
+	$ = window.$
+if (config.env=='server'){
+	// Load jQuery
+	var $ = require('jquery')
+}
 
 // ---------------------------------------------------------------------
 // Define model's sub-objects that 
@@ -80,7 +78,10 @@ $.extend(true, CGroup, {
 	website:'',
 	congs:{many_to_many:['congregation','cgroup']},
     roles:{many_to_many:['person','role']},
-	directories:{many_to_one:'directory', backref:'cgroup'}
+	directories:{many_to_one:'directory', backref:'cgroup'},
+	views:{
+		
+	}
 })
 var Directory = CouchAppObject.Type.sub()
 $.extend(true, Directory, {
@@ -136,8 +137,15 @@ $.extend(true, Role, {
 var model = CouchAppObject.Model.sub()
 $.extend(true, model, {
 	// Declare model's types
+	// TODO: Can this be automated?  Just iterate through this.properties and filter for the objects
+	//	who are an instanceof("Type", Type) or if (obj instanceof Type){}
 	types:{
-	    Cong:Cong
+	    Cong:Cong,
+	    Person:Person,
+	    CGroup:CGroup,
+	    Directory:Directory,
+	    Office:Office,
+	    Role:Role
 	},
 	//Define model's migrations
 	migration_version : 1,
