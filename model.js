@@ -10,12 +10,14 @@ if (config.env=='server'){
 
 // ---------------------------------------------------------------------
 // Define model's sub-objects that 
-//  1) have the CouchObject base object as their prototype
-//  2) allow you to document your schema
-//  3) allow you to define views in one place
-//  4) auto-create (and auto-load on attribute access) default views and relationship views
-//  5) auto-persist data to CouchDB when the object changes, and auto-load data from the database when the object's underlying documents change in CouchDB
-//	6) allow you to add convenience methods to your model objects
+//1) have the CouchAppObject base object as their prototype
+//2) allow you to document your schema
+//3) provide easy (attribute) access to related objects (via one-to-many and many-to-many relations)
+//4) allow you to define custom views in one place
+//5) auto-create (and auto-load on attribute access) default views and relationship views
+//6) auto-persist data to CouchDB when the object changes, and auto-load data from the database 
+//	when the object's underlying documents change in CouchDB
+//7) allow you to add convenience methods to your model objects
 
 // Set migration_version for all new types created
 CouchAppObject.Type.migration_version = 0

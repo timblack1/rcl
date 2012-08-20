@@ -1,3 +1,8 @@
+// CouchAppObject is a simple ORM patterned after EndTable (a CouchDB ORM that runs in Node.js; see
+//	https://github.com/bcoe/endtable), but is intended to run in the browser in a CouchApp environment,
+//	which means it does not depend on Node.js core modules, and uses jquery.couch.js for access to
+//	CouchDB.
+
 // I want to use objects to model my data and get related items;
 // basically I want a very simple ORM.  I've got documents like this:
 //	{
@@ -17,11 +22,16 @@
 
 // So the document's 'type' attribute functions like a table in a relational database.
 
-// I want a set of objects that do two things:  1) document what attributes each type
-// of document contains, and 2) gives me easy access to the list of congregations in
-// one group, or the list of groups to which one congregation belongs ("easy" means
-// I don't have to write that access code in more than one place.)  Is there any
-// standard or recommended way to do this?
+// I want to be able to define model objects that 
+//  1) have the CouchAppObject base object as their prototype [DONE]
+//  2) allow you to document your schema [DONE]
+//	3) provide easy (attribute) access to related objects (via one-to-many and many-to-many relations,
+//      dependent on default & relationship views)
+//	4) allow you to add convenience methods to your model objects [DONE]
+//  5) allow you to define custom views in one place
+//  6) auto-create (and auto-load on attribute access) default views and relationship views
+//  7) auto-persist data to CouchDB when the object changes, and auto-load data from the database 
+//		when the object's underlying documents change in CouchDB [IN PROGRESS]
 
 // TODO: Make CouchAppObject an npm-installable module, host on Github
 // TODO: Is this problem still present?
@@ -54,12 +64,13 @@ var config = require('config'),
 //	synchronously, and hiding its asynchronous nature inside the object, but perhaps this is 
 //	unwise, since it might block the UI.
 
-// Base Base object
+// Base object
 var Base = {
     sub: function(){
         // Return a sub-instance of this object, like a subclass (technically, return an object
         // which has this object as its prototype.) We're using prototypal inheritance to save on
-    	// memory usage, following http://www.adobe.com/devnet/html5/articles/javascript-object-creation.html
+    	// memory usage, following 
+    	// http://www.adobe.com/devnet/html5/articles/javascript-object-creation.html
         return Object.create(this)
     }
 }
@@ -73,21 +84,23 @@ $.extend(true, Type, {
 
         // Get this type instance's data if an instance with this id exists in the database
         if (params._id !== undefined) {
-            db.view(this.default_view.name, {
-                keys : [params._id],
-                include_docs : true,
-                success : function(data) {
+            db.openDoc(params._id, {
+                success : function(doc) {
                     // TODO: Does this overwrite existing fields, as it should?
                     // TODO: Do I need the deep copy?
                     // TODO: Run migrations here if we are running on read
-                    var doc = this.run_migrations(data.rows[0])
-                    this.copy_to_save = $.extend(true, this, doc)
+                    var doc = this.run_migrations(doc);
+                    // It appears we have to extend and return a copy rather than the current object, 
+                    //	otherwise we get an error.
+                    // Note that this.copy_to_return must be removed from the object before saving, so
+                    //	we don't create a recursive object.
+                    this.copy_to_return = $.extend(true, this, doc)
                 }
             })
         }
         // Else, populate this object
         else{
-        	this.copy_to_save = $.extend(true, this, params)
+        	this.copy_to_return = $.extend(true, this, params)
         }
         // TODO: Automate the save, like is done in
         //          https://github.com/bcoe/endtable/blob/master/lib/endtable-object.js and
@@ -95,28 +108,72 @@ $.extend(true, Type, {
         // TODO: Set up self-monitoring object code here
         
 
-        // TODO: Consider setting up a filtered changes listener that updates the local cache 
+        // TODO: Set up a filtered changes listener that updates the local cache 
         //          of the object in memory if it changes in the database.  But will this cause
-        //          conflicts in a problematic way? 
-        return this.copy_to_save
+        //          conflicts in a problematic way?
+        // TODO: This should be changed, because I shouldn't return a value here synchronously 
+        //  that is gotten asynchronously above.  Should I force the openDoc call above to use 
+        //  async:false?  That's bad because it will lock up the browser.  So how to use a callback here? 
+        return this.copy_to_return
     },
     save:function(options){
-        // Save the doc to the database
+    	// Save the doc to the database
         // TODO: Figure out how to handle the callback options object
         // TODO: Make sure to use the previous _rev when needed to guarantee that this 
         //  saves a new revision.
-    	// TODO: Strip out the following attributes before saving:
-    	//	[views, relations, dirty, default_view]
-    	db.saveDoc(this, {
+    	// Remove the following attributes before saving:
+    	var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return']
+    	var copy_to_save = this
+    	for (var i=0; i<attrs_to_remove.length; i++){
+    		delete copy_to_save[attrs_to_remove[i]]
+    	}
+    	// Import the function into the current scope so it can be used below
+    	var monitor_db_changes = this.monitor_db_changes
+    	db.saveDoc(copy_to_save, {
     		success:function(data){
     			this.dirty = false
-    			// TODO: Handle the response here.  Is data._rev the right reference?
-    			this._rev = data._rev
+    			delete this.copy_to_return
+    			// Handle the response here.
+    			this._rev = data.rev;
+    			// Set up changes listener to repopulate object in browser if object changes in
+    			//	database.
+    			monitor_db_changes()
     		},
     		error:function(status){
     			console.log(status)
     		}
     	});
+    },
+    monitor_db_changes:function(){
+    	this.changes = db.changes();
+    	function merge_from_db_callback(doc){
+    	    // TODO: Merge values from db doc into this object
+    	    // This function has the "this" variable in its scope, so should be able to work here.
+            // TODO: (Error from before this code was put into CouchAppObject:)
+            //  This should set doc._rev to the rev in the db, but doesn't,
+            //  so it causes a doc update conflict in the browser
+            // start here
+            // TODO: Do I need to use some other method (like making a copy of this object)
+            //  to get the db object into memory, replacing this object with that copy?
+    	    this = doc
+    	}
+		changes.onChange(function(change){
+			// Determine if the db document which changed is the one this object represents 
+			var change_id = change.results[0].id
+			if (change_id == this._id){
+				// TODO: After I create this object's self-monitoring code, stop this object from 
+			    //   monitoring changes to itself until after the changes from the db are merged into 
+			    //   memory.  Maybe it would be better to queue new this.save() events until after 
+			    //   merging in from the db, too.
+				// Get document by id
+				db.openDoc(change_id, {
+					success:function(doc){
+						// Put new doc from db into memory
+						merge_from_db_callback(doc);
+					}
+				});
+			}
+		})
     },
     // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
     // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
