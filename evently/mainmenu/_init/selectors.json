@@ -1,5 +1,6 @@
 {
   "#delete_all_opc_cgroups" : {"click": "delete_all_opc_cgroups" },
   "#delete_all_opc_directories" : {"click": "delete_all_opc_directories" },
+  "#delete_all_caney_opc" : {"click": "delete_all_caney_opc" },
   "#delete_all_opc_data" : {"click": "delete_all_opc_data" }
 }
