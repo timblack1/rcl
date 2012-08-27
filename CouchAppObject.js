@@ -58,7 +58,7 @@
 
 //Define database access variable
 var config = require('config'),
-	db = config.db
+	db = config.db;
 
 // TODO: Make it so the values returned by the object are returned synchronously, or the object
 //	takes a callback function on success.  Initially, I prefer making the object return 
@@ -72,7 +72,7 @@ var Base = {
         // which has this object as its prototype.) We're using prototypal inheritance to save on
     	// memory usage, following 
     	// http://www.adobe.com/devnet/html5/articles/javascript-object-creation.html
-        return Object.create(this)
+        return Object.create(this);
     },
     bind_scope:function(){
         // Bind this object's functions to this object's scope so the 'this' variable consistently refers
@@ -106,7 +106,7 @@ $.extend(true, Type, {
         this.create_views()
        
         //console.log(params)
-        merge_db_from_callback = this.merge_from_db_callback
+        merge_from_db_callback = this.merge_from_db_callback
         // Get this type instance's data if an instance with this id exists in the database
         if (params._id !== undefined) {
             console.log('We have an _id!')
@@ -121,7 +121,7 @@ $.extend(true, Type, {
                     // Note that this.copy_to_return must be removed from the object before saving, so
                     //	we don't create a recursive object.
                     //this.copy_to_return = $.extend(true, this, doc)
-                    merge_db_from_callback(doc)
+                    merge_from_db_callback(doc)
                 },
                 async:false
             })
@@ -155,9 +155,9 @@ $.extend(true, Type, {
     },
     save:function(options){
     	// Save the doc to the database
-        // TODO: Figure out how to handle the callback options object
         // TODO: Make sure to use the previous _rev when needed to guarantee that this 
-        //  saves a new revision.
+        //  saves a new revision of an existing document.  Instead it is saving a new document every time
+        //  save() is called.
     	// Remove the following attributes before saving:
     	var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return']
     	var copy_to_save = this
@@ -170,9 +170,14 @@ $.extend(true, Type, {
         db.saveDoc(copy_to_save, {
     		success:function(data){
     		    save_success(data)
+    		    // TODO: Figure out how to handle the callback options object.  Is this the right way?
+    		    try {options.success()}
+    		    catch(err) {}
     		},
     		error:function(status){
     			console.log(status)
+                try {options.error(); } 
+    			catch(err){}
     		}
     	});
     },
@@ -216,37 +221,37 @@ $.extend(true, Type, {
     // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
     // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
     create_views:function(){
-    	// TODO: Write code here!
-    	// TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
-    	//	Maybe I should have this put views into a separate CouchAppObject-specific design doc.
         // TODO: How can I keep this code from running every time a new object is created?  What if 
-        //          the view already exists in the database?  It seems create_views needs to run 
-        //          only at the time when the model is first loaded into the application (Or 
-        //          maybe only at deployment.)  Does it make sense to run it when the browser first
-        //          loads the application?  That seems like overkill.
+        //  the view already exists in the database?  It seems create_views needs to run 
+        //  only at the time when the model is first loaded into the application (or 
+        //  maybe only at deployment, or both.)  Does it make sense to run it when the 
+        //  browser first loads the application?  That seems like overkill.
 
-    	// Declare default view, but only if it doesn't exist yet
+    	// Declare default views, but only if they don't exist yet
     	// TODO: It should not be written to execute here, but simply be declared here.  So does it need 
     	//	to be a string?  Can I get the string programmatically?  Yes, with function.toString()
-    	if (typeof this.default_view !== 'undefined'){
-        	this.default_view = {
-        			name:'rcl/' + this.type,
-        			function_string:(
-        					function(){
-        						// TODO: On what key should this allow searching?  I assume _id.
-        						//	But because this makes it a "Get all" kind of view, maybe it 
-        						//	should be named accordingly (maybe views.all), and other similar 
-        						//	ORM query names should be borrowed from SQLAlchemy.
-        						// TODO: We could even create a default view on every object attribute,
-        						//	but that might waste disk space.
-        						if (doc.type == this.type) {
-        							emit(doc._id, null)
-        						}
-        					}).toString()
+        var views = {}
+        if (typeof this.default_view_on !== 'undefined'){
+        	views[this.type + '_' + this.default_view_on] = {
+    			'map':(
+					function(){
+						if (doc.type == this.type) {
+							emit(doc[this.default_view_on], null)
+						}
+					}).toString()
         	}
-    	}
-    	// TODO: Create default views in database
-    	// TODO: How do I create this view in the database?
+        }
+        if (typeof this.all !== 'undefined'){
+            views[this.type + '_all'] = {
+                'map':(
+                     function(){
+                         if (doc.type == this.type) {
+                             emit(doc[this._id], null)
+                         }
+                     }).toString()
+            }
+        }
+    	console.log(views)
     	// TODO: Create relation views
 
         // TODO: Isn't it easier to simply get cgroup.congs.length() from the client side?
@@ -256,17 +261,17 @@ $.extend(true, Type, {
         this.relations = []
         var num_relations = '' // TODO: Count how many attributes contain a .many_to_many or .one_to_many sub-attribute, and register them in a list
         
-        for (var i=0;i<num_relations;i++){
-            this.relations.push(function(){
-            	// TODO: Dynamically create the type below for the join type
-            	if (doc.type == 'congregation_cgroup') {
-                    emit(doc._id, null)
-                }
-            })
-        }
+//        for (var i=0;i<num_relations;i++){
+//            this.relations.push(function(){
+//            	// TODO: Dynamically create the type below for the join type
+//            	if (doc.type == 'congregation_cgroup') {
+//                    emit(doc._id, null)
+//                }
+//            })
+//        }
         // TODO: Create user-defined views
         
-    	for (view in this.views){
+    	for (view in views){
             // Code here
             // TODO: Check to see if the view is a function, or is truly a view, avoiding functions
             //          that are default parts of JavaScript objects
@@ -275,6 +280,16 @@ $.extend(true, Type, {
             // TODO: Populate relationship arrays with data from those views, on access (getters)
             // TODO: Save new items in relationship arrays to database using setters
         }
+        // TODO: Create default views in database
+        // TODO: How do I create this view in the database?
+        // TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
+        //  Maybe I should have this put views into a separate CouchAppObject-specific design doc.
+        views._id = 'rcl/_design/CouchAppObject_views'
+        db.saveDoc(views, {
+            success:function(data){
+                // TODO: Should I do anything here?
+            }
+        })
     }
 })
 
