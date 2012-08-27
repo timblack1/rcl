@@ -23,8 +23,10 @@ function(){
 	    name:'Caney OPC',
 	    mailing_state:'KS'
 	})
-	console.log(cong1)
+	//console.log(cong1)
 	cong1.save()
+	cong1.mailing_city = 'Caney'
+    cong1.save()
 	
 	// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
 	// TODO: Don't fire on every key event, but only once after delay.
@@ -48,7 +50,7 @@ function(){
 		// Save request to get contents of URL to database
 		// TODO: Move the rev-checking and object syncing code below into CouchAppObject.js
 		// Get current object from db
-		console.log(dir)
+		//console.log(dir)
 		if (dir._id){
 			// We've already gotten this dir out the db
 			db.openDoc(dir._id, {
@@ -153,7 +155,7 @@ function(){
 	// Query database by cgroup.abbreviation
 	// TODO: Turn this into a view in model.cgroup
 	// TODO: Run this when the abbreviation changes, rather than when the URL changes
-	console.log(db)
+	//console.log(db)
 	db.view('rcl/cgroup-by-abbreviation', {
 		keys:[$('#abbreviation').val()],
 		include_docs:true,
