@@ -5,7 +5,8 @@ function(){
 	model = $$(this).app.require('model').model,
 	CGroup = model.types.CGroup,
 	Directory = model.types.Directory,
-	Cong = model.types.Cong
+	Cong = model.types.Cong,
+	CGroup = model.types.CGroup
 	// TODO: Get model working
 	// Example usage of CouchObject model
 //		// Create a cong
@@ -19,6 +20,11 @@ function(){
 //		var cong = model.types.Cong.init(id)
 //		groups = cong.groups
 //		
+    var cg1 = CGroup.init({
+        name:'Orthodox Presbyterian Church',
+        abbreviation:'OPC'
+    })
+    cg1.save()
 	var cong1 = Cong.init({
 	    name:'Caney OPC',
 	    mailing_state:'KS'
