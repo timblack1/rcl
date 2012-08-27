@@ -23,11 +23,12 @@ function(){
 	    name:'Caney OPC',
 	    mailing_state:'KS'
 	})
-	//console.log(cong1)
 	cong1.save()
 	cong1.mailing_city = 'Caney'
     cong1.save()
-	
+    
+    setTimeout(function(cong1){console.log('rev: ' + cong1._rev)}, 3000)
+    
 	// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
 	// TODO: Don't fire on every key event, but only once after delay.
 	//			The way to do this is not via setTimeout, but probably something like a while loop
