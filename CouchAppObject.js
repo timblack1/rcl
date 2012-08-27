@@ -20,7 +20,8 @@
 //		group_id:'124'
 //	}
 
-// So the document's 'type' attribute functions like a table in a relational database.
+// So the document's 'type' attribute functions like a (reference to / name of the document's 
+//  containing) table in a relational database.
 
 // I want to be able to define model objects that 
 //  1) have the CouchAppObject base object as their prototype [DONE]
@@ -72,30 +73,57 @@ var Base = {
     	// memory usage, following 
     	// http://www.adobe.com/devnet/html5/articles/javascript-object-creation.html
         return Object.create(this)
+    },
+    bind_scope:function(){
+        // Bind this object's functions to this object's scope so the 'this' variable consistently refers
+        //  to this object.
+        if (typeof Function.prototype.bind === 'undefined') {
+            // Taken from http://www.robertsosinski.com/2009/04/28/binding-scope-in-javascript/
+            Function.prototype.bind = function(scope) {
+                var _function = this;
+
+                return function() {
+                    return _function.apply(scope, arguments);
+                }
+            }
+        }
+        for (item in this){
+            if (typeof this[item] === 'function' && item != 'init'){
+                this[item] = this[item].bind(this)
+            }
+        }
     }
 }
 // Base Type object
 var Type = Base.sub()
 $.extend(true, Type, {
+    db: db,
     // Initialize the object
-    init : function(params) {
+    init: function(params) {
+        // Bind this object's scope to this object's functions
+        this.bind_scope()
         // Create views for this type (not instance) if they are not yet defined
         this.create_views()
-
+       
+        //console.log(params)
+        merge_db_from_callback = this.merge_from_db_callback
         // Get this type instance's data if an instance with this id exists in the database
         if (params._id !== undefined) {
+            console.log('We have an _id!')
             db.openDoc(params._id, {
                 success : function(doc) {
                     // TODO: Does this overwrite existing fields, as it should?
-                    // TODO: Do I need the deep copy?
                     // TODO: Run migrations here if we are running on read
+                    //console.log(this)
                     var doc = this.run_migrations(doc);
                     // It appears we have to extend and return a copy rather than the current object, 
                     //	otherwise we get an error.
                     // Note that this.copy_to_return must be removed from the object before saving, so
                     //	we don't create a recursive object.
-                    this.copy_to_return = $.extend(true, this, doc)
-                }
+                    //this.copy_to_return = $.extend(true, this, doc)
+                    merge_db_from_callback(doc)
+                },
+                async:false
             })
         }
         // Else, populate this object
@@ -116,6 +144,15 @@ $.extend(true, Type, {
         //  async:false?  That's bad because it will lock up the browser.  So how to use a callback here? 
         return this.copy_to_return
     },
+    save_success:function(data){
+        this.dirty = false
+        delete this.copy_to_return
+        // Handle the response here.
+        this._rev = data.rev;
+        // Set up changes listener to repopulate object in browser if object changes in
+        //  database.
+        this.monitor_db_changes()
+    },
     save:function(options){
     	// Save the doc to the database
         // TODO: Figure out how to handle the callback options object
@@ -128,36 +165,34 @@ $.extend(true, Type, {
     		delete copy_to_save[attrs_to_remove[i]]
     	}
     	// Import the function into the current scope so it can be used below
-    	var monitor_db_changes = this.monitor_db_changes
-    	db.saveDoc(copy_to_save, {
+    	var save_success = this.save_success
+    	console.log(copy_to_save._rev)
+        db.saveDoc(copy_to_save, {
     		success:function(data){
-    			this.dirty = false
-    			delete this.copy_to_return
-    			// Handle the response here.
-    			this._rev = data.rev;
-    			// Set up changes listener to repopulate object in browser if object changes in
-    			//	database.
-    			monitor_db_changes()
+    		    save_success(data)
     		},
     		error:function(status){
     			console.log(status)
     		}
     	});
     },
+    merge_from_db_callback:function(doc){
+        // TODO: Merge values from db doc into this object
+        // This function has the "this" variable in its scope, so should be able to work here.
+        // TODO: (Error from before this code was put into CouchAppObject:)
+        //  This should set doc._rev to the rev in the db, but doesn't,
+        //  so it causes a doc update conflict in the browser
+        // start here
+        // TODO: Do I need to use some other method (like making a copy of this object)
+        //  to get the db object into memory, replacing this object with that copy?
+        // TODO: Do I need the deep copy?
+        $.extend(true, this, doc)
+        console.log(doc)
+    },
     monitor_db_changes:function(){
-    	this.changes = db.changes();
-    	function merge_from_db_callback(doc){
-    	    // TODO: Merge values from db doc into this object
-    	    // This function has the "this" variable in its scope, so should be able to work here.
-            // TODO: (Error from before this code was put into CouchAppObject:)
-            //  This should set doc._rev to the rev in the db, but doesn't,
-            //  so it causes a doc update conflict in the browser
-            // start here
-            // TODO: Do I need to use some other method (like making a copy of this object)
-            //  to get the db object into memory, replacing this object with that copy?
-    	    this = doc
-    	}
-		changes.onChange(function(change){
+        this.changes = this.db.changes();
+        merge_from_db_callback = this.merge_from_db_callback
+        this.changes.onChange(function(change){
 			// Determine if the db document which changed is the one this object represents 
 			var change_id = change.results[0].id
 			if (change_id == this._id){
@@ -174,6 +209,9 @@ $.extend(true, Type, {
 				});
 			}
 		})
+    },
+    delete_:function(){
+        // TODO: Delete this object from the database
     },
     // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
     // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
