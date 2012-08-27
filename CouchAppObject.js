@@ -166,8 +166,7 @@ $.extend(true, Type, {
     	}
     	// Import the function into the current scope so it can be used below
     	var save_success = this.save_success
-    	console.log(copy_to_save._rev)
-        db.saveDoc(copy_to_save, {
+    	db.saveDoc(copy_to_save, {
     		success:function(data){
     		    save_success(data)
     		    // TODO: Figure out how to handle the callback options object.  Is this the right way?
@@ -175,8 +174,7 @@ $.extend(true, Type, {
     		    catch(err) {}
     		},
     		error:function(status){
-    			console.log(status)
-                try {options.error(); } 
+    			try {options.error(); } 
     			catch(err){}
     		}
     	});
@@ -228,8 +226,8 @@ $.extend(true, Type, {
         //  browser first loads the application?  That seems like overkill.
 
     	// Declare default views, but only if they don't exist yet
-    	// TODO: It should not be written to execute here, but simply be declared here.  So does it need 
-    	//	to be a string?  Can I get the string programmatically?  Yes, with function.toString()
+    	// The view function is not written to execute here, but is only declared here 
+        //  and put into a string.
         var views = {}
         if (typeof this.default_view_on !== 'undefined'){
         	views[this.type + '_' + this.default_view_on] = {
@@ -241,14 +239,13 @@ $.extend(true, Type, {
 					}).toString()
         	}
         }
-        if (typeof this.all !== 'undefined'){
+        if (typeof this.all == 'undefined'){
             views[this.type + '_all'] = {
-                'map':(
-                     function(){
-                         if (doc.type == this.type) {
-                             emit(doc[this._id], null)
-                         }
-                     }).toString()
+                'map': "function(doc){ " +
+                             "if (doc.type == '" + this.type + "') {" +
+                                 "emit(doc._id, null) "+
+                             " } " +
+                     " } "
             }
         }
     	console.log(views)
@@ -280,16 +277,34 @@ $.extend(true, Type, {
             // TODO: Populate relationship arrays with data from those views, on access (getters)
             // TODO: Save new items in relationship arrays to database using setters
         }
-        // TODO: Create default views in database
-        // TODO: How do I create this view in the database?
-        // TODO: Will db writes initiated here overwrite or be overwritten by the design doc?
-        //  Maybe I should have this put views into a separate CouchAppObject-specific design doc.
-        views._id = 'rcl/_design/CouchAppObject_views'
-        db.saveDoc(views, {
+        // Create default views in database, in a separate CouchAppObject-specific design doc 
+        this.views_doc = {
+                     _id: '_design/CouchAppObject_views',
+                     views: views
+        }
+        // TODO: Check to see if this design doc already exists in the db, and if so, then update
+        //  the existing design doc
+        db.openDoc(this.views_doc._id, {
+            success:function(data){
+                assign_views_doc_rev(data)
+            },
+            error:function(data){
+                // TODO: Handle error here
+                //console.log(data)
+            }
+        })
+        db.saveDoc(views_doc, {
             success:function(data){
                 // TODO: Should I do anything here?
             }
         })
+    },
+    assign_views_doc_rev(data){
+        // Handle the response
+        console.log(data)
+        if (typeof data._rev !== 'undefined'){
+            this.views_doc._rev = data._rev
+        }
     }
 })
 
