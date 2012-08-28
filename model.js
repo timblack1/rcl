@@ -19,9 +19,6 @@ if (config.env=='server'){
 //	when the object's underlying documents change in CouchDB
 //7) allow you to add convenience methods to your model objects
 
-// Set migration_version for all new types created
-CouchAppObject.Type.migration_version = 0
-
 var Cong = CouchAppObject.Type.sub()
 $.extend(true, Cong, {
     // Cong object using the prototype method of inheritance

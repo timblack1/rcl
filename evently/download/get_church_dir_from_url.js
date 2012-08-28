@@ -1,12 +1,12 @@
 function(){
 	var elem = $(this),
-	config = $$(this).app.require('config'),
-	db = config.db,
-	model = $$(this).app.require('model').model,
-	CGroup = model.types.CGroup,
-	Directory = model.types.Directory,
-	Cong = model.types.Cong,
-	CGroup = model.types.CGroup
+    	config = $$(this).app.require('config'),
+    	db = config.db,
+    	model = $$(this).app.require('model').model,
+    	CGroup = model.types.CGroup,
+    	Directory = model.types.Directory,
+    	Cong = model.types.Cong,
+    	CGroup = model.types.CGroup
 	// TODO: Get model working
 	// Example usage of CouchObject model
 //		// Create a cong
@@ -124,37 +124,38 @@ function(){
 	
 		
 	function create_dir(cgroup){
-		// Create directory if it does not exist in the browser's memory
-		if (typeof dir === 'undefined'){
-			// Get directory doc from db if it exists there
-			var url = $('#url').val()
-			// TODO: Move this into model.cgroup
-			db.view('rcl/directories-by-url', {
-				startkey:url,
-				endkey:url,
-				include_docs:true,
-				success:function(data){
-					dir = {}
-					if (data.rows.length>1){
-						// TODO: Throw an error or handle the problem that this directory 
-						//	has multiple entries
-						console.log("Error:  More than one copy of this directory's settings are found in the database.")
-					}else if (data.rows.length==1){
-						// We found the right directory
-						// Populate dir object from db
-						dir = data.rows[0].doc
-					}else{
-						// Create new directory document from here
-						dir = {type:'directory'};
-					}
-					dir.url = url
-					populate_dir(cgroup)
-				}
-			})
-		}else{
-			// Use existing directory object in browser's memory
-			populate_dir(cgroup)
-		}
+	    // Create directory if it does not exist in the browser's memory
+	    if (typeof dir === 'undefined'){
+	        // Get directory doc from db if it exists there
+	        var url = $('#url').val()
+	        // TODO: Move this into model.cgroup
+	        db.view('rcl/directories-by-url', {
+	            startkey:url,
+	            endkey:url,
+	            include_docs:true,
+	            success:function(data){
+	                dir = {}
+	                if (data.rows.length>1){
+	                    // TODO: Throw an error or handle the problem that this
+                        // directory
+	                    // has multiple entries
+	                    console.log("Error:  More than one copy of this directory's settings are found in the database.")
+	                }else if (data.rows.length==1){
+	                    // We found the right directory
+	                    // Populate dir object from db
+	                    dir = data.rows[0].doc
+	                }else{
+	                    // Create new directory document from here
+	                    dir = {type:'directory'};
+	                }
+	                dir.url = url
+	                populate_dir(cgroup)
+	            }
+	        })
+	    }else{
+	        // Use existing directory object in browser's memory
+	        populate_dir(cgroup)
+	    }
 	}
 		
 	// If the associated cgroup exists in the db, get it
