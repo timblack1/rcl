@@ -83,7 +83,7 @@ var Base = {
                 var _function = this;
 
                 return function() {
-                    return _function.apply(scope, arguments);
+                    return _function.apply(scope, arguments)
                 }
             }
         }
@@ -102,10 +102,6 @@ $.extend(true, Type, {
     init: function(params) {
         // Bind this object's scope to this object's functions
         this.bind_scope()
-        // Create views for this type (not instance) if they are not yet defined
-        this.create_views()
-       
-        //console.log(params)
         merge_from_db_callback = this.merge_from_db_callback
         // Get this type instance's data if an instance with this id exists in the database
         if (params._id !== undefined) {
@@ -122,6 +118,10 @@ $.extend(true, Type, {
                     //	we don't create a recursive object.
                     //this.copy_to_return = $.extend(true, this, doc)
                     merge_from_db_callback(doc)
+                    // Create views for this type (not instance) if they are not yet defined
+                    this.create_views()
+                    // TODO: Is this necessary?  Create views accessors on this object in the 
+                    //  browser memory.
                 },
                 async:false
             })
@@ -159,7 +159,8 @@ $.extend(true, Type, {
         //  saves a new revision of an existing document.  Instead it is saving a new document every time
         //  save() is called.
     	// Remove the following attributes before saving:
-    	var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return']
+    	var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return',
+    	                       'views_doc']
     	var copy_to_save = this
     	for (var i=0; i<attrs_to_remove.length; i++){
     		delete copy_to_save[attrs_to_remove[i]]
@@ -174,12 +175,12 @@ $.extend(true, Type, {
     		    catch(err) {}
     		},
     		error:function(status){
-    			try {options.error(); } 
+    			try {options.error()} 
     			catch(err){}
     		}
     	});
     },
-    merge_from_db_callback:function(doc){
+    merge_from_db_callback: function(doc){
         // TODO: Merge values from db doc into this object
         // This function has the "this" variable in its scope, so should be able to work here.
         // TODO: (Error from before this code was put into CouchAppObject:)
@@ -189,12 +190,12 @@ $.extend(true, Type, {
         // TODO: Do I need to use some other method (like making a copy of this object)
         //  to get the db object into memory, replacing this object with that copy?
         // TODO: Do I need the deep copy?
-        $.extend(true, this, doc)
-        console.log(doc)
+        $.extend(true, this, doc);
+        //console.log(doc)
     },
     monitor_db_changes:function(){
         this.changes = this.db.changes();
-        merge_from_db_callback = this.merge_from_db_callback
+        var merge_from_db_callback = this.merge_from_db_callback
         this.changes.onChange(function(change){
 			// Determine if the db document which changed is the one this object represents 
 			var change_id = change.results[0].id
@@ -215,10 +216,15 @@ $.extend(true, Type, {
     },
     delete_:function(){
         // TODO: Delete this object from the database
+        db.removeDoc(this, {
+            success:function(data){},
+            error:function(msg){}
+        })
     },
-    // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
-    // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
-    create_views:function(){
+    create_views: function(){
+        // TODO: Consider mimicking EndTable's dynamic creation of views if they aren't 
+        // identical to the ones defined in the CouchAppObject:  https://github.com/bcoe/endtable
+
         // TODO: How can I keep this code from running every time a new object is created?  What if 
         //  the view already exists in the database?  It seems create_views needs to run 
         //  only at the time when the model is first loaded into the application (or 
@@ -226,29 +232,26 @@ $.extend(true, Type, {
         //  browser first loads the application?  That seems like overkill.
 
     	// Declare default views, but only if they don't exist yet
-    	// The view function is not written to execute here, but is only declared here 
-        //  and put into a string.
+    	// The view function is not written to execute here, but is only declared here. 
         var views = {}
         if (typeof this.default_view_on !== 'undefined'){
         	views[this.type + '_' + this.default_view_on] = {
-    			'map':(
-					function(){
-						if (doc.type == this.type) {
-							emit(doc[this.default_view_on], null)
+    			map:function(){
+						if (doc.type == eval("this.type")) {
+							emit(doc[eval("this.default_view_on")], null)
 						}
-					}).toString()
+				}
         	}
         }
         if (typeof this.all == 'undefined'){
             views[this.type + '_all'] = {
-                'map': "function(doc){ " +
-                             "if (doc.type == '" + this.type + "') {" +
-                                 "emit(doc._id, null) "+
-                             " } " +
-                     " } "
+                 map:function(doc){
+                     if (doc.type == eval("this.type")) {
+                         emit(doc._id, null)
+                     }
+                 }
             }
         }
-    	console.log(views)
     	// TODO: Create relation views
 
         // TODO: Isn't it easier to simply get cgroup.congs.length() from the client side?
@@ -268,7 +271,7 @@ $.extend(true, Type, {
 //        }
         // TODO: Create user-defined views
         
-    	for (view in views){
+    	for (var i; i<views.length; i++){
             // Code here
             // TODO: Check to see if the view is a function, or is truly a view, avoiding functions
             //          that are default parts of JavaScript objects
@@ -276,34 +279,41 @@ $.extend(true, Type, {
             //  suffixes for keys
             // TODO: Populate relationship arrays with data from those views, on access (getters)
             // TODO: Save new items in relationship arrays to database using setters
+            // Convert view functions to string representations for saving to the database
+    	    views[i].map = views[i].map.toString()
+            if (typeof views[i].reduce !== 'undefined') {
+                views[i].reduce = views[i].reduce.toString()
+            }
         }
         // Create default views in database, in a separate CouchAppObject-specific design doc 
         this.views_doc = {
-                     _id: '_design/CouchAppObject_views',
-                     views: views
+             _id: '_design/CouchAppObject_views',
+             views: views
         }
-        // TODO: Check to see if this design doc already exists in the db, and if so, then update
-        //  the existing design doc
+        // TODO: Check to see if this design doc already exists in the db, and if so, get, then update
+        //  the existing design doc.  Else, create this design doc for the first time.
+        var assign_views_doc_rev = this.assign_views_doc_rev
         db.openDoc(this.views_doc._id, {
-            success:function(data){
-                assign_views_doc_rev(data)
+            success:function(doc){
+                assign_views_doc_rev(doc)
             },
             error:function(data){
                 // TODO: Handle error here
                 //console.log(data)
             }
         })
-        db.saveDoc(views_doc, {
-            success:function(data){
-                // TODO: Should I do anything here?
-            }
-        })
     },
-    assign_views_doc_rev(data){
+    assign_views_doc_rev(doc){
         // Handle the response
-        console.log(data)
-        if (typeof data._rev !== 'undefined'){
-            this.views_doc._rev = data._rev
+        if (typeof doc._rev !== 'undefined'){
+            this.views_doc._rev = doc._rev
+            // TODO: Update contents of doc
+            db.saveDoc(views_doc, {
+                success:function(data){
+                    // TODO: Should I do anything here?
+                    console.log('')
+                }
+            })
         }
     }
 })
