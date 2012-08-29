@@ -128,13 +128,13 @@ $.extend(true, Type, {
         }
         // Else, populate this object
         else{
-        	this.copy_to_return = $.extend(true, this, params)
+            this.copy_to_return = $.extend(true, this, params)
         }
         // TODO: Automate the save, like is done in
         //          https://github.com/bcoe/endtable/blob/master/lib/endtable-object.js and
         //          https://github.com/bcoe/endtable/blob/master/lib/monitored-object.js
         // TODO: Set up self-monitoring object code here
-        
+
 
         // TODO: Set up a filtered changes listener that updates the local cache 
         //          of the object in memory if it changes in the database.  But will this cause
@@ -154,31 +154,31 @@ $.extend(true, Type, {
         this.monitor_db_changes()
     },
     save:function(options){
-    	// Save the doc to the database
+        // Save the doc to the database
         // TODO: Make sure to use the previous _rev when needed to guarantee that this 
         //  saves a new revision of an existing document.  Instead it is saving a new document every time
         //  save() is called.
-    	// Remove the following attributes before saving:
-    	var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return',
-    	                       'views_doc']
-    	var copy_to_save = this
-    	for (var i=0; i<attrs_to_remove.length; i++){
-    		delete copy_to_save[attrs_to_remove[i]]
-    	}
-    	// Import the function into the current scope so it can be used below
-    	var save_success = this.save_success
-    	db.saveDoc(copy_to_save, {
-    		success:function(data){
-    		    save_success(data)
-    		    // TODO: Figure out how to handle the callback options object.  Is this the right way?
-    		    try {options.success()}
-    		    catch(err) {}
-    		},
-    		error:function(status){
-    			try {options.error()} 
-    			catch(err){}
-    		}
-    	});
+        // Remove the following attributes before saving:
+        var attrs_to_remove = ['views', 'relations', 'dirty', 'default_view', 'copy_to_return',
+                               'views_doc']
+        var copy_to_save = this
+        for (var i=0; i<attrs_to_remove.length; i++){
+            delete copy_to_save[attrs_to_remove[i]]
+        }
+        // Import the function into the current scope so it can be used below
+        var save_success = this.save_success
+        db.saveDoc(copy_to_save, {
+            success:function(data){
+                save_success(data)
+                // TODO: Figure out how to handle the callback options object.  Is this the right way?
+                try {options.success()}
+                catch(err) {}
+            },
+            error:function(status){
+                try {options.error()} 
+                catch(err){}
+            }
+        });
     },
     merge_from_db_callback: function(doc){
         // TODO: Merge values from db doc into this object
@@ -197,22 +197,22 @@ $.extend(true, Type, {
         this.changes = this.db.changes();
         var merge_from_db_callback = this.merge_from_db_callback
         this.changes.onChange(function(change){
-			// Determine if the db document which changed is the one this object represents 
-			var change_id = change.results[0].id
-			if (change_id == this._id){
-				// TODO: After I create this object's self-monitoring code, stop this object from 
-			    //   monitoring changes to itself until after the changes from the db are merged into 
-			    //   memory.  Maybe it would be better to queue new this.save() events until after 
-			    //   merging in from the db, too.
-				// Get document by id
-				db.openDoc(change_id, {
-					success:function(doc){
-						// Put new doc from db into memory
-						merge_from_db_callback(doc);
-					}
-				});
-			}
-		})
+            // Determine if the db document which changed is the one this object represents 
+            var change_id = change.results[0].id
+            if (change_id == this._id){
+                // TODO: After I create this object's self-monitoring code, stop this object from 
+                //   monitoring changes to itself until after the changes from the db are merged into 
+                //   memory.  Maybe it would be better to queue new this.save() events until after 
+                //   merging in from the db, too.
+                // Get document by id
+                db.openDoc(change_id, {
+                    success:function(doc){
+                        // Put new doc from db into memory
+                        merge_from_db_callback(doc);
+                    }
+                });
+            }
+        })
     },
     delete_:function(){
         // TODO: Delete this object from the database
@@ -231,19 +231,19 @@ $.extend(true, Type, {
         //  maybe only at deployment, or both.)  Does it make sense to run it when the 
         //  browser first loads the application?  That seems like overkill.
 
-    	// Declare default views, but only if they don't exist yet
-    	// The view function is not written to execute here, but is only declared here. 
-        var views = {}
+        // Declare default views, but only if they don't exist yet
+        // The view function is not written to execute here, but is only declared here. 
+        var views = this.views ? this.views : {}
         if (typeof this.default_view_on !== 'undefined'){
-        	views[this.type + '_' + this.default_view_on] = {
-    			map:function(){
-						if (doc.type == eval("this.type")) {
-							emit(doc[eval("this.default_view_on")], null)
-						}
-				}
-        	}
+            views[this.type + '_' + this.default_view_on] = {
+                 map:function(){
+                     if (doc.type == eval("this.type")) {
+                         emit(doc[eval("this.default_view_on")], null)
+                     }
+                 }
+            }
         }
-        if (typeof this.all == 'undefined'){
+        if (typeof this.all === 'undefined'){
             views[this.type + '_all'] = {
                  map:function(doc){
                      if (doc.type == eval("this.type")) {
@@ -252,26 +252,26 @@ $.extend(true, Type, {
                  }
             }
         }
-    	// TODO: Create relation views
+        // TODO: Create relation views
 
         // TODO: Isn't it easier to simply get cgroup.congs.length() from the client side?
-		//	Maybe I could create a many_to_many.length() method which would get the value 
-		//	from CouchDB without getting all the CouchAppObject objects.
+        //	Maybe I could create a many_to_many.length() method which would get the value 
+        //	from CouchDB without getting all the CouchAppObject objects.
 
-        this.relations = []
-        var num_relations = '' // TODO: Count how many attributes contain a .many_to_many or .one_to_many sub-attribute, and register them in a list
-        
+//        this.relations = []
+//        var num_relations = ''; // TODO: Count how many attributes contain a .many_to_many or .one_to_many sub-attribute, and register them in a list
+
 //        for (var i=0;i<num_relations;i++){
 //            this.relations.push(function(){
-//            	// TODO: Dynamically create the type below for the join type
-//            	if (doc.type == 'congregation_cgroup') {
+//                // TODO: Dynamically create the type below for the join type
+//                if (doc.type == 'congregation_cgroup') {
 //                    emit(doc._id, null)
 //                }
 //            })
 //        }
         // TODO: Create user-defined views
-        
-    	for (var i; i<views.length; i++){
+
+        for (var i; i<views.length; i++){
             // Code here
             // TODO: Check to see if the view is a function, or is truly a view, avoiding functions
             //          that are default parts of JavaScript objects
@@ -280,15 +280,15 @@ $.extend(true, Type, {
             // TODO: Populate relationship arrays with data from those views, on access (getters)
             // TODO: Save new items in relationship arrays to database using setters
             // Convert view functions to string representations for saving to the database
-    	    views[i].map = views[i].map.toString()
+            views[i].map = views[i].map.toString()
             if (typeof views[i].reduce !== 'undefined') {
                 views[i].reduce = views[i].reduce.toString()
             }
         }
         // Create default views in database, in a separate CouchAppObject-specific design doc 
         this.views_doc = {
-             _id: '_design/CouchAppObject_views',
-             views: views
+          _id: '_design/CouchAppObject_views',
+          views: views
         }
         // TODO: Check to see if this design doc already exists in the db, and if so, get, then update
         //  the existing design doc.  Else, create this design doc for the first time.
@@ -303,7 +303,7 @@ $.extend(true, Type, {
             }
         })
     },
-    assign_views_doc_rev(doc){
+    assign_views_doc_rev:function(doc){
         // Handle the response
         if (typeof doc._rev !== 'undefined'){
             this.views_doc._rev = doc._rev
