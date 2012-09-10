@@ -120,7 +120,7 @@ $.extend(true, Type, {
                     merge_from_db_callback(doc)
                     // Create views for this type (not instance) if they are not yet defined
                     this.create_views()
-                    // TODO: Is this necessary?  Create views accessors on this object in the 
+                    // TODO: Is this necessary?:  Create views accessors on this object in the 
                     //  browser memory.
                 },
                 async:false
