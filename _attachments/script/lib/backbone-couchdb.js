@@ -222,19 +222,19 @@ Backbone.sync = function(method, model, opts) {
   }
 };
 
-Backbone.Model = (function(_super) {
+Backbone.RelationalModel = (function(_super) {
 
-  __extends(Model, _super);
+  __extends(RelationalModel, _super);
 
-  Model.name = 'Model';
+  RelationalModel.name = 'RelationalModel';
 
-  function Model() {
-    return Model.__super__.constructor.apply(this, arguments);
+  function RelationalModel() {
+    return RelationalModel.__super__.constructor.apply(this, arguments);
   }
 
-  Model.prototype.idAttribute = "_id";
+  RelationalModel.prototype.idAttribute = "_id";
 
-  Model.prototype.clone = function() {
+  RelationalModel.prototype.clone = function() {
     var new_model;
     new_model = new this.constructor(this);
     if (new_model.attributes._id) {
@@ -245,10 +245,10 @@ Backbone.Model = (function(_super) {
     }
     return new_model;
   };
+  
+  return RelationalModel;
 
-  return Model;
-
-})(Backbone.Model);
+})(Backbone.RelationalModel);
 
 Backbone.Collection = (function(_super) {
 
@@ -263,7 +263,7 @@ Backbone.Collection = (function(_super) {
     return Collection.__super__.constructor.apply(this, arguments);
   }
 
-  Collection.prototype.model = Backbone.Model;
+  Collection.prototype.model = Backbone.RelationalModel;
 
   Collection.prototype.initialize = function() {
     if (!this._db_changes_enabled && ((this.db && this.db.changes) || con.config.global_changes)) {
