@@ -76,6 +76,63 @@ $(function() {
 
      // set your models here
       
+    // A link object between 'CGroup' and 'Cong', to achieve many-to-many relations.
+    var CGroupCong = Backbone.RelationalModel.extend({
+    });
+    
+    var CGroup = Backbone.RelationalModel.extend({
+        defaults:{
+            collection:'cgroup',
+            name : '',
+            meeting_address1 : '',
+            meeting_address2:'',
+            meeting_city:'',
+            meeting_state:'',
+            meeting_zip:'',
+            meeting_country:'',
+            lat:'',
+            lng:'',
+            mailing_address1:'',
+            mailing_address2:'',
+            mailing_city:'',
+            mailing_state:'',
+            mailing_zip:'',
+            mailing_country:'',
+            phone:'',
+            fax:'',
+            email:'',
+            website:'',
+            service_info:'',
+            date_founded:'', // date
+            number_of_members:'', // integer
+            range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+                                           //   permitted/preferred or the only available data
+            organized:'', // boolean, defines whether this is a mission work or an organized congregation
+            source:'', // Foreign key:  Which source this cong's data came from
+            source_cong_id:'', // The ID of this cong in the source's database
+        },
+        urlRoot:'/cong',
+        relations:[
+                   {
+                       type:'HasMany',
+                       key: 'people',
+                       relatedModel: 'CongPerson',
+                       reverseRelation: {
+                           key: 'congregations'
+                       }
+                   },
+                   // TODO: create link object
+                   {
+                       type:'HasMany',
+                       key: 'groups',
+                       relatedModel: 'CGroupCong',
+                       reverseRelation: {
+                           key: 'congregations'
+                       }
+                   }
+                   ]
+      });
+
     var Cong = Backbone.RelationalModel.extend({
       defaults:{
           collection:'cong',
@@ -146,7 +203,9 @@ $(function() {
       }
     });
     var Congs = new CongList()
-//    Congs.add(cong1)
+    Congs.add(cong1)
+    // TODO: make an 'OPC' CGroup and associate cong1 with it
+    
     
     // A link object between 'Cong' and 'Person', to achieve many-to-many relations.
     var CongPerson = Backbone.RelationalModel.extend({
