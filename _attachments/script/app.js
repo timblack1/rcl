@@ -82,52 +82,45 @@ $(function() {
     
     var CGroup = Backbone.RelationalModel.extend({
         defaults:{
-            collection:'cgroup',
-            name : '',
-            meeting_address1 : '',
-            meeting_address2:'',
-            meeting_city:'',
-            meeting_state:'',
-            meeting_zip:'',
-            meeting_country:'',
-            lat:'',
-            lng:'',
-            mailing_address1:'',
-            mailing_address2:'',
-            mailing_city:'',
-            mailing_state:'',
-            mailing_zip:'',
-            mailing_country:'',
-            phone:'',
-            fax:'',
-            email:'',
-            website:'',
-            service_info:'',
-            date_founded:'', // date
-            number_of_members:'', // integer
-            range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
-                                           //   permitted/preferred or the only available data
-            organized:'', // boolean, defines whether this is a mission work or an organized congregation
-            source:'', // Foreign key:  Which source this cong's data came from
-            source_cong_id:'', // The ID of this cong in the source's database
+ //         collection:'cgroup',
+            name: '',
+            abbreviaton: '',
+            website: ''
         },
         urlRoot:'/cong',
         relations:[
                    {
                        type:'HasMany',
                        key: 'people',
-                       relatedModel: 'CongPerson',
+                       relatedModel: 'CGroupPerson',
                        reverseRelation: {
-                           key: 'congregations'
+                           key: 'cgroups'
                        }
                    },
                    // TODO: create link object
                    {
                        type:'HasMany',
-                       key: 'groups',
+                       key: 'congregations',
                        relatedModel: 'CGroupCong',
                        reverseRelation: {
-                           key: 'congregations'
+                           key: 'cgroups'
+                       }
+                   },
+                   {
+                	   type:'HasMany',
+                       key: 'roles',
+                       relatedModel: 'CGroupRole',
+                       reverseRelation: {
+                           key: 'cgroups'
+                       }
+                   },
+                   {
+                	   type:'HasMany',
+                       key: 'directories',
+                       relatedModel: 'Directory',
+                       collectionType:'DirectoryList',
+                       reverseRelation: {
+                           key: 'cgroups'
                        }
                    }
                    ]
