@@ -87,7 +87,7 @@ $(function() {
             abbreviaton: '',
             website: ''
         },
-        urlRoot:'/cong',
+        urlRoot:'/cgroup',
         relations:[
                    {
                        type:'HasMany',
@@ -118,7 +118,7 @@ $(function() {
                 	   type:'HasMany',
                        key: 'directories',
                        relatedModel: 'Directory',
-                       collectionType:'DirectoryList',
+                       collectionType:'DirectoryList', 
                        reverseRelation: {
                            key: 'cgroups'
                        }
@@ -183,10 +183,17 @@ $(function() {
         name:'Caney OPC',
         mailing_state:'KS'
     })
+    cong2 = new Cong({
+        name:'Bartlesville OPC',
+        mailing_state:'OK'
+    })
     cong1.save({}, {success:function(){
-        cong1.set({name:'Caney OPC, second version'}).save()
+        cong1.set({name:'Caney OPC, second version'}).save()        
     }})
-    
+    cong2.save()
+    OPC = new CGroup({
+        name:'Orthodox Presbyterian Church'})
+    OPC.get('congregations').add ( cong1, cong2 ); 
     var CongList = Backbone.Collection.extend({
       url : "/cong",
       model : Cong,
