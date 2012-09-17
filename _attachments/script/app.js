@@ -41,9 +41,10 @@ $(function() {
     
     // Fill this with your database information.
     
-    //var mode = 'backbone.couch' // newer? rewrite of JM's backbone-couch
-    var mode = 'backbone-couch'
-    if (mode == 'backbone-couch'){
+    var mode = 'backbone-couchdb' // Jan Monschke's original backbone-couch.js
+    //var mode = 'backbone.couch' // backbone.couch.js. Andrzej Sliwa's old rewrite of JM's backbone-couch.
+    //var mode = 'backbone.couchdb' // Thomas Rampelberg's backbone.couchdb.js
+    if (mode == 'backbone-couchdb'){
         // `ddoc_name` is the name of your couchapp project.
         Backbone.couch_connector.config.db_name = "rcl";
         Backbone.couch_connector.config.ddoc_name = "rcl";
@@ -51,7 +52,10 @@ $(function() {
         // If set to true, the connector will listen to the changes feed
         // and will provide your models with real time remote updates.
         // But in this case we enable the changes feed for each Collection on our own.
+        // TODO: Get this to work
         Backbone.couch_connector.config.global_changes = true;
+        // TODO: Replicate ddocChange() window.location.reload() functionality available 
+        //  in backbone.couch.js for use here in backbone-couchdb.js
     }else if (mode=='backbone.couch'){
        Backbone.couch.databaseName = "rcl";
        Backbone.couch.ddocName = "rcl";
@@ -74,7 +78,6 @@ $(function() {
       
     var Cong = Backbone.RelationalModel.extend({
       defaults:{
-          urlRoot:'/cong',
           name : '',
           meeting_address1 : '',
           meeting_address2:'',
@@ -103,6 +106,7 @@ $(function() {
           source:'', // Foreign key:  Which source this cong's data came from
           source_cong_id:'', // The ID of this cong in the source's database
       },
+      urlRoot:'/cong',
       relations:[
                  {
                      type:'HasMany',
@@ -123,28 +127,32 @@ $(function() {
                  }
                  ]
     });
+    // TODO: Should this be global or not?
     cong1 = new Cong({
-        name:'Caney OPC2',
+        name:'Caney OPC',
         mailing_state:'KS'
     })
-    // TODO: Figure out how to remove this explicit save call
-    cong1.save()
+    cong1.save({}, {success:function(){
+        cong1.set({name:'Caney OPC, second version'}).save()
+    }})
+    
     var CongList = Backbone.Collection.extend({
-      url : "/congs",
+      url : "/cong",
       model : Cong,
       // The congs should be ordered by name
       comparator : function(cong){
         return cong.get("name");
       }
     });
-    var Congs = new CongList()
-    Congs.add(cong1)
+//    var Congs = new CongList()
+//    Congs.add(cong1)
     
     // A link object between 'Cong' and 'Person', to achieve many-to-many relations.
     var CongPerson = Backbone.RelationalModel.extend({
     })
     
     var Person = Backbone.RelationalModel.extend({
+        urlRoot:'/person',
         defaults: {
                     prefix:'',
                     firstname:'',
