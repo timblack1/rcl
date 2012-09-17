@@ -78,6 +78,7 @@ $(function() {
       
     var Cong = Backbone.RelationalModel.extend({
       defaults:{
+          collection:'cong',
           name : '',
           meeting_address1 : '',
           meeting_address2:'',
@@ -144,7 +145,7 @@ $(function() {
         return cong.get("name");
       }
     });
-//    var Congs = new CongList()
+    var Congs = new CongList()
 //    Congs.add(cong1)
     
     // A link object between 'Cong' and 'Person', to achieve many-to-many relations.
