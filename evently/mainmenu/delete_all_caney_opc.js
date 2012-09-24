@@ -3,7 +3,8 @@ function(){
 	var db = $$(this).app.require('db').db
 	// Get all OPC congregations
 	db.view('rcl/caney_opc',{
-		keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version'],
+		keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version',
+		      'Bartlesville OPC'],
 		success:function(data){
 			var docs = []
 			for (var i=0;i<data.rows.length;i++){

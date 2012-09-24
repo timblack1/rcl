@@ -77,58 +77,67 @@ $(function() {
      // set your models here
       
     // A link object between 'CGroup' and 'Cong', to achieve many-to-many relations.
-    var CGroupCong = Backbone.RelationalModel.extend({
-    });
+    var CGroup_Cong = Backbone.RelationalModel.extend({});
     
     var CGroup = Backbone.RelationalModel.extend({
+        collection:'cgroup',
+        urlRoot:'/cgroup',
         defaults:{
- //         collection:'cgroup',
             name: '',
             abbreviaton: '',
             website: ''
         },
-        urlRoot:'/cgroup',
         relations:[
                    {
                        type:'HasMany',
-                       key: 'people',
-                       relatedModel: 'CGroupPerson',
+                       key: 'congregations',
+                       relatedModel: 'CGroup_Cong',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'cgroups'
+                           key: 'cgroup',
+                           // TODO: Is this needed?
+                           includeInJSON:'_id'
                        }
                    },
-                   // TODO: create link object
                    {
                        type:'HasMany',
-                       key: 'congregations',
-                       relatedModel: 'CGroupCong',
+                       key: 'people',
+                       relatedModel: 'CGroup_Person',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'cgroups'
+                           key: 'cgroup',
+                           includeInJSON:'_id'
                        }
                    },
                    {
                 	   type:'HasMany',
                        key: 'roles',
-                       relatedModel: 'CGroupRole',
+                       relatedModel: 'CGroup_Role',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'cgroups'
+                           key: 'cgroup',
+                           includeInJSON:'_id'
                        }
                    },
                    {
                 	   type:'HasMany',
                        key: 'directories',
                        relatedModel: 'Directory',
+                       includeInJSON:'_id',
+                       // TODO: Should we include this collectionType attribute in the other relations?
                        collectionType:'DirectoryList', 
                        reverseRelation: {
-                           key: 'cgroups'
+                           key: 'cgroup',
+                           includeInJSON:'_id'
                        }
                    }
                    ]
       });
 
     var Cong = Backbone.RelationalModel.extend({
+      urlRoot:'/cong',
+      collection:'cong',
       defaults:{
-          collection:'cong',
           name : '',
           meeting_address1 : '',
           meeting_address2:'',
@@ -157,62 +166,38 @@ $(function() {
           source:'', // Foreign key:  Which source this cong's data came from
           source_cong_id:'', // The ID of this cong in the source's database
       },
-      urlRoot:'/cong',
       relations:[
                  {
                      type:'HasMany',
                      key: 'people',
-                     relatedModel: 'CongPerson',
+                     relatedModel: 'Cong_Person',
+                     includeInJSON:'_id',
                      reverseRelation: {
-                         key: 'congregations'
+                         key: 'congregation',
+                         includeInJSON:'_id'
                      }
                  },
                  // TODO: create link object
                  {
                      type:'HasMany',
-                     key: 'groups',
-                     relatedModel: 'CGroupCong',
+                     key: 'cgroups',
+                     relatedModel: 'CGroup_Cong',
+                     includeInJSON:'_id',
                      reverseRelation: {
-                         key: 'congregations'
+                         key: 'congregation',
+                         includeInJSON:'_id'
                      }
                  }
                  ]
     });
-    // TODO: Should this be global or not?
-    cong1 = new Cong({
-        name:'Caney OPC',
-        mailing_state:'KS'
-    })
-    cong2 = new Cong({
-        name:'Bartlesville OPC',
-        mailing_state:'OK'
-    })
-    cong1.save({}, {success:function(){
-        cong1.set({name:'Caney OPC, second version'}).save()        
-    }})
-    cong2.save()
-    OPC = new CGroup({
-        name:'Orthodox Presbyterian Church'})
-    OPC.get('congregations').add ( cong1, cong2 ); 
-    var CongList = Backbone.Collection.extend({
-      url : "/cong",
-      model : Cong,
-      // The congs should be ordered by name
-      comparator : function(cong){
-        return cong.get("name");
-      }
-    });
-    var Congs = new CongList()
-    Congs.add(cong1)
-    // TODO: make an 'OPC' CGroup and associate cong1 with it
-    
     
     // A link object between 'Cong' and 'Person', to achieve many-to-many relations.
-    var CongPerson = Backbone.RelationalModel.extend({
+    var Cong_Person = Backbone.RelationalModel.extend({
     })
     
     var Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
+        collection:'person',
         defaults: {
                     prefix:'',
                     firstname:'',
@@ -225,53 +210,104 @@ $(function() {
                    {
                        type:'HasMany',
                        key: 'congregations',
-                       relatedModel: 'CongPerson',
+                       relatedModel: 'Cong_Person',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'people'
+                           key: 'person',
+                           includeInJSON:'_id'
                        }
                    },
                    // TODO: create link object
                    {
                        type:'HasMany',
                        key: 'groups',
-                       relatedModel: 'CGroupPerson',
+                       relatedModel: 'CGroup_Person',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'people'
+                           key: 'person',
+                           includeInJSON:'_id'
                        }
                    },
                    // TODO: create link object
                    {
                        type:'HasMany',
                        key: 'roles',
-                       relatedModel: 'PersonRole',
+                       relatedModel: 'Person_Role',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'people'
+                           key: 'person',
+                           includeInJSON:'_id'
                        }
                    },
                    // TODO: create link object
                    {
                        type:'HasMany',
                        key: 'offices',
-                       relatedModel: 'OfficePerson',
+                       relatedModel: 'Office_Person',
+                       includeInJSON:'_id',
                        reverseRelation: {
-                           key: 'people'
+                           key: 'person',
+                           includeInJSON:'_id'
                        }
                    }
                    ]
     })
-    var PersonList = Backbone.Collection.extend({
-      url : "/people",
-      model : Person,
-      // The people should be ordered by lastname, firstname
-      comparator : function(obj){
-        return obj.get("lastname") + obj.get("firstname");
-      }
-    });
-    var People = new PersonList()
     
+    // TODO: Figure out the syntax for saving many-to-many relations to the database 
+    //  and restoring them from the database.
+    // Instantiate congregation model
+    // TODO: Should this be global or not?
+    cong1 = new Cong({
+        name:'Caney OPC',
+        mailing_state:'KS'
+    })
+    // Save congregation model
+    cong1.save({}, {success:function(){
+        // Instantiate second congregation model
+        cong2 = new Cong({
+            name:'Bartlesville OPC',
+            mailing_state:'OK'
+        })
+        // Save second congregation model
+        cong2.save({},{success:function(){
+            // Create CGroup model and add congregations to it
+            // TODO: make an 'OPC' CGroup and associate cong1 with it
+            OPC = new CGroup({
+                name:'Orthodox Presbyterian Church',
+                abbreviation:'OPC'
+                //congregations:[cong1.get('_id'), cong2.get('_id')]
+            })
+            // TODO: Start here. Why doesn't OPC have a congregations attribute?  Is this due 
+            //  to some conflict with backbone-couchdb?
+            console.log(OPC.get('congregations'))
+            OPC.get('congregations').add({congregation:cong1})
+            // Save CGroup model to the database
+            OPC.save({}, {success:function(){
+                // TODO: Get the OPC group to get its related congregations' full data 
+                //  from the database.
+                // Try following this:  http://stackoverflow.com/questions/10871369/how-to-handle-relations-in-backbone-js
+                OPC.fetchRelated()
+                console.log(OPC.get('congregations')) // -> ["a319a63adde1a4ef2a16aca9392cba51", "a319a63adde1a4ef2a16aca9392cd53b"]
+                // This returns correct cong objects
+                // TODO: How can I get backbone-relational to do this for me?
+                // This seems to be about the same problem as http://stackoverflow.com/questions/11669356/how-to-auto-create-many-to-many-relations-from-initial-json-with-backbone-relati
+                $.each(OPC.get('congregations'), function(key, val){ console.log(Cong.findOrCreate(val)); })
+                
+            }});
+        }})
+    }})
+    // TODO: Figure out the syntax for querying via relations in the database.
+
+//    cong1.save({}, {success:function(){
+//        cong1.set({name:'Caney OPC, second version'}).save({}, {success:function(){
+//            cong2.save({}, {success:function(){
+//            }})
+//        }})        
+//    }})
 
     // TODO: Create views here
     
+    // Main application
     var App = Backbone.Router.extend({
       initialize : function(){
       
