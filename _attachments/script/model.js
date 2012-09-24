@@ -47,7 +47,7 @@ define(function(){
         },
         relations:[
                    {
-                       type:'HasMany',
+                       type:'HasMany', // many-to-many
                        key: 'congregations',
                        relatedModel: 'CGroup_Cong',
                        includeInJSON:'_id',
@@ -205,6 +205,33 @@ define(function(){
                    }
                    ]
     })
+    Directory = Backbone.RelationalModel.extend({
+        collection:'directory',
+        urlRoot:'/directory',
+        defaults:{
+            get_url_contents:'', // true or false
+            pagetype:'', // html or rss
+            url:'', // url of directory's main page
+            url_html:'', // HTML of directory's main page
+            state_url:'', // URL of state page
+            state_url_html:'', // HTML of state page
+            state_page_values:[] // list of select box options for this directory's states
+        },
+        relations:[
+                   {
+                       type:'HasOne', // many-to-one
+                       key: 'cgroup',
+                       relatedModel: 'CGroup_Directory',
+                       includeInJSON:'_id',
+                       reverseRelation: {
+                           key: 'directories',
+                           // TODO: Is this needed?
+                           includeInJSON:'_id'
+                       }
+                   }
+                   ]
+    })
+    
 
     return {
         CGroup_Cong: CGroup_Cong,
