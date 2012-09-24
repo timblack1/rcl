@@ -69,21 +69,33 @@ define(['model'], function(model){
                 // make an 'OPC' CGroup
                 OPC = new model.CGroup({
                     name:'Orthodox Presbyterian Church',
-                    abbreviation:'OPC'
-                    //congregations:[cong1.get('_id'), cong2.get('_id')]
+                    abbreviation:'OPC',
+                    congregations:[cong1.get('_id'), cong2.get('_id')]
                 })
-                // TODO: Start here. Why doesn't OPC have a congregations attribute?  Is this due 
-                //  to some conflict with backbone-couchdb?
+                // The way to associate congregations with the cgroup so they can be saved 
+                //  to the database is by adding the congregation._id to the 
+                //  cgroup.congregations array 
+                // add cong1 & cong2 to the OPC group
+                // TODO: Figure out how to add an _id when other ids are already in the array
+                //OPC.set('congregations', [cong1.get('_id'), cong2.get('_id')])
+                // This one works to at least relate the model objects in the browser
+                //OPC.get('congregations').add({congregation:cong1})
+                // These don't relate the model objects in the browser
+                //OPC.get('congregations').add({_id:cong1.get('_id')})
+                //OPC.get('congregations').add({congregation:cong1.toJSON()})
+                //OPC.get('congregations').push(cong1.get('_id'))
                 console.log(OPC.get('congregations'))
-                // add cong1 to the OPC group
-                OPC.get('congregations').add({congregation:cong1})
+                
                 // Save CGroup model to the database
+                // TODO: Start here. This isn't saving ids (or full model objects, 
+                //  which we don't want) to the db
                 OPC.save({}, {success:function(){
-                    // TODO: Get the OPC group to get its related congregations' full data 
+                    // Make the OPC group fetch its related congregations' full data 
                     //  from the database.
-                    // Try following this:  http://stackoverflow.com/questions/10871369/how-to-handle-relations-in-backbone-js
-                    OPC.fetchRelated()
-                    console.log(OPC.get('congregations')) // -> ["a319a63adde1a4ef2a16aca9392cba51", "a319a63adde1a4ef2a16aca9392cd53b"]
+                    //  We're following http://stackoverflow.com/questions/10871369/how-to-handle-relations-in-backbone-js
+                    //  This answer:  http://stackoverflow.com/a/10875400
+                    //OPC.fetchRelated('congregations')
+                    console.log(OPC.get('congregations'))
                     // This returns correct cong objects
                     // TODO: How can I get backbone-relational to do this for me?
                     // This seems to be about the same problem as http://stackoverflow.com/questions/11669356/how-to-auto-create-many-to-many-relations-from-initial-json-with-backbone-relati
@@ -94,14 +106,16 @@ define(['model'], function(model){
         }})
         // TODO: Figure out the syntax for querying via relations in the database.
     
-    //    cong1.save({}, {success:function(){
-    //        cong1.set({name:'Caney OPC, second version'}).save({}, {success:function(){
-    //            cong2.save({}, {success:function(){
-    //            }})
-    //        }})        
-    //    }})
+//        cong1.save({}, {success:function(){
+//            cong1.set({name:'Caney OPC, second version'}).save({}, {success:function(){
+//                cong2.save({}, {success:function(){
+//                }})
+//            }})        
+//        }})
     
         // TODO: Create views here
+        // TODO: This tutorial shows how to use RequireJS with Backbone:
+        //  http://backbonetutorials.com/organizing-backbone-using-modules/
         
         // Main application
         var App = Backbone.Router.extend({
