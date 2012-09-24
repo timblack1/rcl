@@ -2,7 +2,7 @@ function(){
 	// Delete all OPC cgroups
 	var db = $$(this).app.require('db').db
 	// Get all OPC groups
-	db.view('rcl/cgroup-abbreviation',{
+	db.view('rcl/cgroup-by-abbreviation',{
 		keys:['OPC'],
 		success:function(data){
 			var docs = []
