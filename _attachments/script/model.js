@@ -231,6 +231,28 @@ define(function(){
                    }
                    ]
     })
+    Office_Person = Backbone.RelationalModel.extend({
+    })
+        Office = Backbone.RelationalModel.extend({
+        collection:'office',
+        urlRoot:'/office',
+        defaults:{
+            name: ""
+        },
+        relations:[
+                   {
+                       type:'HasMany', // many-to-many
+                       key: 'people',
+                       relatedModel: 'Office_Person',
+                       includeInJSON:'_id',
+                       reverseRelation: {
+                           key: 'office',
+                           // TODO: Is this needed?
+                           includeInJSON:'_id'
+                       }
+                   }
+                   ]
+    })
     
 
     return {
