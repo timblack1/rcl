@@ -93,14 +93,19 @@ define(['model'], function(model){
         congs2.fetch()
         //console.log(congs2)
     
-        // TODO: Create views here
+        // TODO: Create Backbone views here
         // TODO: This tutorial shows how to use RequireJS with Backbone:
         //  http://backbonetutorials.com/organizing-backbone-using-modules/
+        // TODO: Convert map to Backbone view following http://backbonetutorials.com/what-is-a-view/
+        // TODO: Convert map template from Genshi to Underscore template syntax, and put in
+        //  _attachments/index.html following http://backbonetutorials.com/what-is-a-view/
+        // TODO: Create a Backbone view render function to render the map in the page
         
-        // Main application
+        
+        // TODO: Create main application
         var App = Backbone.Router.extend({
           initialize : function(){
-          
+              // TODO: Set up URLs here
           }
         });
         // TODO: Call App() and other views if necessary
