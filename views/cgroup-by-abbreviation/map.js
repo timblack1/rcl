@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.collection == 'cgroup') {
+  if (doc.collection == 'cgroups') {
       emit(doc.abbreviation, doc._rev)
   }
 };

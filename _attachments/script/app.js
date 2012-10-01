@@ -48,70 +48,50 @@ define(['model'], function(model){
           interpolate : /\{\{(.+?)\}\}/g
         };
     
-        // TODO: Figure out the syntax for saving many-to-many relations to the database 
-        //  and restoring them from the database.
+        // Example of how to save a many-to-many relation to the datbase
+        // Instantiate group of congs
+        congs = new model.Congs
         // Instantiate congregation model
         // TODO: Should this be global or not?
-        cong1 = new model.Cong({
+        cong1 = congs.create({
             name:'Caney OPC',
             mailing_state:'KS'
         })
-        // Save congregation model
+        // Save congregation model so we can get its _id
         cong1.save({}, {success:function(){
             // Instantiate second congregation model
-            cong2 = new model.Cong({
+            cong2 = congs.create({
                 name:'Bartlesville OPC',
                 mailing_state:'OK'
             })
-            // Save second congregation model
+            // Save second congregation model so we can get its _id
             cong2.save({},{success:function(){
                 // Create CGroup model and add congregations to it
-                // make an 'OPC' CGroup
                 OPC = new model.CGroup({
                     name:'Orthodox Presbyterian Church',
-                    abbreviation:'OPC',
-                    congregations:[cong1.get('_id'), cong2.get('_id')]
+                    abbreviation:'OPC'
                 })
-                // The way to associate congregations with the cgroup so they can be saved 
-                //  to the database is by adding the congregation._id to the 
-                //  cgroup.congregations array 
-                // add cong1 & cong2 to the OPC group
-                // TODO: Figure out how to add an _id when other ids are already in the array
-                //OPC.set('congregations', [cong1.get('_id'), cong2.get('_id')])
-                // This one works to at least relate the model objects in the browser
-                //OPC.get('congregations').add({congregation:cong1})
-                // These don't relate the model objects in the browser
-                //OPC.get('congregations').add({_id:cong1.get('_id')})
-                //OPC.get('congregations').add({congregation:cong1.toJSON()})
-                //OPC.get('congregations').push(cong1.get('_id'))
-                console.log(OPC.get('congregations'))
+                // Add congregations to cgroup
+                OPC.get('congregations').add({_id:cong1.get('_id')})
+                OPC.get('congregations').add({_id:cong2.get('_id')})
                 
-                // Save CGroup model to the database
-                // TODO: Start here. This isn't saving ids (or full model objects, 
-                //  which we don't want) to the db
+                // Save CGroup model to the database so we can get its _id
                 OPC.save({}, {success:function(){
-                    // Make the OPC group fetch its related congregations' full data 
-                    //  from the database.
-                    //  We're following http://stackoverflow.com/questions/10871369/how-to-handle-relations-in-backbone-js
-                    //  This answer:  http://stackoverflow.com/a/10875400
-                    //OPC.fetchRelated('congregations')
-                    console.log(OPC.get('congregations'))
-                    // This returns correct cong objects
-                    // TODO: How can I get backbone-relational to do this for me?
-                    // This seems to be about the same problem as http://stackoverflow.com/questions/11669356/how-to-auto-create-many-to-many-relations-from-initial-json-with-backbone-relati
-                    $.each(OPC.get('congregations'), function(key, val){ console.log(Cong.findOrCreate(val)); })
-                    
+                    // Add cgroup to congs' cgroups
+                    $.each([cong1,cong2], function(key, cong){
+                        cong.get('cgroups').add({_id:OPC.get('_id')})
+                        cong.save()
+                    })
                 }});
             }})
         }})
+        // TODO: Figure out the syntax for restoring many-to-many relations from the database 
         // TODO: Figure out the syntax for querying via relations in the database.
-    
-//        cong1.save({}, {success:function(){
-//            cong1.set({name:'Caney OPC, second version'}).save({}, {success:function(){
-//                cong2.save({}, {success:function(){
-//                }})
-//            }})        
-//        }})
+        //  It appears to be by creating a collection whose url points to a CouchDB view,
+        //  then querying (an instance of) that collection using CouchDB query options
+        var congs2 = new model.Congs
+        congs2.fetch()
+        //console.log(congs2)
     
         // TODO: Create views here
         // TODO: This tutorial shows how to use RequireJS with Backbone:
