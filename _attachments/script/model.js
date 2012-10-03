@@ -8,6 +8,9 @@ define(function(){
     // If set to true, the connector will listen to the changes feed
     //  and will provide your models with real time remote updates.
     Backbone.couch_connector.config.global_changes = true;
+    // This setting enables the code in this pull request:
+    //  https://github.com/janmonschke/backbone-couchdb/pull/25
+    Backbone.couch_connector.config.single_feed = true;
     // TODO: Replicate ddocChange() window.location.reload() functionality (see below)
     //  available in backbone.couch.js for use here in backbone-couchdb.js
     // Special object for reloading the page when the design doc changes
@@ -54,12 +57,11 @@ define(function(){
     var path = unescape(document.location.pathname).split('/')
     changes = $.couch.db(path[1]).changes();
     changes.onChange(function(data){
-        console.log(data);
         for (var i=0; i<data.results.length; i++){
             if (data.results[i].id == '_design/rcl'){
-                console.log(data.results[i].id)
-                //window.location.reload()
+                window.location.reload()
             }
+            console.log(i, data.results[i].id)
         }
     }) 
     
