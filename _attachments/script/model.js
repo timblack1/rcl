@@ -8,49 +8,10 @@ define(function(){
     // If set to true, the connector will listen to the changes feed
     //  and will provide your models with real time remote updates.
     Backbone.couch_connector.config.global_changes = true;
-    // This setting enables the code in this pull request:
+    // This setting enables the code/features in this pull request:
     //  https://github.com/janmonschke/backbone-couchdb/pull/25
     Backbone.couch_connector.config.single_feed = true;
-    // TODO: Replicate ddocChange() window.location.reload() functionality (see below)
-    //  available in backbone.couch.js for use here in backbone-couchdb.js
-    // Special object for reloading the page when the design doc changes
-
-//    var DDoc = Backbone.RelationalModel.extend({
-//        collection:'design'
-//    })
-//    var ddoc = DDoc.findOrCreate('_design/rcl', {create:false})
-//    //var ddoc = DDoc.fetch('_design/rcl')
-//    console.log(ddoc)
-//    var DDocs = Backbone.Collection.extend({
-//        url:'_design/rcl'
-//    })
-////        DDocs.fetch('_design/rcl',{success:function(col, res){
-////            console.log(ddoc, col, res)
-////        }})
-////        console.log(DDocs.models[0])
-//    console.log(DDocs)
-//    ddocs = new DDocs()
-//    ddocs.fetch('_design/rcl',{success:function(col, res){
-//        console.log(ddocs, col, res)
-//    }})
-//    console.log(ddocs)
-//    
-    // TODO: Consider putting this into a model change event
-//    DesignDoc = Backbone.RelationalModel.extend({
-//        collection:'design',
-//        urlRoot:'/designdoc'
-//    })
-//    DesignDoc.bind('change', function(model, coll){
-//        console.log(model)
-//    })
-//    DesignDocs = Backbone.Collection.extend({
-//        model:'DesignDoc',
-//        url:'/design'
-//    })
-//    ddocs = new DesignDocs
-//    ddocs.fetch({success:function(col, res){
-//        console.log(ddocs)
-//    }})
+    // Reload the page when the design doc changes
     // TODO: Refactor this into an AMD module in db.js
     // TODO: path[1] won't refer to 'rcl' anymore after we make SEF urls using something 
     //  like Sammy.js or Backbone's router
@@ -61,31 +22,9 @@ define(function(){
             if (data.results[i].id == '_design/rcl'){
                 window.location.reload()
             }
-            console.log(i, data.results[i].id)
         }
     }) 
     
-    // TODO: Monkey-patch to reload the page when the design doc changes
-//    var original_function = Backbone.Collection.prototype._db_on_change
-//    Backbone.Collection.prototype._db_on_change = function(changes){
-//        var doc, i, len, ref;
-//        ref = changes.results;
-//        console.log(changes)
-//        for (i = 0, len = ref.length; i < len; i++) {
-//          doc = ref[i];
-//          console.log(doc)
-//          if (doc._id && doc._id == 'rcl/_design'){
-//              if (console && console.log && window) {
-//                  console.log("current ddoc: '" + doc._id + "' changed");
-//                  console.log("restarting...");
-//                  window.location.reload();
-//              }
-//          }
-//        }
-//        return original_function.apply(this, changes)
-//    }
-
-
     // Define model objects
 
     // Define link objects for many-to-many relations

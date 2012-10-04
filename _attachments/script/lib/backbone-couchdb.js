@@ -199,6 +199,7 @@
     }
   };
 
+  // TODO: Swap-in Backbone.RelationalModel here if it is already declared
   Backbone.RelationalModel = (function() {
 
     __extends(RelationalModel, Backbone.RelationalModel);
