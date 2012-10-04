@@ -1,5 +1,6 @@
 // Define require() from require.js using the standard AMD define
-define(['model'], function(model){
+define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
+        'lib/jquery.couchLogin'], function(model){
     // TODO: Is this needed within RequireJS?
     // Encapsulate app code and execute it on domReady event
     // Apache 2.0 J Chris Anderson 2011
@@ -25,14 +26,12 @@ define(['model'], function(model){
         var path = unescape(document.location.pathname).split('/'),
             design = path[3],
             db = $.couch.db(path[1]);
-        // TODO: Use couchdb-login-jquery instead of Evently login widget:
-        //  https://github.com/couchapp/couchdb-login-jquery
         $("#account").couchLogin({});
        
         // TODO: Put custom evently code here
         
         // Evently version
-        // TODO: Migrate this to Backbone to get auto-persisting model objects
+        // TODO: Migrate these Evently widgets to Backbone views
         $.couch.app(function(app) {
             $("#mainmenu").evently("mainmenu", app);
             $("#map").evently("map", app);
@@ -94,62 +93,59 @@ define(['model'], function(model){
         //console.log(congs2)
     
         // TODO: Create Backbone views here
-        // TODO: This tutorial shows how to use RequireJS with Backbone:
+        // TODO: Move views into separate files when they get too numerous here
+        //  This tutorial shows how to use RequireJS with Backbone:
         //  http://backbonetutorials.com/organizing-backbone-using-modules/
-            MapView = Backbone.View.extend({
-        initialize: function(){
-        	//TODO: We are trying to get the AJAX request to work on the "on key up" event; but no luck so far. 
-        	var geocoder;
-        	var map;
-        	function initialize() {
-        		geocoder = new google.maps.Geocoder();
-        		// TODO: Center the map on the viewer's country
-        		var latlng = new google.maps.LatLng(-34.397, 150.644);
-        		var myOptions = {
-        				zoom: 8,
-        				center: latlng,
-        				mapTypeId: google.maps.MapTypeId.ROADMAP
-        		}
-        		map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-        	}
-        	initialize();
+        MapView = Backbone.View.extend({
+            initialize: function(){
+                this.render();
+    
+            	// TODO: Migrate the code below into Backbone events
+            	
+            	// Attach events to search_the_map form elements
+            	$('#search').click(function() {
+            		codeAddress();
+            		return false;
+            	});
+            	$('#search_the_map').keypress(function(event) {
+            		if (event.which==13){ // The user pressed the enter key
+            			event.preventDefault();  // Prevent the default action of submitting the form
+            			codeAddress();
+            			return false; // This might help some browsers avoid submitting the form
+            		}
+            	});
+            },
+            render: function(){
+                var template = _.template( $("#map_template").html(), {} );
+                $(this.el).html( template );
+                // Initialize Google map
+                // TODO: We are trying to get the AJAX request to work on the "on key up" event; but no luck so far. 
+                var geocoder;
+                var map;
+                function initialize() {
+                    geocoder = new google.maps.Geocoder();
+                    // TODO: Center the map on the viewer's country
+                    var latlng = new google.maps.LatLng(-34.397, 150.644);
+                    var myOptions = {
+                            zoom: 8,
+                            center: latlng,
+                            mapTypeId: google.maps.MapTypeId.ROADMAP
+                    }
+                    map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+                }
+                initialize();
+            },
+            events: {
+                "click input[type=button]": "doSearch"
+            },
+            doSearch: function( event ){
+                // Button clicked, you can access the element that was clicked with event.currentTarget
+                alert( "Search for " + $("#search_input").val() );
+            }
+        });
 
-        	// TODO: Migrate the code below into Evently events
-        	
-        	// Attach events to search_the_map form elements
-        	$('#search').click(function() {
-        		codeAddress();
-        		return false;
-        	});
-        	$('#search_the_map').keypress(function(event) {
-        		if (event.which==13){ // The user pressed the enter key
-        			event.preventDefault();  // Prevent the default action of submitting the form
-        			codeAddress();
-        			return false; // This might help some browsers avoid submitting the form
-        		}
-        	});
-            this.render();
-        },
-        render: function(){
-            var template = _.template( $("#map_template").html(), {} );
-            this.el.html( template );
-        },
-        events: {
-            "click input[type=button]": "doSearch"
-        },
-        doSearch: function( event ){
-            // Button clicked, you can access the element that was clicked with event.currentTarget
-            alert( "Search for " + $("#search_input").val() );
-        }
-    });
-
-    var map_view = new MapView({ el: $("#map") });
-        
-        // TODO: Convert map to Backbone view following http://backbonetutorials.com/what-is-a-view/
-        // TODO: Convert map template from Genshi to Underscore template syntax, and put in
-        //  _attachments/index.html following http://backbonetutorials.com/what-is-a-view/
-        // TODO: Create a Backbone view render function to render the map in the page
-        
+        // TODO: Should this view initialization be done in the App below?
+        var map_view = new MapView({ el: $("#map") });
         
         // TODO: Create main application
         var App = Backbone.Router.extend({
