@@ -17,7 +17,7 @@ if [ ! -e .couchapprc ];
 then
     cp .couchapprc.template .couchapprc
     sed -i "s/username:password/$AUTH/g" .couchapprc
-    sed -i "s/60434/$PORT/g" .couchapprc
+    sed -i "s/5984/$PORT/g" .couchapprc
 fi
 
 # Push app into database in case this has not been done yet
