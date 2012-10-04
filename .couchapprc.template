@@ -4,7 +4,7 @@
     ],
     "env" : {
         "default" : {
-          "db" : "http://username:password@localhost:60434/rcl"
+          "db" : "http://username:password@localhost:5984/rcl"
         },
         "prod" : {
           "db" : "http://admin:password@myhost.com/rcl"
