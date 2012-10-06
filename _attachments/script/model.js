@@ -92,7 +92,7 @@ define(function(){
     })
     CGroups = Backbone.Collection.extend({
         model:CGroup,
-        url:'/cgroups'
+        url:'/cgroup'
     })
     Cong = Backbone.RelationalModel.extend({
       urlRoot:'/cong',
@@ -153,7 +153,7 @@ define(function(){
     })
     Congs = Backbone.Collection.extend({
         model:Cong,
-        url:'/congs'
+        url:'/cong'
     })
     Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
@@ -218,7 +218,7 @@ define(function(){
     })
     People = Backbone.Collection.extend({
         model:Person,
-        url:'/people'
+        url:'/person'
     })
     Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
@@ -249,7 +249,7 @@ define(function(){
     })
     Directories = Backbone.Collection.extend({
         model:Directory,
-        url:'/directories'
+        url:'/directory'
     })
     Office = Backbone.RelationalModel.extend({
         collection:'Offices',
@@ -274,7 +274,7 @@ define(function(){
     })
     Offices = Backbone.Collection.extend({
         model:Office,
-        url:'/offices'
+        url:'/office'
     })
     Role = Backbone.RelationalModel.extend({
         collection:'Roles',
@@ -311,7 +311,7 @@ define(function(){
     })
     Roles = Backbone.Collection.extend({
         model:Role,
-        url:'/roles'
+        url:'/role'
     })
     // Define collections for querying the database
     
