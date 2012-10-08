@@ -133,6 +133,8 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     // TODO: Move form elements into Backbone view
     //  - Copy above view to below
     //  - in initialize:  Delete all but this.render();
+    //  - Create a template section (in <script></script> tags) in index.html, and paste in 
+    //      the form element code currently found higher up in index.html
     //  - in render:  Delete all but the first two lines, then modify the first two lines to
     //      reference a container div with the correct ID
     //  - in doSearch:  Find our existing code that handles the "change" event in the 
