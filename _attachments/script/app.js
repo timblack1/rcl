@@ -139,6 +139,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     //      input & select elements, put it into doSearch, rename doSearch to appropriately describe
     //      that code, then modify the events: section above to call that doSearch function when
     //      the change event happens in the input & select boxes
+    //  - Instantiate this new view in a variable below. 
 
     // TODO: Should this view initialization be done in the App below?
     var map_view = new MapView({ el: $("#map") });
