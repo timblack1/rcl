@@ -64,6 +64,59 @@
         <div id="map_canvas" style="width: 918px; height: 500px;"></div>
     </script>
 
+ 	<script type="text/template" id="search_template">
+
+<div>
+	<form action="TODO: write this!">
+		<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+				location</span>
+		<input class="jq_watermark" title="Enter location" type="text" name="location" id="search_the_map"></span>
+		Search within 
+		<select title="Search within" name="radius" id="radius">
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="25">25</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+			<option value="250">250</option>
+		</select>
+		<select title="unit of measurement" name="units" id="units">
+			<option value="miles">miles</option>
+			<option value="km">km</option>
+		</select>
+		<input type="button" value="Search" id="search">
+	</form>
+	<form action="TODO">
+		<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+				keyword</span><input class="jq_watermark" title="Enter keyword" type="text"
+			name="keyword" id="keyword"></span>
+	</form>
+</div>
+<div>
+	<form action="TODO">
+		<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+				state</span><input class="jq_watermark" title="Enter state" type="text"
+			name="state" id="state"></span>
+	</form>
+</div>
+<div id="group_filter">
+	Filter: <span> <a href="TODO">OPC</a>
+	</span><span> <a href="TODO">PCA</a>
+	</span>
+</div>
+ 		
+    </script>
+
+
 </body>
 
 <!--  Couchapp JavaScript files -->
