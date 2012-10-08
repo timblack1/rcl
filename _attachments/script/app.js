@@ -123,25 +123,45 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             initialize();
         },
         events: {
+            "click #mainmenu >li>a[href=#map]": "map"
+        },
+        // TODO: make a view that contains the whole map page
+        map: function( event ){
+            // Button clicked, you can access the element that was clicked with event.currentTarget
+        	// TODO: Load the map view
+            alert( "Search for " + $("#search_input").val() );
+        }
+    });
+    // TODO: Move form elements into Menu view
+    //  - Copy above view to below
+    //  - in initialize:  Delete all but this.render();
+    //  - Create a template section (in <script></script> tags) in index.html, and paste in 
+    //      the form element code currently found higher up in index.html
+    //  - in render:  Delete all but the first two lines, then modify the first two lines to
+    //      reference a container div with the correct ID
+    //  - in doSearch:  Find our existing code that handles the "change" event in the 
+    //      input & select elements, put it into doSearch, rename doSearch to appropriately describe
+    //      that code, then modify the events: section above to call that doSearch function when
+    //      the change event happens in the input & select boxes
+    //  - Instantiate this new view in a variable below. 
+    MenuView = Backbone.View.extend({
+        initialize: function(){
+            this.render();
+        },
+        render: function(){
+        	var template = _.template( $("#menu_template").html(), {} );
+            $(this.el).html( template );
+        },
+        events: {
             "click input[type=button]": "doSearch"
         },
+  // TODO: one function per menu item
         doSearch: function( event ){
             // Button clicked, you can access the element that was clicked with event.currentTarget
             alert( "Search for " + $("#search_input").val() );
         }
     });
-    // TODO: Move form elements into Backbone view
-    //  + Copy above view to below
-    //  + in initialize:  Delete all but this.render();
-    //  + Create a template section (in <script></script> tags) in index.html, and paste in 
-    //      the form element code currently found higher up in index.html
-    //  + in render:  Delete all but the first two lines, then modify the first two lines to
-    //      reference a container div with the correct ID
-    // +- in doSearch:  Find our existing code that handles the "change" event in the 
-    //      input & select elements, put it into doSearch, rename doSearch to appropriately describe
-    //      that code, then modify the events: section above to call that doSearch function when
-    //      the change event happens in the input & select boxes
-    //  - Instantiate this new view in a variable below. 
+    
     SearchView = Backbone.View.extend({
         initialize: function(){
             this.render();
