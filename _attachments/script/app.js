@@ -130,6 +130,15 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             alert( "Search for " + $("#search_input").val() );
         }
     });
+    // TODO: Move form elements into Backbone view
+    //  - Copy above view to below
+    //  - in initialize:  Delete all but this.render();
+    //  - in render:  Delete all but the first two lines, then modify the first two lines to
+    //      reference a container div with the correct ID
+    //  - in doSearch:  Find our existing code that handles the "change" event in the 
+    //      input & select elements, put it into doSearch, rename doSearch to appropriately describe
+    //      that code, then modify the events: section above to call that doSearch function when
+    //      the change event happens in the input & select boxes
 
     // TODO: Should this view initialization be done in the App below?
     var map_view = new MapView({ el: $("#map") });
