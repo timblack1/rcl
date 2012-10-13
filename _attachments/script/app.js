@@ -57,14 +57,17 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
                             // Example of how to fetch many-to-many relations from the db
                             // Fetch the cong so as to populate its relations in the browser
                             cong.fetch({success:function(){
+                                // Example of how to query for related CGroups
+                                var cong_cgroups = cong.get('cgroups')
+                                for (var i=0; i<cong_cgroups.length; i++){
+                                    var cgroup_id = cong_cgroups.at(i).get('_id')
+                                    var cgroup = cgroups.get(cgroup_id)
+                                }
                                 // Example of how to query by one attribute
-                                congs2 = new model.CongsByName
-                                congs2.db.keys = ['Caney OPC']
-                                congs2.fetch({success:function(){
-                                    console.log(congs2)
-                                    // TODO: Example of how to query for related CGroups
-                                    var caney_cgroups = congs2.at(0).get('cgroups')
-                                    console.log(cgroups.get(caney_cgroups.at(0).get('_id')))
+                                congs_by_name = new model.CongsByName
+                                congs_by_name.db.keys = ['Caney OPC']
+                                congs_by_name.fetch({success:function(col, res){
+                                    var caney_opc = col.at(0)
                                 }})
                             }})
                         }})
