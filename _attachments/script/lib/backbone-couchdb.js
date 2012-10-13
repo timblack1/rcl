@@ -217,13 +217,15 @@
   Backbone.Collection = (function() {
 
     __extends(Collection, Backbone.Collection);
-
+    
     function Collection() {
       this._db_on_change = __bind(this._db_on_change, this);
       this._db_prepared_for_global_changes = __bind(this._db_prepared_for_global_changes, this);
       this._db_prepared_for_changes = __bind(this._db_prepared_for_changes, this);
       Collection.__super__.constructor.apply(this, arguments);
     }
+    
+    Collection.prototype.model = Backbone.RelationalModel;
 
     Collection.prototype.initialize = function() {
       if (!this._db_changes_enabled && ((this.db && this.db.changes) || con.config.global_changes)) {
@@ -306,8 +308,6 @@
       return _results;
     };
     
-    Collection.prototype.model = Backbone.RelationalModel;
-
     return Collection;
 
   })();
