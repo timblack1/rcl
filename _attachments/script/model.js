@@ -26,7 +26,7 @@ define(function(){
     }) 
     
     // Define model objects
-
+    
     // Define link objects for many-to-many relations
     CGroup_Cong = Backbone.RelationalModel.extend({})
     CGroup_Person = Backbone.RelationalModel.extend({})
@@ -38,6 +38,9 @@ define(function(){
     CGroup = Backbone.RelationalModel.extend({
         collection:'CGroups',
         urlRoot:'/cgroup',
+        // All defaults are commented out because they are here only for the purpose 
+        //  of documenting the schema, and we don't need all these attributes to appear 
+        //  on every actual instance of a model object.
 //        defaults:{
 //            name: '',
 //            abbreviaton: '',
@@ -92,7 +95,7 @@ define(function(){
     })
     CGroups = Backbone.Collection.extend({
         model:CGroup,
-        url:'/cgroup'
+        url:'/cgroups'
     })
     Cong = Backbone.RelationalModel.extend({
       urlRoot:'/cong',
@@ -153,7 +156,14 @@ define(function(){
     })
     Congs = Backbone.Collection.extend({
         model:Cong,
-        url:'/cong'
+        url:'/congs'
+    })
+    CongsByName = Backbone.Collection.extend({
+        model:Cong,
+        url:'/congs',
+        db:{
+            view: 'congs_by_name'
+        }
     })
     Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
@@ -218,7 +228,7 @@ define(function(){
     })
     People = Backbone.Collection.extend({
         model:Person,
-        url:'/person'
+        url:'/people'
     })
     Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
@@ -249,7 +259,7 @@ define(function(){
     })
     Directories = Backbone.Collection.extend({
         model:Directory,
-        url:'/directory'
+        url:'/directories'
     })
     Office = Backbone.RelationalModel.extend({
         collection:'Offices',
@@ -274,7 +284,7 @@ define(function(){
     })
     Offices = Backbone.Collection.extend({
         model:Office,
-        url:'/office'
+        url:'/offices'
     })
     Role = Backbone.RelationalModel.extend({
         collection:'Roles',
@@ -311,7 +321,7 @@ define(function(){
     })
     Roles = Backbone.Collection.extend({
         model:Role,
-        url:'/role'
+        url:'/roles'
     })
     // Define collections for querying the database
     
@@ -327,12 +337,14 @@ define(function(){
         CGroup: CGroup,
         Cong: Cong,
         Directory: Directory,
+        Directories: Directories,
         Person: Person,
         Office: Office,
         Role: Role,
         // collections
         CGroups:CGroups,
         Congs:Congs,
+        CongsByName: CongsByName,
         Directories:Directories,
         People:People,
         Offices:Offices,

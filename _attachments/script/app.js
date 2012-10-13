@@ -27,60 +27,55 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     };
 
     // Example of how to save a many-to-many relation to the database
+    // Create CGroup model
+    cgroups = new model.CGroups
+    OPC = cgroups.create({
+        name:'Orthodox Presbyterian Church',
+        abbreviation:'OPC'
+    })
     // Instantiate group of congs
     congs = new model.Congs
-    // Instantiate congregation model
+    // Instantiate first congregation model
     // TODO: Should this be global or not?
     cong1 = congs.create({
         name:'Caney OPC',
         mailing_state:'KS'
+    },{
+        success:function(){
+            // Instantiate second congregation model
+            cong2 = congs.create({
+                name:'Bartlesville OPC',
+                mailing_state:'OK'
+            },{success:function(){
+                // Add congregations to cgroup
+                OPC.get('congregations').add([{_id:cong1.get('_id')},{_id:cong2.get('_id')}])
+                // Save cgroup to db
+                OPC.save({_id:OPC.get('_id')},{success:function(){
+                    $.each([cong1,cong2], function(key, cong){
+                        cong.get('cgroups').add({_id:OPC.get('_id')})
+                        cong.save({},{success:function(){
+                            // Example of how to fetch many-to-many relations from the db
+                            // Fetch the cong so as to populate its relations in the browser
+                            cong.fetch({success:function(){
+                                // Example of how to query by one attribute
+                                congs2 = new model.CongsByName
+                                congs2.db.keys = ['Caney OPC']
+                                congs2.fetch({success:function(){
+                                    console.log(congs2)
+                                    // TODO: Example of how to query for related CGroups
+                                    var caney_cgroups = congs2.at(0).get('cgroups')
+                                    console.log(cgroups.get(caney_cgroups.at(0).get('_id')))
+                                }})
+                            }})
+                        }})
+                    })
+                }})
+            }})
+        }
     })
-    // Save congregation model so we can get its _id
-    cong1.save({}, {success:function(){
-        // Instantiate second congregation model
-        cong2 = congs.create({
-            name:'Bartlesville OPC',
-            mailing_state:'OK'
-        })
-        // Save second congregation model so we can get its _id
-        cong2.save({},{success:function(){
-            // Create CGroup model and add congregations to it
-            OPC = new model.CGroup({
-                name:'Orthodox Presbyterian Church',
-                abbreviation:'OPC'
-            })
-            // Add congregations to cgroup
-            OPC.get('congregations').add({_id:cong1.get('_id')})
-            OPC.get('congregations').add({_id:cong2.get('_id')})
-            
-            // Save CGroup model to the database so we can get its _id
-            OPC.save({}, {success:function(){
-                // Add cgroup to congs' cgroups
-                // TODO: This isn't working
-                // Note that one reason might be that it isn't created the same way OPC is above,
-                //  but adding congregations to OPC is working.
-                cong1.get('cgroups').add({_id:OPC.get('_id')})
-//              console.log(cong1.get('cgroups'))
-                console.log(cong1)
-//                // TODO: This isn't working either
-//                $.each([cong1,cong2], function(key, cong){
-//                    cong.get('cgroups').add({_id:OPC.get('_id')})
-//                    cong.save()
-//                })
-            }});
-        }})
-    }})
-    // TODO: Figure out the syntax for restoring many-to-many relations from the database 
-    // TODO: Figure out the syntax for querying via relations in the database.
-    //  It appears to be by creating a collection whose url points to a CouchDB view,
-    //  then querying (an instance of) that collection using CouchDB query options
-    // Note:  Just instantiating a new Collection like this populates it from the db,
-    //  which may be all we need to do, if the relations are recorded properly above.
-    //  Or we may have to call .fetch() on each relationship's collection.
-    congs2 = new model.Congs
     
     // TODO: Create Backbone views here
-    // TODO: Move views into separate files when they get too numerous here
+    // TODO: Move views into separate files when they get too long or numerous here
     //  This tutorial shows how to use RequireJS with Backbone:
     //  http://backbonetutorials.com/organizing-backbone-using-modules/
     MapView = Backbone.View.extend({
@@ -187,7 +182,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
 
         			// Send AJAX call to controller method containing bounds within which congregations are found
         			// So we can search like this:  cong_lat > south_lat and cong_lat < north_lat and cong_lng > west_lng and cong_lng < east_lng
-        			// TODO: Create codes go getcongsinbounds
+        			// TODO: Create code to get congs in bounds
         			$.ajax({
         				url: "/cong/getcongsinbounds",
         				data: {
@@ -197,6 +192,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         					south_lat:	south_lat
         				},
         				success: function(data){
+        				    // TODO: Rewrite this to use the data format returned from couchdb
         					var congs = data['congs'];
         					if (congs.length > 0){
         						// Plot the congregations returned on the map
@@ -206,6 +202,9 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         							}
         						}
 
+        						// TODO: Use a template rather than constructing HTML here,
+        						//    and wrap the display in a self-updating Backbone view,
+        						//    which should render this .remove() call unnecessary
         						// Remove existing table rows that contain congregation data (don't remove the header row)
         						$("#congregation_list tbody tr").remove();
 
