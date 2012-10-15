@@ -170,6 +170,21 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         }
     });
     
+    CongregationsView = Backbone.View.extend({
+        initialize: function(){
+            this.render();
+            // Apply tablesorter widget to table containing congregation list
+    		$("#congregation_list")
+            .tablesorter({widgets: ['zebra'], locale: 'us', useUI: true});
+    		// TODO: For some reason the pager doesn't display, its div wraps around the table and filter widgets,
+    		//		 and it breaks the sorter so when you click on the table header the rows disappear.
+            //.tablesorterPager({container: $("#pager")});
+        },
+        render: function(){
+        	var template = _.template( $("#congregations_template").html(), {} );
+            $(this.el).html( template );
+        }
+    });
     SearchView = Backbone.View.extend({
         initialize: function(){
             this.render();
@@ -342,6 +357,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           this.menu_view = new MenuView({ el: $("#mainmenu") });
           this.map_view = new MapView({ el: $("#map") });
           this.search_view = new SearchView({ el: $("#search_container") });
+          this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
       },
       // Set up URLs here
       // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
