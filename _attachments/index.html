@@ -1,163 +1,162 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Reformed Churches Locator</title>
-    <link rel="stylesheet" href="style/main.css" type="text/css">
-</head>
-<body>
-	<div id="header">
-		<h2 style="text-align: center">
-			<b>Reformed Churches Locator</b>
+	<head>
+		<title>Reformed Churches Locator</title>
+		<link rel="stylesheet" href="style/main.css" type="text/css">
+	</head>
+	<body>
+		<div id="header">
+			<h2 style="text-align: center"><b>Reformed Churches Locator</b>
 			<br />
 			<br />
-			<span class="subtitle">The Ultimate Directory of Reformed Churches Worldwide</span>
-		</h2>
-	</div>
-	<ul id="mainmenu">
-	</ul>
+			<span class="subtitle">The Ultimate Directory of Reformed Churches Worldwide</span></h2>
+		</div>
+		<ul id="mainmenu"></ul>
 
-	<div id="content">
-		<div id="congregations">
-            <div id="account" style="float: right"></div>
-            <h2>Congregations</h2>
-			<div class="ui-widget ui-widget-content ui-corner-all">
-				<div>
-					<div id="map"></div>
-					<div id="search_container"></div>
-					<div id="congregations_container"></div>
+		<div id="content"> </div>
+
+		<div id="old_content">
+			<div id="congregations">
+				<div id="account" style="float: right"></div>
+				<h2>Congregations</h2>
+				<div class="ui-widget ui-widget-content ui-corner-all">
+					<div>
+						<div id="map"></div>
+						<div id="search_container"></div>
+						<div id="congregations_container"></div>
+					</div>
+
+					<div id="pager" class="pager"></div>
 				</div>
-
-				<div id="pager" class="pager"></div>
+			</div>
+			<!-- End of main_content -->
+			<div id="footer">
+				<div class="clearingdiv"></div>
 			</div>
 		</div>
-		<!-- End of main_content -->
-		<div id="footer">
-			<div class="clearingdiv"></div>
-		</div>
-	</div>
 
-    <script type="text/template" id="map_template">
-        <div id="map_canvas" style="width: 918px; height: 500px;"></div>
-    </script>
-    <script type="text/template" id="congregations_template">
-    		<table id="congregation_list" class="tablesorter">
-					<thead>
-						<tr>
-							<th>Congregation name</th>
-							<th>City, State</th>
-							<th>Contact info</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr class="odd">
-							<td class="cong_info"><a href="http://127.0.0.1:8080/cong/1">Caney
-									OPC</a></td>
-							<td class="cong_info">Caney, KS, US</td>
-							<td class="cong_info"><a href="http:" class="external"
-								title="Visit Caney OPC online" target="_blank"></a></td>
-						</tr>
-						<tr class="even">
-							<td class="cong_info">
-							    <a href="http://127.0.0.1:8080/cong/2">CrossPoint Baptist Church</a></td>
-							<td class="cong_info">Caney, KS, US</td>
-							<td class="cong_info">
-							    <a href="http:" class="external" title="Visit CrossPoint Baptist Church online" target="_blank"></a>
-							</td>
-						</tr>
-					</tbody>
-				</table>
-    </script>
-    <script type="text/template" id="menu_template">
-        <li class="first"><a href="/find_a_church">Find a church</a></li>
-        <li><a href="/import_directory">Import a directory</a></li>
-        <li><a href="delete_all_opc_cgroups" id="delete_all_opc_cgroups">Delete all OPC cgroups</a>
-        </li>
-        <li><a href="delete_all_opc_directories" id="delete_all_opc_directories">Delete all OPC directories</a></li>
-        <li><a href="delete_all_caney_opc" id="delete_all_caney_opc">Delete all Caney OPC</a></li>
-        <li><a href="delete_all_opc_data" id="delete_all_opc_data">Delete all OPC data</a></li>
-    </script>
+		<script type="text/template" id="map_template">
+			<div id="map_canvas" style="width: 918px; height: 500px;"></div>
+		</script>
+		<script type="text/template" id="congregations_template">
+			<table id="congregation_list" class="tablesorter">
+			<thead>
+			<tr>
+			<th>Congregation name</th>
+			<th>City, State</th>
+			<th>Contact info</th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr class="odd">
+			<td class="cong_info"><a href="http://127.0.0.1:8080/cong/1">Caney
+			OPC</a></td>
+			<td class="cong_info">Caney, KS, US</td>
+			<td class="cong_info"><a href="http:" class="external"
+			title="Visit Caney OPC online" target="_blank"></a></td>
+			</tr>
+			<tr class="even">
+			<td class="cong_info">
+			<a href="http://127.0.0.1:8080/cong/2">CrossPoint Baptist Church</a></td>
+			<td class="cong_info">Caney, KS, US</td>
+			<td class="cong_info">
+			<a href="http:" class="external" title="Visit CrossPoint Baptist Church online" target="_blank"></a>
+			</td>
+			</tr>
+			</tbody>
+			</table>
+		</script>
+		<script type="text/template" id="menu_template">
+			<li class="first"><a href="/find_a_church">Find a church</a></li>
+			<li><a href="/import_directory">Import a directory</a></li>
+			<li><a href="delete_all_opc_cgroups" id="delete_all_opc_cgroups">Delete all OPC cgroups</a>
+			</li>
+			<li><a href="delete_all_opc_directories" id="delete_all_opc_directories">Delete all OPC directories</a></li>
+			<li><a href="delete_all_caney_opc" id="delete_all_caney_opc">Delete all Caney OPC</a></li>
+			<li><a href="delete_all_opc_data" id="delete_all_opc_data">Delete all OPC data</a></li>
+		</script>
 
- 	<script type="text/template" id="search_template">
+		<script type="text/template" id="search_template">
 
-        <div>
-        	<form action="TODO: write this!">
-        		<span class="watermark_container"
-        			style="display: inline-block; position: relative;"><span
-        			class="watermark"
-        			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        				location</span>
-        		<input class="jq_watermark" title="Enter location" type="text" name="location" id="search_the_map"></span>
-        		Search within 
-        		<select title="Search within" name="radius" id="radius">
-        			<option value="5">5</option>
-        			<option value="10">10</option>
-        			<option value="25">25</option>
-        			<option value="50">50</option>
-        			<option value="100">100</option>
-        			<option value="250">250</option>
-        		</select>
-        		<select title="unit of measurement" name="units" id="units">
-        			<option value="miles">miles</option>
-        			<option value="km">km</option>
-        		</select>
-        		<input type="button" value="Search" id="search">
-        	</form>
-        	<form action="TODO">
-        		<span class="watermark_container"
-        			style="display: inline-block; position: relative;"><span
-        			class="watermark"
-        			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        				keyword</span><input class="jq_watermark" title="Enter keyword" type="text"
-        			name="keyword" id="keyword"></span>
-        	</form>
-        </div>
-        <div>
-        	<form action="TODO">
-        		<span class="watermark_container"
-        			style="display: inline-block; position: relative;"><span
-        			class="watermark"
-        			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        				state</span><input class="jq_watermark" title="Enter state" type="text"
-        			name="state" id="state"></span>
-        	</form>
-        </div>
-        <div id="group_filter">
-        	Filter: <span> <a href="TODO">OPC</a>
-        	</span><span> <a href="TODO">PCA</a>
-        	</span>
-        </div>
- 		
-    </script>
+			<div>
+			<form action="TODO: write this!">
+			<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+			location</span>
+			<input class="jq_watermark" title="Enter location" type="text" name="location" id="search_the_map"></span>
+			Search within
+			<select title="Search within" name="radius" id="radius">
+			<option value="5">5</option>
+			<option value="10">10</option>
+			<option value="25">25</option>
+			<option value="50">50</option>
+			<option value="100">100</option>
+			<option value="250">250</option>
+			</select>
+			<select title="unit of measurement" name="units" id="units">
+			<option value="miles">miles</option>
+			<option value="km">km</option>
+			</select>
+			<input type="button" value="Search" id="search">
+			</form>
+			<form action="TODO">
+			<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+			keyword</span><input class="jq_watermark" title="Enter keyword" type="text"
+			name="keyword" id="keyword"></span>
+			</form>
+			</div>
+			<div>
+			<form action="TODO">
+			<span class="watermark_container"
+			style="display: inline-block; position: relative;"><span
+			class="watermark"
+			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
+			state</span><input class="jq_watermark" title="Enter state" type="text"
+			name="state" id="state"></span>
+			</form>
+			</div>
+			<div id="group_filter">
+			Filter: <span> <a href="TODO">OPC</a>
+			</span><span> <a href="TODO">PCA</a>
+			</span>
+			</div>
 
+		</script>
 
-</body>
+	</body>
 
-<!--  Couchapp JavaScript files -->
+	<!--  Couchapp JavaScript files -->
 
-<script src="vendor/couchapp/loader.js"></script>
-<script>couchapp_load(["vendor/couchapp/jquery.couchLogin.js"])</script>
+	<script src="vendor/couchapp/loader.js"></script>
+	<script>
+		couchapp_load(["vendor/couchapp/jquery.couchLogin.js"])
+	</script>
 
-<!-- Reformed Churches Locator JavaScript files -->
-<!-- TODO: Put these script & CSS loads into their associated widgets -->
+	<!-- Reformed Churches Locator JavaScript files -->
+	<!-- TODO: Put these script & CSS loads into their associated widgets -->
 
-<script src="script/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
-<link rel="stylesheet" type="text/css" href="script/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
-<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/ui.css" media="all">
-<script src="script/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
-<script src="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
-<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
-<script src="script/jquery.tablesorter/sorter.js"></script>
-<script src="script/jquery.watermark/jquery.watermark.min_.js"></script>
-<!-- TODO: Put this script into app.js -->
-<!-- <script src="script/search_the_map.js"></script> -->
-<script type="text/javascript" src="script/lib/underscore.js"></script>
-<script type="text/javascript" src="script/lib/backbone.js"></script>
-<script type="text/javascript" src="script/lib/backbone-relational.js"></script>
-<script type="text/javascript" src="script/lib/backbone-couchdb.js"></script>
-<!-- <script type="text/javascript" src="script/lib/backbone.couch.js"></script> -->
-<!-- <script type="text/javascript" src="script/lib/backbone.couchdb.js"></script> -->
+	<script src="script/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="script/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
+	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/ui.css" media="all">
+	<script src="script/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
+	<script src="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
+	<script src="script/jquery.watermark/jquery.watermark.min_.js"></script>
+	<!-- TODO: Put this script into app.js -->
+	<!-- <script src="script/search_the_map.js"></script> -->
+	<script type="text/javascript" src="script/lib/underscore.js"></script>
+	<script type="text/javascript" src="script/lib/backbone.js"></script>
+	<script type="text/javascript" src="script/lib/backbone-relational.js"></script>
+	<script type="text/javascript" src="script/lib/backbone-couchdb.js"></script>
+	<!-- <script type="text/javascript" src="script/lib/backbone.couch.js"></script> -->
+	<!-- <script type="text/javascript" src="script/lib/backbone.couchdb.js"></script> -->
 
-<script data-main="script/main" src="script/require.js"></script>
-<script src="script/app.js"></script>
+	<script data-main="script/main" src="script/require.js"></script>
+	<script src="script/app.js"></script>
 
 </html>
