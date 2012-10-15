@@ -6,12 +6,12 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         db = $.couch.db(path[1]);
     $("#account").couchLogin({});
    
-    // TODO: Put custom evently code here
+    // Put custom evently code here
     
     // Evently version
     // TODO: Migrate these Evently widgets to Backbone views
     $.couch.app(function(app) {
-        $("#mainmenu").evently("mainmenu", app);
+        //$("#mainmenu").evently("mainmenu", app);
         $("#map").evently("map", app);
         $("#search_container").evently("search", app);
     });
@@ -26,57 +26,61 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
       interpolate : /\{\{(.+?)\}\}/g
     };
 
-    // Example of how to save a many-to-many relation to the database
-    // Create CGroup model
-    cgroups = new model.CGroups
-    OPC = cgroups.create({
-        name:'Orthodox Presbyterian Church',
-        abbreviation:'OPC'
-    })
-    // Instantiate group of congs
-    congs = new model.Congs
-    // Instantiate first congregation model
-    // TODO: Should this be global or not?
-    cong1 = congs.create({
-        name:'Caney OPC',
-        mailing_state:'KS'
-    },{
-        success:function(){
-            // Instantiate second congregation model
-            cong2 = congs.create({
-                name:'Bartlesville OPC',
-                mailing_state:'OK'
-            },{success:function(){
-                // Add congregations to cgroup
-                OPC.get('congregations').add([{_id:cong1.get('_id')},{_id:cong2.get('_id')}])
-                // Save cgroup to db
-                OPC.save({_id:OPC.get('_id')},{success:function(){
-                    $.each([cong1,cong2], function(key, cong){
-                        cong.get('cgroups').add({_id:OPC.get('_id')})
-                        cong.save({},{success:function(){
-                            // Example of how to fetch many-to-many relations from the db
-                            // Fetch the cong so as to populate its relations in the browser
-                            cong.fetch({success:function(){
-                                // Example of how to query for related CGroups
-                                var cong_cgroups = cong.get('cgroups')
-                                for (var i=0; i<cong_cgroups.length; i++){
-                                    var cgroup_id = cong_cgroups.at(i).get('_id')
-                                    var cgroup = cgroups.get(cgroup_id)
-                                }
-                                // Example of how to query by one attribute
-                                congs_by_name = new model.CongsByName
-                                congs_by_name.db.keys = ['Caney OPC']
-                                congs_by_name.fetch({success:function(col, res){
-                                    var caney_opc = col.at(0)
-                                }})
-                            }})
-                        }})
-                    })
-                }})
-            }})
-        }
-    })
-    
+//  -------------------------------------------------------------------
+
+//    // Example of how to save a many-to-many relation to the database
+//    // Create CGroup model
+//    cgroups = new model.CGroups
+//    OPC = cgroups.create({
+//        name:'Orthodox Presbyterian Church',
+//        abbreviation:'OPC'
+//    })
+//    // Instantiate group of congs
+//    congs = new model.Congs
+//    // Instantiate first congregation model
+//    // TODO: Should this be global or not?
+//    cong1 = congs.create({
+//        name:'Caney OPC',
+//        mailing_state:'KS'
+//    },{
+//        success:function(){
+//            // Instantiate second congregation model
+//            cong2 = congs.create({
+//                name:'Bartlesville OPC',
+//                mailing_state:'OK'
+//            },{success:function(){
+//                // Add congregations to cgroup
+//                OPC.get('congregations').add([{_id:cong1.get('_id')},{_id:cong2.get('_id')}])
+//                // Save cgroup to db
+//                OPC.save({_id:OPC.get('_id')},{success:function(){
+//                    $.each([cong1,cong2], function(key, cong){
+//                        cong.get('cgroups').add({_id:OPC.get('_id')})
+//                        cong.save({},{success:function(){
+//                            // Example of how to fetch many-to-many relations from the db
+//                            // Fetch the cong so as to populate its relations in the browser
+//                            cong.fetch({success:function(){
+//                                // Example of how to query for related CGroups
+//                                var cong_cgroups = cong.get('cgroups')
+//                                for (var i=0; i<cong_cgroups.length; i++){
+//                                    var cgroup_id = cong_cgroups.at(i).get('_id')
+//                                    var cgroup = cgroups.get(cgroup_id)
+//                                }
+//                                // Example of how to query by one attribute
+//                                congs_by_name = new model.CongsByName
+//                                congs_by_name.db.keys = ['Caney OPC']
+//                                congs_by_name.fetch({success:function(col, res){
+//                                    var caney_opc = col.at(0)
+//                                }})
+//                            }})
+//                        }})
+//                    })
+//                }})
+//            }})
+//        }
+//    })
+
+//  -------------------------------------------------------------------
+
     // TODO: Create Backbone views here
     // TODO: Move views into separate files when they get too long or numerous here
     //  This tutorial shows how to use RequireJS with Backbone:
@@ -104,7 +108,8 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             var template = _.template( $("#map_template").html(), {} );
             $(this.el).html( template );
             // Initialize Google map
-            // TODO: We are trying to get the AJAX request to work on the "on key up" event; but no luck so far. 
+            // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
+            //  but no luck so far. 
             var geocoder;
             var map;
             function initialize() {
@@ -145,6 +150,11 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     MenuView = Backbone.View.extend({
         initialize: function(){
             this.render();
+            // TODO: Get the menu item that is selected
+            var path = unescape(document.location.pathname).split('/')
+            var filename = path[path.length-1]
+            // Add the "active" class to the menu item the user clicked
+            $('#mainmenu a[href="' + filename + '"]').addClass('active')
         },
         render: function(){
         	var template = _.template( $("#menu_template").html(), {} );
@@ -325,15 +335,137 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     });
     
 
-    // TODO: Should this view initialization be done in the App below?
-    var map_view = new MapView({ el: $("#map") });
-    var search_view = new SearchView({ el: $("#search_container") });
-    
     // TODO: Create main application
     var App = Backbone.Router.extend({
       initialize : function(){
-          // TODO: Set up URLs here
+          // TODO: Should this view initialization be done in the App below?
+          this.menu_view = new MenuView({ el: $("#mainmenu") });
+          this.map_view = new MapView({ el: $("#map") });
+          this.search_view = new SearchView({ el: $("#search_container") });
+      },
+      // Set up URLs here
+      // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
+      //    without duplicating what is written here?
+      //    http://blog.couchbase.com/what%E2%80%99s-new-apache-couchdb-011-%E2%80%94-part-one-nice-urls-rewrite-rules-and-virtual-hosts
+      routes: {
+          "find_a_church":                 "find_a_church",
+          "import_directory":              "import_directory",
+          "delete_all_opc_cgroups" : "delete_all_opc_cgroups",
+          "delete_all_opc_directories" : "delete_all_opc_directories",
+          "delete_all_caney_opc" : "delete_all_caney_opc",
+          "delete_all_opc_data" : "delete_all_opc_data"
+      },
+      find_a_church:function(){
+          this.map_view.render()
+      },
+      import_directory:function(){
+          
+      },
+      delete_all_opc_directories:function(){
+          // Delete all OPC directories
+          var db = $$(this).app.require('db').db
+          // Get all OPC directories
+          db.view('rcl/directories',{
+              keys:['OPC'],
+              success:function(data){
+                  var docs = []
+                  for (var i=0;i<data.rows.length;i++){
+                      docs.push({
+                          _id:data.rows[i].id,
+                          _rev:data.rows[i].value
+                      })
+                  }
+                  db.bulkRemove({docs:docs}, {
+                      success:function(data){
+                          //console.log(data)
+                      }
+                  })
+              }
+          })
+      },
+      delete_all_caney_opc:function(){
+          // Delete all OPC directories
+          var db = $$(this).app.require('db').db
+          // Get all OPC congregations
+          db.view('rcl/caney_opc',{
+              keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version',
+                    'Bartlesville OPC'],
+              success:function(data){
+                  var docs = []
+                  for (var i=0;i<data.rows.length;i++){
+                      docs.push({
+                          _id:data.rows[i].id,
+                          _rev:data.rows[i].value
+                      })
+                  }
+                  db.bulkRemove({docs:docs}, {
+                      success:function(data){
+                          //console.log(data)
+                      }
+                  })
+              }
+          })
+      },
+      delete_all_opc_cgroups:function(){
+          // Delete all OPC cgroups
+          var db = $$(this).app.require('db').db
+          // Get all OPC groups
+          db.view('rcl/cgroup-by-abbreviation',{
+              keys:['OPC'],
+              success:function(data){
+                  var docs = []
+                  for (var i=0;i<data.rows.length;i++){
+                      docs.push({
+                          _id:data.rows[i].id,
+                          _rev:data.rows[i].value
+                      })
+                  }
+                  db.bulkRemove({docs:docs}, {
+                      success:function(data){
+                          //console.log(data)
+                      }
+                  })
+              }
+          })
+      },
+      delete_all_opc_data:function(){
+          // Delete all OPC directories
+          var db = $$(this).app.require('db').db
+          // Get all OPC directories
+          db.view('rcl/opc',{
+              keys:['OPC'],
+              success:function(data){
+                  var docs = []
+                  for (var i=0;i<data.rows.length;i++){
+                      docs.push({
+                          _id:data.rows[i].id,
+                          _rev:data.rows[i].value
+                      })
+                  }
+                  db.bulkRemove({docs:docs}, {
+                      success:function(data){
+                          //console.log(data)
+                      }
+                  })
+              }
+          })
       }
     });
     // TODO: Call App() and other views if necessary
+    app = new App
+    Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
+    // Globally capture clicks. If they are internal and not in the pass 
+    // through list, route them through Backbone's navigate method.
+    $(document).on("click", "a[href^='/']", function(event){
+        var href = $(event.currentTarget).attr('href')
+        // chain 'or's for other black list routes
+        var passThrough = href.indexOf('sign_out') >= 0
+        // Allow shift+click for new tabs, etc.
+        if (!passThrough && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey){
+            event.preventDefault()
+            // Instruct Backbone to trigger routing events
+            app.navigate(href, { trigger: true })
+            return false
+        }
+    })
 });
