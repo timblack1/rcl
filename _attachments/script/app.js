@@ -187,6 +187,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     });
     SearchView = Backbone.View.extend({
         initialize: function(){
+        	console.log ("SearchView called")
             this.render();
         },
         render: function(){
@@ -348,16 +349,22 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         	});
         	}
     });
-    
+    var FindAChurchView = Backbone.Router.extend({
+        initialize : function(){
+        	console.log("find a church")
+            this.menu_view = new MenuView({ el: $("#mainmenu") });
+            this.map_view = new MapView({ el: $("#map") });
+            this.search_view = new SearchView({ el: $("#search_container") });
+            this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
+        }
+    })
 
     // TODO: Create main application
     var App = Backbone.Router.extend({
       initialize : function(){
           // TODO: Should this view initialization be done in the App below?
-          this.menu_view = new MenuView({ el: $("#mainmenu") });
-          this.map_view = new MapView({ el: $("#map") });
-          this.search_view = new SearchView({ el: $("#search_container") });
-          this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
+    	  console.log("app called here.")
+          this.find_a_church_view = new FindAChurchView({ el: $("#content") });
       },
       // Set up URLs here
       // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
