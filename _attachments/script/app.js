@@ -4,22 +4,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     
     var path = unescape(document.location.pathname).split('/'),
         db = $.couch.db(path[1]);
-    $("#account").couchLogin({});
    
-    // Put custom evently code here
-    
-    // Evently version
-    // TODO: Migrate these Evently widgets to Backbone views
-    $.couch.app(function(app) {
-        //$("#mainmenu").evently("mainmenu", app);
-        $("#map").evently("map", app);
-        $("#search_container").evently("search", app);
-    });
-
-    // ------------------------------------------------------------------
-    // Backbone version
-    // ------------------------------------------------------------------
-    
     // TODO: This should probably go into a configuration file
     // Enables Mustache.js-like templating.
     _.templateSettings = {
@@ -88,7 +73,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     MapView = Backbone.View.extend({
         initialize: function(){
             this.render();
-            console.log('after map renders')
 
         	// TODO: Migrate the code below into Backbone events
         	
@@ -106,40 +90,21 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         	});
         },
         render: function(){
-            console.log('before map renders')
             var template = _.template( $("#map_template").html(), {} );
             $(this.el).html( template );
-            console.log(this.el)
-            console.log($(this.el).html())
+            
             // Initialize Google map
-            // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
-            //  but no luck so far. 
             var geocoder;
             var map;
-            function initialize() {
-                geocoder = new google.maps.Geocoder();
-                // TODO: Center the map on the viewer's country
-                var latlng = new google.maps.LatLng(-34.397, 150.644);
-                var myOptions = {
-                        zoom: 8,
-                        center: latlng,
-                        mapTypeId: google.maps.MapTypeId.ROADMAP
-                }
-                console.log($("#map_canvas"))
-                console.log(document.getElementById("map_canvas"))
-                // TODO: Start here.  This call does not have an element to which to render.
-                map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+            geocoder = new google.maps.Geocoder();
+            // TODO: Center the map on the viewer's country
+            var latlng = new google.maps.LatLng(-34.397, 150.644);
+            var myOptions = {
+                    zoom: 8,
+                    center: latlng,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
             }
-            initialize();
-        },
-        events: {
-            "click #mainmenu >li>a[href=#map]": "map"
-        },
-        // TODO: make a view that contains the whole map page
-        map: function( event ){
-            // Button clicked, you can access the element that was clicked with event.currentTarget
-        	// TODO: Load the map view
-            alert( "Search for " + $("#search_input").val() );
+            map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
         }
     });
     // TODO: Move form elements into Menu view
@@ -194,7 +159,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     });
     SearchView = Backbone.View.extend({
         initialize: function(){
-        	console.log ("SearchView called")
             this.render();
         },
         render: function(){
@@ -202,6 +166,8 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             $(this.el).html( template );
         },
         events: {
+            // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
+            //  but no luck so far. 
             "click #search": "doSearch"
         },
         doSearch: function( event ){
@@ -343,7 +309,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         							"</td>" + 
         							"</tr>"; 
 
-
         							// Append the new table rows to the table
         							$("#congregation_list tbody").append(msg);
         						}
@@ -356,15 +321,12 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         	});
         	}
     });
-    var FindAChurchView = Backbone.Router.extend({
+    var FindAChurchView = Backbone.View.extend({
         initialize : function(){
-        	console.log("find a church")
         	this.render()
-        	console.log("before menu")
+        	// Render child views
             this.menu_view = new MenuView({ el: $("#mainmenu") });
-        	console.log("before map")
             this.map_view = new MapView({ el: $("#map") });
-        	console.log("before search")
             this.search_view = new SearchView({ el: $("#search_container") });
             this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
         },
@@ -376,16 +338,14 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         }
     })
 
-    // TODO: Create main application
+    // Create main application
     var App = Backbone.Router.extend({
       initialize : function(){
-          // TODO: Should this view initialization be done in the App below?
-    	  console.log("app called here.")
           // This renders the default view for the app
           // TODO:  If the page loaded from a different view's URL, load that view instead
           //    Maybe we can handle that in the router below.
-    	  // TODO: Start here.  It appears this is not rendering to the #content div
           this.find_a_church_view = new FindAChurchView({ el: $("#content") });
+          $("#account").couchLogin({});
       },
       // Set up URLs here
       // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
@@ -400,10 +360,11 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           "delete_all_opc_data" : "delete_all_opc_data"
       },
       find_a_church:function(){
-          this.map_view.render()
+          this.find_a_church_view.render()
       },
       import_directory:function(){
-          
+          // TODO: Migrate evently/download code to here
+          // TODO: Wrap import_directory form parts into separate Backbone views
       },
       delete_all_opc_directories:function(){
           // Delete all OPC directories
