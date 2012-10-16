@@ -88,6 +88,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     MapView = Backbone.View.extend({
         initialize: function(){
             this.render();
+            console.log('after map renders')
 
         	// TODO: Migrate the code below into Backbone events
         	
@@ -105,8 +106,11 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         	});
         },
         render: function(){
+            console.log('before map renders')
             var template = _.template( $("#map_template").html(), {} );
             $(this.el).html( template );
+            console.log(this.el)
+            console.log($(this.el).html())
             // Initialize Google map
             // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
             //  but no luck so far. 
@@ -121,6 +125,9 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
                         center: latlng,
                         mapTypeId: google.maps.MapTypeId.ROADMAP
                 }
+                console.log($("#map_canvas"))
+                console.log(document.getElementById("map_canvas"))
+                // TODO: Start here.  This call does not have an element to which to render.
                 map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
             }
             initialize();
@@ -352,10 +359,20 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     var FindAChurchView = Backbone.Router.extend({
         initialize : function(){
         	console.log("find a church")
+        	this.render()
+        	console.log("before menu")
             this.menu_view = new MenuView({ el: $("#mainmenu") });
+        	console.log("before map")
             this.map_view = new MapView({ el: $("#map") });
+        	console.log("before search")
             this.search_view = new SearchView({ el: $("#search_container") });
             this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
+        },
+        render: function(){
+            // TODO: Refactor this so we don't repeat ourselves
+            //  Create a generalized render(this, element_id) function
+            var template = _.template( $("#find_a_church_template").html(), {} );
+            $(this.el).html( template );
         }
     })
 
@@ -364,6 +381,10 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
       initialize : function(){
           // TODO: Should this view initialization be done in the App below?
     	  console.log("app called here.")
+          // This renders the default view for the app
+          // TODO:  If the page loaded from a different view's URL, load that view instead
+          //    Maybe we can handle that in the router below.
+    	  // TODO: Start here.  It appears this is not rendering to the #content div
           this.find_a_church_view = new FindAChurchView({ el: $("#content") });
       },
       // Set up URLs here

@@ -13,31 +13,29 @@
 		</div>
 		<ul id="mainmenu"></ul>
 
-		<div id="content"> </div>
+		<div id="content"></div>
 
-		<div id="old_content">
-			<div id="congregations">
-				<div id="account" style="float: right"></div>
-				<h2>Congregations</h2>
-				<div class="ui-widget ui-widget-content ui-corner-all">
-					<div>
-						<div id="map"></div>
-						<div id="search_container"></div>
-						<div id="congregations_container"></div>
-					</div>
+        <script type="text/template" id="find_a_church_template">
+            <div id="congregations">
+                <div id="account" style="float: right"></div>
+                <h2>Congregations</h2>
+                <div class="ui-widget ui-widget-content ui-corner-all">
+                    <div>
+                        <div id="map"></div>
+                        <div id="search_container"></div>
+                        <div id="congregations_container"></div>
+                    </div>
 
-					<div id="pager" class="pager"></div>
-				</div>
-			</div>
-			<!-- End of main_content -->
-			<div id="footer">
-				<div class="clearingdiv"></div>
-			</div>
-		</div>
-
-		<script type="text/template" id="map_template">
-			<div id="map_canvas" style="width: 918px; height: 500px;"></div>
-		</script>
+                    <div id="pager" class="pager"></div>
+                </div>
+            </div>
+            <div id="footer">
+                <div class="clearingdiv"></div>
+            </div>
+        </script>
+        <script type="text/template" id="map_template">
+            <div id="map_canvas" style="width: 918px; height: 500px;"></div>
+        </script>
 		<script type="text/template" id="congregations_template">
 			<table id="congregation_list" class="tablesorter">
 			<thead>
