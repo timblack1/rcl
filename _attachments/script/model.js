@@ -357,6 +357,7 @@ define(function(){
         Congs:Congs,
         CongsByName: CongsByName,
         Directories:Directories,
+        DirectoriesByURL:DirectoriesByURL,
         People:People,
         Offices:Offices,
         Roles:Roles
