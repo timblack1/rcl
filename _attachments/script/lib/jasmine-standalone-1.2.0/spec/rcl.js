@@ -10,7 +10,7 @@ describe("Reformed Churches Locator", function() {
     describe("'Find a church' page", function() {
 
         it("should not display an error", function() {
-            // TODO: Create this test
+            // TODO: Make this test for an error on the page, or for the correct page content
             app.navigate('find_a_church', { trigger: true })
         });
 
