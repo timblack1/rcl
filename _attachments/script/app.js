@@ -323,34 +323,52 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     });
     var FindAChurchView = Backbone.View.extend({
         initialize : function(){
-        	this.render()
-        	// Render child views
-            this.menu_view = new MenuView({ el: $("#mainmenu") });
-            this.map_view = new MapView({ el: $("#map") });
-            this.search_view = new SearchView({ el: $("#search_container") });
-            this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
         },
         render: function(){
             // TODO: Refactor this so we don't repeat ourselves
             //  Create a generalized render(this, element_id) function
             var template = _.template( $("#find_a_church_template").html(), {} );
             $(this.el).html( template );
+            // Render child views
+            this.menu_view = new MenuView({ el: $("#mainmenu") });
+            this.map_view = new MapView({ el: $("#map") });
+            this.search_view = new SearchView({ el: $("#search_container") });
+            this.congregations_view = new CongregationsView({ el: $("#congregations_container") });
+        }
+    })
+    var ImportDirectoryView = Backbone.View.extend({
+        initialize : function(){
+        },
+        render: function(){
+            // TODO: Refactor this so we don't repeat ourselves
+            //  Create a generalized render(this, element_id) function
+            var template = _.template( $("#import_directory_template").html(), {} );
+            $(this.el).html( template );
+            // TODO: Render child views
+            // TODO: Migrate evently/download code to here
+            // TODO: Wrap import_directory form parts into separate Backbone views
         }
     })
 
     // Create main application
     var App = Backbone.Router.extend({
       initialize : function(){
+          // TODO: Set up routes here
           // This renders the default view for the app
           // TODO:  If the page loaded from a different view's URL, load that view instead
           //    Maybe we can handle that in the router below.
           this.find_a_church_view = new FindAChurchView({ el: $("#content") });
+          this.find_a_church_view.render()
+          this.import_directory_view = new ImportDirectoryView({ el: $("#content") });
           $("#account").couchLogin({});
       },
       // Set up URLs here
       // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
       //    without duplicating what is written here?
       //    http://blog.couchbase.com/what%E2%80%99s-new-apache-couchdb-011-%E2%80%94-part-one-nice-urls-rewrite-rules-and-virtual-hosts
+      //    Maybe in this.initialize we can dynamically get ddoc.rewrites, iterate through it, 
+      //    and dynamically create this.routes in the correct data format, 
+      //    which is {'url':'function_name',...}.
       routes: {
           "find_a_church":                 "find_a_church",
           "import_directory":              "import_directory",
@@ -360,11 +378,17 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           "delete_all_opc_data" : "delete_all_opc_data"
       },
       find_a_church:function(){
+          // TODO: This destroys the old view, and renders a new view, in the #content div.
+          //    But if the view has already been rendered, and has some state, it might 
+          //    be better to HIDE other views, and DISPLAY this one, rather than render it,
+          //    because this would preserve the rendered view's state.
+          //    Con:  Preserving the rendered view's state is not what most users expect.
+          //    Pro:  It might be what most users want
+          //    So, do we want to preserve this view's state?
           this.find_a_church_view.render()
       },
       import_directory:function(){
-          // TODO: Migrate evently/download code to here
-          // TODO: Wrap import_directory form parts into separate Backbone views
+          this.import_directory_view.render()
       },
       delete_all_opc_directories:function(){
           // Delete all OPC directories
@@ -456,11 +480,14 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           })
       }
     });
-    // TODO: Call App() and other views if necessary
+    // Instantiate App
     app = new App
+    // Create SEF URLs and handle clicks
     Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
     // Globally capture clicks. If they are internal and not in the pass 
     // through list, route them through Backbone's navigate method.
+    // TODO: When I go to http://localhost:5984/rcl2/find_a_church, it returns:
+    //  {"error":"not_found","reason":"Document is missing attachment"}
     $(document).on("click", "a[href^='/']", function(event){
         var href = $(event.currentTarget).attr('href')
         // chain 'or's for other black list routes
