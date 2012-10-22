@@ -344,70 +344,27 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             //  Create a generalized render(this, element_id) function
             var template = _.template( $("#import_directory_template").html(), {} );
             $(this.el).html( template );
-            // TODO: Render child views
-            // TODO: Migrate evently/download code to here
-            // TODO: Wrap import_directory form parts into separate Backbone views
-        }
-    })
-
-    var ImportDirectoryView = Backbone.View.extend({
-        initialize : function(){
-        	this.render()
-        	// Render child views
         },
-        render: function(){
-            // TODO: Refactor this so we don't repeat ourselves
-            //  Create a generalized render(this, element_id) function
-            var template = _.template( $("#import_directory_template").html(), {} );
-            $(this.el).html( template );
-        },
-        routes: {
-//        	{
-//        		  "#url" : {"keyup": "get_church_dir_from_url" },
-//        		  "#directory_type input" : {"click": "show_directory_type"}
-//        		}
+        events: {
+            'keyup #url':"get_church_dir_from_url",
+            'click #directory_type input': 'show_directory_type'
         },
         get_church_dir_from_url:function(){
-        	var elem = $(this),
-        	config = $$(this).app.require('config'),
-        	db = config.db,
-        	model = $$(this).app.require('model').model,
-        	CGroup = model.types.CGroup,
-        	Directory = model.types.Directory,
-        	Cong = model.types.Cong,
-        	CGroup = model.types.CGroup
-    	// TODO: Get model working
-    	// Example usage of CouchObject model
-//    		// Create a cong
-//    		var cong = model.types.Cong.init({
-//    		    name:'Caney OPC',
-//    		    mailing_state:'KS'
-//    		})
-//    		// Or create first, then populate second
-//    		var cong = model.types.Cong.init()
-//    		// Retrieve a cong from the database
-//    		var cong = model.types.Cong.init(id)
-//    		groups = cong.groups
-//    		
-        var cg1 = CGroup.init({
-            name:'Orthodox Presbyterian Church',
-            abbreviation:'OPC'
-        })
-        cg1.save()
-    	var cong1 = Cong.init({
-    	    name:'Caney OPC',
-    	    mailing_state:'KS'
-    	})
-    	cong1.save()
-    	cong1.mailing_city = 'Caney'
-        cong1.save()
-        
-        setTimeout(function(cong1){console.log('rev: ' + cong1._rev)}, 3000)
-        
+            // TODO: Rewrite this for Backbone
+        	var elem = $('#url'),
+            	// TODO: do we need config here anymore?
+    //        	config = $$(this).app.require('config'),
+            	CGroup = model.CGroup,
+            	Directory = model.Directory,
+            	Cong = model.Cong,
+            	CGroup = model.CGroup
+    	       
     	// Delay this to run after typing has stopped for 2 seconds, so we don't send too many requests
     	// TODO: Don't fire on every key event, but only once after delay.
     	//			The way to do this is not via setTimeout, but probably something like a while loop
     	//setTimeout(function(){
+            	
+    	// Declare several utility functions for use further below
 
     	function populate_dir(cgroup){
     		// Populate directory with new data from page
@@ -527,7 +484,19 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     	    }
     	}
     		
-    	// If the associated cgroup exists in the db, get it
+    	// If the associated directory exists in the db, get it
+    	var url = $('#url').val()
+    	directories = new model.DirectoriesByURL
+    	directories.db.keys = [url]
+    	directories.fetch({success:function(col, res){
+    	    var dir = col.at(0)
+    	    console.log(dir)
+    	}})
+    	congs_by_name = new model.DirectoriesByURL
+//      congs_by_name.db.keys = ['Caney OPC']
+//      congs_by_name.fetch({success:function(col, res){
+//          var caney_opc = col.at(0)
+//      }})
     	var cgroup = ''
     	// Query database by cgroup.abbreviation
     	// TODO: Turn this into a view in model.cgroup
@@ -657,8 +626,9 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           // TODO:  If the page loaded from a different view's URL, load that view instead
           //    Maybe we can handle that in the router below.
           this.find_a_church_view = new FindAChurchView({ el: $("#content") });
-          this.find_a_church_view.render()
+          //this.find_a_church_view.render()
           this.import_directory_view = new ImportDirectoryView({ el: $("#content") });
+          this.import_directory_view.render()
           // TODO: Move tests into a View that displays in a suitable location on the page
           $("#account").couchLogin({});
       },
