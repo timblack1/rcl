@@ -360,6 +360,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           this.find_a_church_view = new FindAChurchView({ el: $("#content") });
           this.find_a_church_view.render()
           this.import_directory_view = new ImportDirectoryView({ el: $("#content") });
+          // TODO: Move tests into a View that displays in a suitable location on the page
           $("#account").couchLogin({});
       },
       // Set up URLs here
@@ -370,6 +371,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
       //    and dynamically create this.routes in the correct data format, 
       //    which is {'url':'function_name',...}.
       routes: {
+          "index.html":                 "index.html",
           "find_a_church":                 "find_a_church",
           "import_directory":              "import_directory",
           "delete_all_opc_cgroups" : "delete_all_opc_cgroups",
@@ -486,7 +488,11 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
     // Globally capture clicks. If they are internal and not in the pass 
     // through list, route them through Backbone's navigate method.
-    // TODO: When I go to http://localhost:5984/rcl2/find_a_church, it returns:
+    // TODO: Create vhosts entry to allow pages to load from direct access to the URL, like
+    //  to http://localhost:5984/rcl/_design/rcl/import_directory.  Currently that URL returns:
+    //  {"error":"not_found","reason":"Document is missing attachment"}
+    // TODO: When I create a vhosts entry for /rcl2 and rewrites.json, then go to 
+    //  http://localhost:5984/rcl2/find_a_church, it returns:
     //  {"error":"not_found","reason":"Document is missing attachment"}
     $(document).on("click", "a[href^='/']", function(event){
         var href = $(event.currentTarget).attr('href')
