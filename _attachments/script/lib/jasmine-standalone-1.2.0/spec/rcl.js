@@ -3,7 +3,8 @@ describe("Reformed Churches Locator", function() {
     
     afterEach(function() {
         // Returns the page to display the home page as it should
-        app.navigate('find_a_church', {trigger:true})
+        //app.navigate('find_a_church', {trigger:true})
+        app.navigate('import_directory', {trigger:true})
         app.navigate(home, {trigger:true})
     });
 

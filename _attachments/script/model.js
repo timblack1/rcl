@@ -265,6 +265,13 @@ define(function(){
         model:Directory,
         url:'/directories'
     })
+    DirectoriesByURL = Backbone.Collection.extend({
+        model:Directory,
+        url:'/directories',
+        db:{
+            view: 'directories_by_url'
+        }
+    })
     Office = Backbone.RelationalModel.extend({
         collection:'Offices',
         urlRoot:'/office',
