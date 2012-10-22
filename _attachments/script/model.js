@@ -13,10 +13,14 @@ define(function(){
     Backbone.couch_connector.config.single_feed = true;
     // Reload the page when the design doc changes
     // TODO: Refactor this into an AMD module in db.js
+    // TODO: Dynamically get the database name
     // TODO: path[1] won't refer to 'rcl' anymore after we make SEF urls using something 
     //  like Sammy.js or Backbone's router
-    var path = unescape(document.location.pathname).split('/')
-    changes = $.couch.db(path[1]).changes();
+//    //  This doesn't work when using SEF rewrites
+//    var path = unescape(document.location.pathname).split('/')
+//    changes = $.couch.db(path[1]).changes();
+    // Manually enter the database name
+    changes = $.couch.db('rcl').changes();
     changes.onChange(function(data){
         for (var i=0; i<data.results.length; i++){
             if (data.results[i].id == '_design/rcl'){
