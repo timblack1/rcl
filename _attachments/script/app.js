@@ -488,6 +488,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     	var url = $('#url').val()
     	directories = new model.DirectoriesByURL
     	directories.db.keys = [url]
+    	// TODO: Start here
     	directories.fetch({success:function(col, res){
     	    var dir = col.at(0)
     	    console.log(dir)
@@ -643,7 +644,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
           "index.html":                 "index.html",
           "find_a_church":                 "find_a_church",
           "import_directory":              "import_directory",
-          "delete_all_opc_cgroups" : "delete_all_opc_cgroups",
+          "#delete_all_opc_cgroups" : "delete_all_opc_cgroups",
           "delete_all_opc_directories" : "delete_all_opc_directories",
           "delete_all_caney_opc" : "delete_all_caney_opc",
           "delete_all_opc_data" : "delete_all_opc_data"
@@ -766,12 +767,12 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     $(document).on("click", "a[href^='/']", function(event){
         var href = $(event.currentTarget).attr('href')
         // chain 'or's for other black list routes
-        var passThrough = href.indexOf('sign_out') >= 0
+        var passThrough = href.indexOf('sign_out') >= 0 || href.indexOf('delete') >= 0
         // Allow shift+click for new tabs, etc.
         if (!passThrough && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey){
             event.preventDefault()
             // Instruct Backbone to trigger routing events
-            app.navigate(href, { trigger: true })
+            app.navigate(href, { trigger: false })
             return false
         }
     })
