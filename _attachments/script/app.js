@@ -180,7 +180,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         },
         delete_all_opc_cgroups:function(){
             // Delete all OPC cgroups
-            //var db = $$(this).app.require('db').db
             // Get all OPC groups
             db.view('rcl/cgroup-by-abbreviation',{
                 keys:['OPC'],
@@ -202,7 +201,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
         },
         delete_all_opc_data:function(){
             // Delete all OPC directories
-            var db = $$(this).app.require('db').db
             // Get all OPC directories
             db.view('rcl/opc',{
                 keys:['OPC'],
