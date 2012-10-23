@@ -107,18 +107,6 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
         }
     });
-    // TODO: Move form elements into Menu view
-    //  - Copy above view to below
-    //  - in initialize:  Delete all but this.render();
-    //  - Create a template section (in <script></script> tags) in index.html, and paste in 
-    //      the form element code currently found higher up in index.html
-    //  - in render:  Delete all but the first two lines, then modify the first two lines to
-    //      reference a container div with the correct ID
-    //  - in doSearch:  Find our existing code that handles the "change" event in the 
-    //      input & select elements, put it into doSearch, rename doSearch to appropriately describe
-    //      that code, then modify the events: section above to call that doSearch function when
-    //      the change event happens in the input & select boxes
-    //  - Instantiate this new view in a variable below. 
     MenuView = Backbone.View.extend({
         initialize: function(){
             this.render();
@@ -133,14 +121,108 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
             $(this.el).html( template );
         },
         events: {
-            "click input[type=button]": "doSearch"
+            "click input[type=button]": "doSearch",
+            "click #delete_all_opc_cgroups" : "delete_all_opc_cgroups",
+            "click #delete_all_opc_directories" : "delete_all_opc_directories",
+            "click #delete_all_caney_opc" : "delete_all_caney_opc",
+            "click #delete_all_opc_data" : "delete_all_opc_data"
         },
-  // TODO: one function per menu item
+        // TODO: Does this function belong here or in another view?
         doSearch: function( event ){
             // Button clicked, you can access the element that was clicked with event.currentTarget
             alert( "Search for " + $("#search_input").val() );
+        },
+        delete_all_opc_directories:function(){
+            // Delete all OPC directories
+            var db = $$(this).app.require('db').db
+            console.log('in delete function')
+            // Get all OPC directories
+            db.view('rcl/directories',{
+                keys:['OPC'],
+                success:function(data){
+                    var docs = []
+                    for (var i=0;i<data.rows.length;i++){
+                        docs.push({
+                            _id:data.rows[i].id,
+                            _rev:data.rows[i].value
+                        })
+                    }
+                    db.bulkRemove({docs:docs}, {
+                        success:function(data){
+                            //console.log(data)
+                        }
+                    })
+                }
+            })
+        },
+        delete_all_caney_opc:function(){
+            // Delete all OPC directories
+            var db = $$(this).app.require('db').db
+            // Get all OPC congregations
+            db.view('rcl/caney_opc',{
+                keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version',
+                      'Bartlesville OPC'],
+                success:function(data){
+                    var docs = []
+                    for (var i=0;i<data.rows.length;i++){
+                        docs.push({
+                            _id:data.rows[i].id,
+                            _rev:data.rows[i].value
+                        })
+                    }
+                    db.bulkRemove({docs:docs}, {
+                        success:function(data){
+                            //console.log(data)
+                        }
+                    })
+                }
+            })
+        },
+        delete_all_opc_cgroups:function(){
+            // Delete all OPC cgroups
+            //var db = $$(this).app.require('db').db
+            // Get all OPC groups
+            db.view('rcl/cgroup-by-abbreviation',{
+                keys:['OPC'],
+                success:function(data){
+                    var docs = []
+                    for (var i=0;i<data.rows.length;i++){
+                        docs.push({
+                            _id:data.rows[i].id,
+                            _rev:data.rows[i].value
+                        })
+                    }
+                    db.bulkRemove({docs:docs}, {
+                        success:function(data){
+                            //console.log(data)
+                        }
+                    })
+                }
+            })
+        },
+        delete_all_opc_data:function(){
+            // Delete all OPC directories
+            var db = $$(this).app.require('db').db
+            // Get all OPC directories
+            db.view('rcl/opc',{
+                keys:['OPC'],
+                success:function(data){
+                    var docs = []
+                    for (var i=0;i<data.rows.length;i++){
+                        docs.push({
+                            _id:data.rows[i].id,
+                            _rev:data.rows[i].value
+                        })
+                    }
+                    db.bulkRemove({docs:docs}, {
+                        success:function(data){
+                            //console.log(data)
+                        }
+                    })
+                }
+            })
         }
-    });
+     });
     
     CongregationsView = Backbone.View.extend({
         initialize: function(){
@@ -643,11 +725,7 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
       routes: {
           "index.html":                 "index.html",
           "find_a_church":                 "find_a_church",
-          "import_directory":              "import_directory",
-          "#delete_all_opc_cgroups" : "delete_all_opc_cgroups",
-          "delete_all_opc_directories" : "delete_all_opc_directories",
-          "delete_all_caney_opc" : "delete_all_caney_opc",
-          "delete_all_opc_data" : "delete_all_opc_data"
+          "import_directory":              "import_directory"
       },
       find_a_church:function(){
           // TODO: This destroys the old view, and renders a new view, in the #content div.
@@ -661,97 +739,8 @@ define(['model', 'async!https://maps.googleapis.com/maps/api/js?sensor=false',
       },
       import_directory:function(){
           this.import_directory_view.render()
-      },
-      delete_all_opc_directories:function(){
-          // Delete all OPC directories
-          var db = $$(this).app.require('db').db
-          // Get all OPC directories
-          db.view('rcl/directories',{
-              keys:['OPC'],
-              success:function(data){
-                  var docs = []
-                  for (var i=0;i<data.rows.length;i++){
-                      docs.push({
-                          _id:data.rows[i].id,
-                          _rev:data.rows[i].value
-                      })
-                  }
-                  db.bulkRemove({docs:docs}, {
-                      success:function(data){
-                          //console.log(data)
-                      }
-                  })
-              }
-          })
-      },
-      delete_all_caney_opc:function(){
-          // Delete all OPC directories
-          var db = $$(this).app.require('db').db
-          // Get all OPC congregations
-          db.view('rcl/caney_opc',{
-              keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version',
-                    'Bartlesville OPC'],
-              success:function(data){
-                  var docs = []
-                  for (var i=0;i<data.rows.length;i++){
-                      docs.push({
-                          _id:data.rows[i].id,
-                          _rev:data.rows[i].value
-                      })
-                  }
-                  db.bulkRemove({docs:docs}, {
-                      success:function(data){
-                          //console.log(data)
-                      }
-                  })
-              }
-          })
-      },
-      delete_all_opc_cgroups:function(){
-          // Delete all OPC cgroups
-          var db = $$(this).app.require('db').db
-          // Get all OPC groups
-          db.view('rcl/cgroup-by-abbreviation',{
-              keys:['OPC'],
-              success:function(data){
-                  var docs = []
-                  for (var i=0;i<data.rows.length;i++){
-                      docs.push({
-                          _id:data.rows[i].id,
-                          _rev:data.rows[i].value
-                      })
-                  }
-                  db.bulkRemove({docs:docs}, {
-                      success:function(data){
-                          //console.log(data)
-                      }
-                  })
-              }
-          })
-      },
-      delete_all_opc_data:function(){
-          // Delete all OPC directories
-          var db = $$(this).app.require('db').db
-          // Get all OPC directories
-          db.view('rcl/opc',{
-              keys:['OPC'],
-              success:function(data){
-                  var docs = []
-                  for (var i=0;i<data.rows.length;i++){
-                      docs.push({
-                          _id:data.rows[i].id,
-                          _rev:data.rows[i].value
-                      })
-                  }
-                  db.bulkRemove({docs:docs}, {
-                      success:function(data){
-                          //console.log(data)
-                      }
-                  })
-              }
-          })
       }
-    });
+ });
     // Instantiate App
     app = new App
     // Create SEF URLs and handle clicks
