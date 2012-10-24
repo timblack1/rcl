@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.type == 'directory') {
-      emit(doc.abbreviation, doc._rev)
+  if (doc.collection == 'directory') {
+      emit(doc.url, doc._rev)
   }
 };
