@@ -1,15 +1,15 @@
 define([
+        'config',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false'
         ], 
-        function(){
+        function(config){
 
     var SearchView = Backbone.View.extend({
         initialize: function(){
             this.render();
         },
         render: function(){
-            var template = _.template( $("#search_template").html(), {} );
-            $(this.el).html( template );
+            config.render_to_id(this, "#search_template")
         },
         events: {
             // TODO: We are trying to get the AJAX request to work on the "on key up" event; 

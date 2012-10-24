@@ -1,6 +1,7 @@
 define([
+        'config'
         ], 
-        function(){
+        function(config){
 
     var CongregationsView = Backbone.View.extend({
         initialize: function(){
@@ -13,8 +14,7 @@ define([
             //.tablesorterPager({container: $("#pager")});
         },
         render: function(){
-            var template = _.template( $("#congregations_template").html(), {} );
-            $(this.el).html( template );
+            config.render_to_id(this, "#congregations_template")
         }
     });
     return CongregationsView

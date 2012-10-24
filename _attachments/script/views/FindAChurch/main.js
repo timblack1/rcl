@@ -2,17 +2,15 @@ define([
         './MapView',
         './SearchView',
         './CongregationsView',
+        'config'
         ], 
-        function(MapView,SearchView,CongregationsView){
+        function(MapView,SearchView,CongregationsView,config){
 
     var FindAChurchView = Backbone.View.extend({
         initialize : function(){
         },
         render: function(){
-            // TODO: Refactor this so we don't repeat ourselves
-            //  Create a generalized render(this, element_id) function
-            var template = _.template( $("#find_a_church_template").html(), {} );
-            $(this.el).html( template );
+            config.render_to_id(this, "#find_a_church_template")
             // Render child views
             this.map_view = new MapView({ el: $("#map") });
             this.search_view = new SearchView({ el: $("#search_container") });
