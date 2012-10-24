@@ -1,9 +1,12 @@
-define([
-        ], 
-        function(){
+define(
+   [
+    '../config'
+    ], 
+    function(config){
 
     var MenuView = Backbone.View.extend({
         initialize: function(){
+            db = config.db
             this.render();
             // TODO: Get the menu item that is selected
             var path = unescape(document.location.pathname).split('/')
@@ -12,13 +15,12 @@ define([
             $('#mainmenu a[href="' + filename + '"]').addClass('active')
         },
         render: function(){
-            var template = _.template( $("#menu_template").html(), {} );
-            $(this.el).html( template );
+            config.render_to_id(this, "#menu_template")
         },
         events: {
             "click input[type=button]": "doSearch",
             "click #delete_all_opc_cgroups" : "delete_all_opc_cgroups",
-            "click #delete_all_opc_directories" : "delete_all_opc_directories",
+            "click #delete_all_directories" : "delete_all_directories",
             "click #delete_all_caney_opc" : "delete_all_caney_opc",
             "click #delete_all_opc_data" : "delete_all_opc_data"
         },
@@ -27,13 +29,10 @@ define([
             // Button clicked, you can access the element that was clicked with event.currentTarget
             alert( "Search for " + $("#search_input").val() );
         },
-        delete_all_opc_directories:function(){
-            // Delete all OPC directories
-            var db = $$(this).app.require('db').db
-            console.log('in delete function')
-            // Get all OPC directories
+        delete_all_directories:function(){
+            // Delete all directories
+            // Get all directories
             db.view('rcl/directories',{
-                keys:['OPC'],
                 success:function(data){
                     var docs = []
                     for (var i=0;i<data.rows.length;i++){
@@ -52,7 +51,6 @@ define([
         },
         delete_all_caney_opc:function(){
             // Delete all OPC directories
-            var db = $$(this).app.require('db').db
             // Get all OPC congregations
             db.view('rcl/caney_opc',{
                 keys:['Caney OPC', 'Caney OPC, second version', 'Caney OPC, third version',

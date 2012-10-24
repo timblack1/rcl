@@ -1,7 +1,8 @@
 define([
+        'config',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false'
         ], 
-        function(){
+        function(config){
 
     var MapView = Backbone.View.extend({
         initialize: function(){
@@ -23,8 +24,7 @@ define([
             });
         },
         render: function(){
-            var template = _.template( $("#map_template").html(), {} );
-            $(this.el).html( template );
+            config.render_to_id(this, "#map_template")
 
             // Initialize Google map
             var geocoder;
