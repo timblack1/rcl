@@ -8,69 +8,6 @@ define(
     'lib/jquery.couchLogin'
     ], 
     function(config, model, views){
-    
-        var db = config.db
-       
-        // TODO: This should probably go into a configuration file
-        // Enables Mustache.js-like templating.
-        _.templateSettings = {
-          interpolate : /\{\{(.+?)\}\}/g
-        };
-
-//  -------------------------------------------------------------------
-
-//    // Example of how to save a many-to-many relation to the database
-//    // Create CGroup model
-//    cgroups = new model.CGroups
-//    OPC = cgroups.create({
-//        name:'Orthodox Presbyterian Church',
-//        abbreviation:'OPC'
-//    })
-//    // Instantiate group of congs
-//    congs = new model.Congs
-//    // Instantiate first congregation model
-//    // TODO: Should this be global or not?
-//    cong1 = congs.create({
-//        name:'Caney OPC',
-//        mailing_state:'KS'
-//    },{
-//        success:function(){
-//            // Instantiate second congregation model
-//            cong2 = congs.create({
-//                name:'Bartlesville OPC',
-//                mailing_state:'OK'
-//            },{success:function(){
-//                // Add congregations to cgroup
-//                OPC.get('congregations').add([{_id:cong1.get('_id')},{_id:cong2.get('_id')}])
-//                // Save cgroup to db
-//                OPC.save({_id:OPC.get('_id')},{success:function(){
-//                    $.each([cong1,cong2], function(key, cong){
-//                        cong.get('cgroups').add({_id:OPC.get('_id')})
-//                        cong.save({},{success:function(){
-//                            // Example of how to fetch many-to-many relations from the db
-//                            // Fetch the cong so as to populate its relations in the browser
-//                            cong.fetch({success:function(){
-//                                // Example of how to query for related CGroups
-//                                var cong_cgroups = cong.get('cgroups')
-//                                for (var i=0; i<cong_cgroups.length; i++){
-//                                    var cgroup_id = cong_cgroups.at(i).get('_id')
-//                                    var cgroup = cgroups.get(cgroup_id)
-//                                }
-//                                // Example of how to query by one attribute
-//                                congs_by_name = new model.CongsByName
-//                                congs_by_name.db.keys = ['Caney OPC']
-//                                congs_by_name.fetch({success:function(col, res){
-//                                    var caney_opc = col.at(0)
-//                                }})
-//                            }})
-//                        }})
-//                    })
-//                }})
-//            }})
-//        }
-//    })
-
-//  -------------------------------------------------------------------
 
         // Create main application
         var App = Backbone.Router.extend({
@@ -83,7 +20,8 @@ define(
                 //this.find_a_church_view.render()
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
                 this.import_directory_view.render()
-                // TODO: Move tests into a View that displays in a suitable location on the page
+                // TODO: Move tests into a View that displays in a suitable location on the page,
+                //  and run them only if config.run_jasmine_tests == true
                 $("#account").couchLogin({});
             },
             // Set up URLs here

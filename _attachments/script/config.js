@@ -1,14 +1,27 @@
 define(
    [
+    'lib/underscore'
     ], 
     function(){
        // TODO: Dynamically get the database name
        var db_name = 'rcl',
-           db = $.couch.db(db_name);
+           db = $.couch.db(db_name),
+           run_jasmine_tests = true;
+
+       // Enables Mustache.js-like templating.
+       _.templateSettings = {
+         interpolate : /\{\{(.+?)\}\}/g
+       };
+       
+       function render_to_id(obj, id){
+           var template = _.template( $(id).html(), {} );
+           $(obj.el).html( template );
+       }
 
        return {
            db_name:db_name,
-           db:db
+           db:db,
+           render_to_id:render_to_id
        }
     }
 )
