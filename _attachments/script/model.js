@@ -1,3 +1,58 @@
+//  -------------------------------------------------------------------
+
+//    // Example of how to save a many-to-many relation to the database
+//    // Create CGroup model
+//    cgroups = new model.CGroups
+//    OPC = cgroups.create({
+//        name:'Orthodox Presbyterian Church',
+//        abbreviation:'OPC'
+//    })
+//    // Instantiate group of congs
+//    congs = new model.Congs
+//    // Instantiate first congregation model
+//    // TODO: Should this be global or not?
+//    cong1 = congs.create({
+//        name:'Caney OPC',
+//        mailing_state:'KS'
+//    },{
+//        success:function(){
+//            // Instantiate second congregation model
+//            cong2 = congs.create({
+//                name:'Bartlesville OPC',
+//                mailing_state:'OK'
+//            },{success:function(){
+//                // Add congregations to cgroup
+//                OPC.get('congregations').add([{_id:cong1.get('_id')},{_id:cong2.get('_id')}])
+//                // Save cgroup to db
+//                OPC.save({_id:OPC.get('_id')},{success:function(){
+//                    $.each([cong1,cong2], function(key, cong){
+//                        cong.get('cgroups').add({_id:OPC.get('_id')})
+//                        cong.save({},{success:function(){
+//                            // Example of how to fetch many-to-many relations from the db
+//                            // Fetch the cong so as to populate its relations in the browser
+//                            cong.fetch({success:function(){
+//                                // Example of how to query for related CGroups
+//                                var cong_cgroups = cong.get('cgroups')
+//                                for (var i=0; i<cong_cgroups.length; i++){
+//                                    var cgroup_id = cong_cgroups.at(i).get('_id')
+//                                    var cgroup = cgroups.get(cgroup_id)
+//                                }
+//                                // Example of how to query by one attribute
+//                                congs_by_name = new model.CongsByName
+//                                congs_by_name.db.keys = ['Caney OPC']
+//                                congs_by_name.fetch({success:function(col, res){
+//                                    var caney_opc = col.at(0)
+//                                }})
+//                            }})
+//                        }})
+//                    })
+//                }})
+//            }})
+//        }
+//    })
+
+//  -------------------------------------------------------------------
+
 // Standard AMD RequireJS define
 define([
         'config',
@@ -335,6 +390,20 @@ define([
     })
     // Define collections for querying the database
     
+    // Define convenience functions
+    
+    function get_one(collection, keys, options) {
+        var coll = new collection
+        coll.db.keys = keys
+        coll.fetch({success:function(col, res){
+            var coll = col.at(0)
+            if (typeof(options.success) !== 'undefined'){
+                options.success(coll)
+            }
+        }
+        })
+    }
+    
     return {
         // link object models
         CGroup_Cong: CGroup_Cong,
@@ -359,6 +428,8 @@ define([
         DirectoriesByURL:DirectoriesByURL,
         People:People,
         Offices:Offices,
-        Roles:Roles
+        Roles:Roles,
+        // Convenience functions
+        get_one:get_one
     }
 })
