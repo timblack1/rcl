@@ -16,12 +16,14 @@ define(
                 // This renders the default view for the app
                 // TODO:  If the page loaded from a different view's URL, load that view instead
                 //    Maybe we can handle that in the router below.
+                //  load-correct-view-from-url-on-first-load
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 //this.find_a_church_view.render()
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
                 this.import_directory_view.render()
                 // TODO: Move tests into a View that displays in a suitable location on the page,
                 //  and run them only if config.run_jasmine_tests == true
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/put-tests-in-backbone-view
                 $("#account").couchLogin({});
             },
             // Set up URLs here
@@ -45,6 +47,7 @@ define(
                 //    Con:  Preserving the rendered view's state is not what most users expect.
                 //    Pro:  It might be what most users want
                 //    So, do we want to preserve this view's state?
+                //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-hide-or-destroy-views
                 this.find_a_church_view.render()
             },
             import_directory:function(){
@@ -63,6 +66,7 @@ define(
         // TODO: When I create a vhosts entry for /rcl2 and rewrites.json, then go to 
         //  http://localhost:5984/rcl2/find_a_church, it returns:
         //  {"error":"not_found","reason":"Document is missing attachment"}
+        //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/example-of-vhosts-not-working-yet
         $(document).on("click", "a[href^='/']", function(event){
             var href = $(event.currentTarget).attr('href')
             // chain 'or's for other black list routes

@@ -35,6 +35,7 @@ describe("Reformed Churches Locator", function() {
                     // TODO: Maybe this is failing because it doesn't wait until after the AJAX call
                     //  completes to run the expect() function below.  So try using a Jasmine
                     //  waitsFor() call.
+                    //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/use-jasmine-waitsfor-in-tests
                     // TODO: Check to see if the AJAX call returned here
                 }, "Get URL contents never completed", 1000)
                 runs(function(){
@@ -47,27 +48,22 @@ describe("Reformed Churches Locator", function() {
 
 });
 
+// General test-runner code
 (function() {
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.updateInterval = 1000;
-
     var htmlReporter = new jasmine.HtmlReporter();
-
     jasmineEnv.addReporter(htmlReporter);
-
     jasmineEnv.specFilter = function(spec) {
         return htmlReporter.specFilter(spec);
     };
-
     var currentWindowOnload = window.onload;
-
     window.onload = function() {
         if (currentWindowOnload) {
             currentWindowOnload();
         }
         execJasmine();
     };
-
     function execJasmine() {
         jasmineEnv.execute();
         // Move Jasmine's symbolSummary to top of page to make it easy to see if 
@@ -75,5 +71,4 @@ describe("Reformed Churches Locator", function() {
         $('body').prepend('<div id="HTMLReporter" class="jasmine_reporter"><div class="banner"></div></div>')
         $('.banner').first().prepend($('.symbolSummary'))
     }
-
 })();

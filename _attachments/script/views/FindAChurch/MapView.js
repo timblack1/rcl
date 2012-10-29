@@ -9,6 +9,7 @@ define([
             this.render();
 
             // TODO: Migrate the code below into Backbone events
+            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/migrate-map-events-into-backbone-events
 
             // Attach events to search_the_map form elements
             $('#search').click(function() {
@@ -31,6 +32,7 @@ define([
             var map;
             geocoder = new google.maps.Geocoder();
             // TODO: Center the map on the viewer's country
+            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/center-map-on-viewers-country
             var latlng = new google.maps.LatLng(-34.397, 150.644);
             var myOptions = {
                              zoom: 8,

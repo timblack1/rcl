@@ -9,6 +9,7 @@ define(
             db = config.db
             this.render();
             // TODO: Get the menu item that is selected
+            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/get-selected-menu-item
             var path = unescape(document.location.pathname).split('/')
             var filename = path[path.length-1]
             // Add the "active" class to the menu item the user clicked
