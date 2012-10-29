@@ -31,7 +31,15 @@ describe("Reformed Churches Locator", function() {
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 $('#url').val('http://opc.org/locator.html')
-                expect($('#directory_type').is(':visible')).toBe(true)
+                waitsFor(function(){
+                    // TODO: Maybe this is failing because it doesn't wait until after the AJAX call
+                    //  completes to run the expect() function below.  So try using a Jasmine
+                    //  waitsFor() call.
+                    // TODO: Check to see if the AJAX call returned here
+                }, "Get URL contents never completed", 1000)
+                runs(function(){
+                    expect($('#directory_type').is(':visible')).toBe(true)
+                }
             })
         })
 
