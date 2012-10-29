@@ -39,7 +39,7 @@ describe("Reformed Churches Locator", function() {
                 }, "Get URL contents never completed", 1000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
-                }
+                })
             })
         })
 
