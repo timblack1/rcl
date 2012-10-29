@@ -31,6 +31,7 @@ define(
             //    Maybe in this.initialize we can dynamically get ddoc.rewrites, iterate through it, 
             //    and dynamically create this.routes in the correct data format, 
             //    which is {'url':'function_name',...}.
+            //    (misunderstood_url)
             routes: {
                 "index.html":                 "index.html",
                 "find_a_church":                 "find_a_church",
