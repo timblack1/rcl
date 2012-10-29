@@ -19,6 +19,7 @@ define(
         },
         events: {
             "click input[type=button]": "doSearch",
+            "click #delete_all_docs" : "delete_all_docs",
             "click #delete_all_opc_cgroups" : "delete_all_opc_cgroups",
             "click #delete_all_directories" : "delete_all_directories",
             "click #delete_all_caney_opc" : "delete_all_caney_opc",
@@ -28,6 +29,22 @@ define(
         doSearch: function( event ){
             // Button clicked, you can access the element that was clicked with event.currentTarget
             alert( "Search for " + $("#search_input").val() );
+        },
+        delete_all_docs:function(){
+            // Delete all docs except design doc
+            // Get all docs
+            db.view('rcl/byCollection',{
+                success:function(data){
+                    var docs = []
+                    for (var i=0;i<data.rows.length;i++){
+                        docs.push({
+                            _id:data.rows[i].id,
+                            _rev:data.rows[i].value._rev
+                        })
+                    }
+                    db.bulkRemove({docs:docs}, {})
+                }
+            })
         },
         delete_all_directories:function(){
             // Delete all directories
@@ -41,11 +58,7 @@ define(
                             _rev:data.rows[i].value
                         })
                     }
-                    db.bulkRemove({docs:docs}, {
-                        success:function(data){
-                            //console.log(data)
-                        }
-                    })
+                    db.bulkRemove({docs:docs}, {})
                 }
             })
         },
@@ -63,11 +76,7 @@ define(
                             _rev:data.rows[i].value
                         })
                     }
-                    db.bulkRemove({docs:docs}, {
-                        success:function(data){
-                            //console.log(data)
-                        }
-                    })
+                    db.bulkRemove({docs:docs}, {})
                 }
             })
         },
@@ -84,11 +93,7 @@ define(
                             _rev:data.rows[i].value
                         })
                     }
-                    db.bulkRemove({docs:docs}, {
-                        success:function(data){
-                            //console.log(data)
-                        }
-                    })
+                    db.bulkRemove({docs:docs}, {})
                 }
             })
         },
@@ -105,11 +110,7 @@ define(
                             _rev:data.rows[i].value
                         })
                     }
-                    db.bulkRemove({docs:docs}, {
-                        success:function(data){
-                            //console.log(data)
-                        }
-                    })
+                    db.bulkRemove({docs:docs}, {})
                 }
             })
         }
