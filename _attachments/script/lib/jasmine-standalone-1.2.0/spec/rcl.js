@@ -27,6 +27,13 @@ describe("Reformed Churches Locator", function() {
             expect(content).toMatch('downloading')
             expect(content).not.toMatch('"error":"not_found"')
         });
+        
+        describe('url field', function(){
+            it('should display step 2 when a valid URL is entered', function(){
+                $('#url').val('http://opc.org/locator.html')
+                expect($('#directory_type').is(':visible')).toBe(true)
+            })
+        })
 
     });
 
