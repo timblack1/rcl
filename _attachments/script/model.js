@@ -155,6 +155,13 @@ define([
         model:CGroup,
         url:'/cgroups'
     })
+    CGroupsByAbbrOrName = Backbone.Collection.extend({
+        model:CGroup,
+        url:'/cgroups',
+        db:{
+            view: 'cgroups_by_abbreviation_or_name'
+        }
+    })
     Cong = Backbone.RelationalModel.extend({
       urlRoot:'/cong',
       collection:'Congs',
@@ -396,12 +403,43 @@ define([
         var coll = new collection
         coll.db.keys = keys
         coll.fetch({success:function(col, res){
-            var coll = col.at(0)
+            var model = col.at(0)
             if (typeof(options.success) !== 'undefined'){
-                options.success(coll)
+                options.success(model)
             }
         }
         })
+    }
+    function create_one(collection, attrs_obj, options){
+        var coll = new collection
+        var model = coll.create(attrs_obj, {success:function(model){
+            if (typeof(options.success) !== 'undefined'){
+                options.success(model)
+            }
+        }})
+    }
+    function get_or_create_one(coll, search_keys, attrs, options){
+        get_one(coll, 
+              search_keys,
+              {success:function(doc){
+                  if (typeof(doc) === 'undefined'){
+                      // The doc didn't exist in the db, so create it
+                      create_one(coll,
+                               attrs,
+                               {success:function(doc){
+                                   if (typeof(options.success) !== 'undefined'){
+                                       options.success(doc)
+                                   }
+                               }}
+                      )
+                  }else{
+                      // The doc did exist in the db, so use it
+                      if (typeof(options.success) !== 'undefined'){
+                          options.success(doc)
+                      }
+                  }
+              }}
+        )
     }
     
     return {
@@ -422,6 +460,7 @@ define([
         Role: Role,
         // collections
         CGroups:CGroups,
+        CGroupsByAbbrOrName:CGroupsByAbbrOrName,
         Congs:Congs,
         CongsByName: CongsByName,
         Directories:Directories,
@@ -430,6 +469,8 @@ define([
         Offices:Offices,
         Roles:Roles,
         // Convenience functions
-        get_one:get_one
+        get_one:get_one,
+        create_one:create_one,
+        get_or_create_one:get_or_create_one
     }
 })

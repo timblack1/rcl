@@ -26,7 +26,7 @@ process.on('message', function(doc){
 
 	// Watch for requests to get the contents of a URL for a church directory
 	// TODO: Check to see if the URL is valid
-	if (doc.type == 'directory' && doc.get_url_contents==true && doc.url){
+	if (doc.collection == 'directory' && doc.get_url_contents==true && doc.url){
 		// E.g., when a user enters "opc.org/locator.html" into the church directory configuration page,
 		// 	then go get the contents of that URL.
 		http.get(doc.url, function(res){
@@ -37,9 +37,9 @@ process.on('message', function(doc){
 			res.on('end', function(){
 				// TODO: Check to see if we got a 404 response
 				// Write the contents of the html variable back to the database
-				console.log(doc._rev)
 				doc.url_html = pageData
 				doc.get_url_contents = false
+		        // TODO: Use Backbone here instead of cradle
 				db.save(doc._id, doc._rev, doc, function(err, res){
 					// TODO: Do anything more that needs to be done here
 				});
