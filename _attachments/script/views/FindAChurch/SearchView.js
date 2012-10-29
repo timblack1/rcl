@@ -14,6 +14,7 @@ define([
         events: {
             // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
             //  but no luck so far. 
+            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/searchview-search-onkeyup
             "click #search": "doSearch"
         },
         doSearch: function( event ){
@@ -51,6 +52,7 @@ define([
                     // Send AJAX call to controller method containing bounds within which congregations are found
                     // So we can search like this:  cong_lat > south_lat and cong_lat < north_lat and cong_lng > west_lng and cong_lng < east_lng
                     // TODO: Create code to get congs in bounds
+                    //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/get-congs-in-bounds
                     $.ajax({
                         url: "/cong/getcongsinbounds",
                         data: {
@@ -61,6 +63,7 @@ define([
                         },
                         success: function(data){
                             // TODO: Rewrite this to use the data format returned from couchdb
+                            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/getcongsinbounds-use-couchdb-data-format
                             var congs = data['congs'];
                             if (congs.length > 0){
                                 // Plot the congregations returned on the map
@@ -73,6 +76,7 @@ define([
                                 // TODO: Use a template rather than constructing HTML here,
                                 //    and wrap the display in a self-updating Backbone view,
                                 //    which should render this .remove() call unnecessary
+                                //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-list-in-backbone-template
                                 // Remove existing table rows that contain congregation data (don't remove the header row)
                                 $("#congregation_list tbody tr").remove();
 
@@ -89,6 +93,7 @@ define([
 
                                     // TODO: Figure out what address formats we need to parse before sending address to Google.
                                     // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
+                                    //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
                                     // Name:    Caney OPC
                                     // Add1:    CVHS Gym
                                     // Add2:    300 A St <-- We need this, not addr1
@@ -144,6 +149,7 @@ define([
                                     });
 
                                     //TODO: Add congregation info to the table below the map.
+                                    // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                     // Construct the table rows that we're going to append to the table
 
                                     var msg="<tr>" +

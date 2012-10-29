@@ -73,6 +73,7 @@ define(
                                       }
                                       $("#url_result_div").innerHTML = dir.get('pagetype');
                                       // TODO: Is this the right place to save the dir?
+                                      //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
                                       //dir.save({_id:dir.get('_id')})
                                     }
                                 }})
@@ -95,6 +96,7 @@ define(
                         //  - I put it into model.get_or_create_one()
                         // TODO: But in this case, the callback takes two arguments.  How can 
                         //  we handle different numbers of callback arguments?
+                        // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/make-getorcreateone-handle-multiple-callback-args
                         model.get_one(model.CGroupsByAbbrOrName, 
                               [cgroup_name,abbr],
                               {success:function(cgroup){
@@ -131,6 +133,7 @@ define(
                             //  Maybe mark the dir's URL as invalid in the node.js script, and/or
                             //  just delete the dir from node.js.
                             // TODO: Provide a list of similar URLs in an autocompleter
+                            https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                             model.create_one(model.Directories,
                                              {
                                                  url:$('#url').val(),
@@ -142,6 +145,7 @@ define(
                                                  //     directory's cgroup to help the user
                                                  // TODO: Maybe only display those fields after 
                                                  //     the URL is filled in
+                                                 //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                                                  get_cgroup(dir)
                                              }}
                             )
@@ -158,6 +162,7 @@ define(
                 }
                 
                 // TODO: Is this code needed anymore?
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/remove-cgroup-by-abbreviation-code
 //                var cgroup = ''
 //                // Query database by cgroup.abbreviation
 //                // TODO: Turn this into a view in model.cgroup
@@ -208,7 +213,9 @@ define(
                     // Show the one page divs
                     $("#state_page").hide(1000);
                     // TODO: If "One Page" is selected, then show page containing list of all congs.
+                    // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/show-one-page-directory
                     // TODO: For some reason, the global dir object is not avaiable in this scope
+                    // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/get-global-dir-object-in-scope
                     dir.set('display_type', type)
                 }
                 //  If "One state per page" is selected, then drop down box showing state options.
@@ -231,6 +238,7 @@ define(
                 // So, I think we need a regular expression editor here.
                 // TODO: Get the select box via a user's click, and record its xpath so it can be found later.
                 // TODO: Get the user to confirm that this select box is found by that xpath
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
                 // TODO: Disable the select box immediately after the user clicks on it, so they can't 
                 //          click on one of its options and fire a page load event.
                 var el = $(this),
@@ -244,6 +252,7 @@ define(
                 // Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
                 // TODO: But, this URL only works for the OPC site, so we'll have to generalize this code
                 //          to work for other sites too.
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/generalize-state-page-url-creation
                 // TODO: Maybe the way to do that is to ask the user to confirm or enter what the URL is
                 //          for an example state page ("To what URL does this link normally lead? 
                 //          <input type='text' />")

@@ -4,6 +4,7 @@ define(
     ], 
     function(){
        // TODO: Dynamically get the database name
+       //   https://blueprints.launchpad.net/reformedchurcheslocator/+spec/dynamically-get-db-name
        var db_name = 'rcl',
            db = $.couch.db(db_name),
            run_jasmine_tests = true;
