@@ -40,16 +40,16 @@ define(
                             // Determine if the changed document is the one we are editing 
                             var change_id = change.results[0].id
                             var rev = change.results[0].changes[0].rev
-                            // TODO: Only fetch the new contents if the _rev has been updated;
+                            // Only fetch the new contents if the _rev has been updated;
                             //  otherwise we create an infinite loop
-                            console.log(rev, dir.get('_rev'))
                             if (change_id == dir.get('_id') && rev != dir.get('_rev')){
-                                console.log('new rev')
                                 // Fetch document's new contents from db
                                 // TODO: Why doesn't backbone-couchdb automatically update the
                                 //  model object for me?
+                                // Start here
+                                // TODO: Somehow I need to report this change to (or notice
+                                //  this change from) the Jasmine unit tests from here
                                 dir.fetch({success:function(model,response){
-                                    // Start here
                                     var html = dir.get('url_html')
                                     //console.log(html)
                                     if (html){
