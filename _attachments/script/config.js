@@ -22,8 +22,7 @@ define(
        return {
            db_name:db_name,
            db:db,
-           render_to_id:render_to_id,
-           run_jasmine_tests:run_jasmine_tests
+           render_to_id:render_to_id
        }
     }
 )

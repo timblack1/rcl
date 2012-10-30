@@ -2,15 +2,13 @@ define(
    [
             'views/MenuView',
             'views/ImportDirectoryView',
-            'views/FindAChurch/main',
-            'views/RunTestsView'
+            'views/FindAChurch/main'
     ], 
-    function(MenuView,ImportDirectoryView,FindAChurchView,RunTestsView){
+    function(MenuView,ImportDirectoryView,FindAChurchView){
        return {
            MenuView:MenuView,
            ImportDirectoryView:ImportDirectoryView,
-           FindAChurchView:FindAChurchView,
-           RunTestsView:RunTestsView
+           FindAChurchView:FindAChurchView
        }
     }
 )
