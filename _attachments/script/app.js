@@ -23,6 +23,11 @@ define(
                 this.import_directory_view.render()
                 // TODO: Move tests into a View that displays in a suitable location on the page,
                 //  and run them only if config.run_jasmine_tests == true
+                if (config.run_jasmine_tests == true) {
+                	//TODO: Run test here
+                	this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
+                    this.run_tests_view.render()
+                }
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/put-tests-in-backbone-view
                 $("#account").couchLogin({});
             },
