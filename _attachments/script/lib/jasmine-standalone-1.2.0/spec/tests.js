@@ -1,12 +1,10 @@
 describe("Reformed Churches Locator", function() {
-    var home = 'index.html'
 
-        afterEach(function() {
-            // Returns the page to display the home page as it should
-            //app.navigate('find_a_church', {trigger:true})
-            app.navigate('import_directory', {trigger:true})
-            app.navigate(home, {trigger:true})
-        });
+    afterEach(function() {
+        // Returns the page to display the home page as it should
+        app.navigate(config.test_home_page, {trigger:true})
+        app.navigate(config.test_home_address, {trigger:true})
+    });
 
     describe("'Find a church' page", function() {
 
@@ -30,14 +28,16 @@ describe("Reformed Churches Locator", function() {
         
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
-                $('#url').val('http://opc.org/locator.html')
+                runs(function(){
+                    $('#url').val('http://opc.org/locator.html')
+                    $('#url').keyup()
+                })                
                 waitsFor(function(){
-                    // TODO: Maybe this is failing because it doesn't wait until after the AJAX call
-                    //  completes to run the expect() function below.  So try using a Jasmine
-                    //  waitsFor() call.
+                    // TODO: See if we can get the test to wait until the AJAX call completes
                     //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/use-jasmine-waitsfor-in-tests
-                    // TODO: Check to see if the AJAX call returned here
-                }, "Get URL contents never completed", 1000)
+                    // Check to see if the AJAX call returned here
+                    return app.status.got_url_html
+                }, "Get URL HTML", 2000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                 })

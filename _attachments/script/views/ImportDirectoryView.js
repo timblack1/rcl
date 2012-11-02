@@ -46,12 +46,15 @@ define(
                                 // Fetch document's new contents from db
                                 // TODO: Why doesn't backbone-couchdb automatically update the
                                 //  model object for me?
-                                // Start here
-                                // TODO: Somehow I need to report this change to (or notice
-                                //  this change from) the Jasmine unit tests from here
                                 dir.fetch({success:function(model,response){
+                                    // Start here
+                                    // TODO: We've gotten the URL's HTML now.  Somehow I need to 
+                                    //  report this event to (or detect it from) the Jasmine 
+                                    //  unit tests.
+                                    // TODO: Why doesn't this get to the console?
+                                    app.status.got_url_html = true
+                                    console.log(app.status, app.status.got_url_html,'test')
                                     var html = dir.get('url_html')
-                                    //console.log(html)
                                     if (html){
                                       // In the controller & output to form, handle whether this is an RSS feed or an HTML page
                                       // Determine whether url_html contains HTML or RSS
@@ -85,7 +88,7 @@ define(
                 function get_cgroup(dir){
                     // Make the dir available globally so it can be reused if the user causes
                     //  this function to be invoked again
-                    dir = dir
+                    window.dir = dir
                     var cgroup_name = $('#cgroup_name').val()
                     var abbr = $('#abbreviation').val()
                     // Don't do anything if the CGroup info isn't entered yet
@@ -133,7 +136,7 @@ define(
                             //  Maybe mark the dir's URL as invalid in the node.js script, and/or
                             //  just delete the dir from node.js.
                             // TODO: Provide a list of similar URLs in an autocompleter
-                            https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
+                            // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                             model.create_one(model.Directories,
                                              {
                                                  url:$('#url').val(),

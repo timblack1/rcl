@@ -9,22 +9,28 @@ define(
     ], 
     function(config, model, views){
 
-        // Create main application
+       // Make model, config global so they're available in tests
+       window.model = model
+       window.config = config
+       
+       // Create main application
         var App = Backbone.Router.extend({
             initialize : function(){
+                // Create global status message object
+                this.status = {}
+                // TODO: Move tests into a View that displays in a suitable location on the page,
+                //  and run them only if config.run_jasmine_tests == true
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/put-tests-in-backbone-view
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
+                this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
+                this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
+                $("#account").couchLogin({});
                 // This renders the default view for the app
                 // TODO:  If the page loaded from a different view's URL, load that view instead
                 //    Maybe we can handle that in the router below.
                 //  load-correct-view-from-url-on-first-load
-                this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
-                //this.find_a_church_view.render()
-                this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
-                this.import_directory_view.render()
-                // TODO: Move tests into a View that displays in a suitable location on the page,
-                //  and run them only if config.run_jasmine_tests == true
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/put-tests-in-backbone-view
-                $("#account").couchLogin({});
+                this.default_view = this[config.default_view]
+                this.default_view.render()
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
@@ -55,7 +61,7 @@ define(
             }
         });
         // Instantiate App
-        app = new App
+        window.app = new App
         // Create SEF URLs and handle clicks
         Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
         // Globally capture clicks. If they are internal and not in the pass 

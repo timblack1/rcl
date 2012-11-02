@@ -398,7 +398,8 @@ define([
     // Define collections for querying the database
     
     // Define convenience functions
-    
+    // TODO: Put these convenience functions into a base class/object that can be used as a mixin
+    //  in the objects above.
     function get_one(collection, keys, options) {
         var coll = new collection
         coll.db.keys = keys
