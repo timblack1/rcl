@@ -173,6 +173,15 @@
 			<li><a href="#" id="delete_all_caney_opc">Caney OPC</a></li>
 			<li><a href="#" id="delete_all_opc_data">OPC data</a></li>
 		</script>
+		
+		<script type="text/template" id="test_template">
+				<!-- Jasmine unit testing files -->
+			    <script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.js"></script2>
+			    <script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine-html.js"></script2>
+			    
+			    <!-- include test spec files here... -->
+    			<script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/spec/tests.js"></script2>
+		</script>
 
 		<script type="text/template" id="search_template">
 
@@ -229,6 +238,10 @@
 
 		</script>
 
+     <div id="tests"></div>
+     
+     
+
 	</body>
 
 	<!--  Couchapp JavaScript files -->
@@ -260,13 +273,4 @@
 	<script data-main="script/main" src="script/require.js"></script>
 	<script src="script/app.js"></script>
 	
-	<!-- Jasmine unit testing files -->
-    <link rel="stylesheet" type="text/css" href="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.css">
-    <script type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.js"></script>
-    <script type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine-html.js"></script>
-    
-    <!-- include test spec files here... -->
-    <script type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/spec/tests.js"></script>
-
-
 </html>
