@@ -30,13 +30,18 @@ describe("Reformed Churches Locator", function() {
             it('should display step 2 when a valid URL is entered', function(){
                 runs(function(){
                     $('#url').val('http://opc.org/locator.html')
-                    $('#url').keyup()
+                    $('#url').focus().keyup()
+//                    var press = $.Event('keypress')
+//                    press.ctrlKey = false
+//                    press.which = 37
+//                    $('#url').trigger(press)
                 })                
                 waitsFor(function(){
                     // TODO: See if we can get the test to wait until the AJAX call completes
                     //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/use-jasmine-waitsfor-in-tests
                     // Check to see if the AJAX call returned here
-                    return app.status.got_url_html
+                    console.log(window.app.status.got_url_html)
+                    return window.app.status.got_url_html
                 }, "Get URL HTML", 2000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
