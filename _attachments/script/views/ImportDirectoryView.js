@@ -46,6 +46,7 @@ define(
                                 // Fetch document's new contents from db
                                 // TODO: Why doesn't backbone-couchdb automatically update the
                                 //  model object for me?
+                            	console.log(dir);
                                 dir.fetch({success:function(model,response){
                                     // Start here
                                     // TODO: We've gotten the URL's HTML now.  Somehow I need to 
