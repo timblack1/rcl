@@ -32,60 +32,61 @@ define(
                     cgroup.get('directories').add([{_id:dir.get('_id')}])
                     // Save cgroup to db
                     // TODO: Does the relation appear on the dir in the db also?
-                    cgroup.save({_id:cgroup.get('_id')},{success:function(){
-                        // Monitor and handle a response from the Node app?
-                        // Watch for Node changes listener's response
-                        var changes = db.changes();
-                        changes.onChange(function(change){
-                            // Determine if the changed document is the one we are editing 
-                            var change_id = change.results[0].id
-                            var rev = change.results[0].changes[0].rev
-                            // Only fetch the new contents if the _rev has been updated;
-                            //  otherwise we create an infinite loop
-                            if (change_id == dir.get('_id') && rev != dir.get('_rev')){
-                                // Fetch document's new contents from db
-                                // TODO: Why doesn't backbone-couchdb automatically update the
-                                //  model object for me?
-                            	console.log(dir);
-                                dir.fetch({success:function(model,response){
-                                    // Start here
-                                    // TODO: We've gotten the URL's HTML now.  Somehow I need to 
-                                    //  report this event to (or detect it from) the Jasmine 
-                                    //  unit tests.
-                                    // TODO: Why doesn't this get to the console in the tests?
-                                    window.app.status.got_url_html = true
-                                    console.log(window.app.status, window.app.status.got_url_html,'test')
-                                    var html = dir.get('url_html')
-                                    if (html){
-                                      // In the controller & output to form, handle whether this is an RSS feed or an HTML page
-                                      // Determine whether url_html contains HTML or RSS
-                                      if (html.indexOf("</html>") > -1){
-                                          console.log('we have html')
-                                          $("#directory_type").show(1000);
-                                          $("#rss_feed").hide(1000);
-                                          dir.set('pagetype', 'html')
-                                      }
-                                      else if (html.indexOf("</rss>") > -1){
-                                          // TODO: Display the right form controls for an RSS page
-                                          $("#directory_type").hide(1000);
-                                          $("#rss_feed").show(1000);
-                                          dir.set('pagetype', 'rss')
-                                      }
-                                      else { // We got an error code
-                                          // Hide the form controls.
-                                          elem.trigger('hide_subform');
-                                      }
-                                      $("#url_result_div").innerHTML = dir.get('pagetype');
-                                      // TODO: Is this the right place to save the dir?
-                                      //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                                      //dir.save({_id:dir.get('_id')})
-                                      setTimeout(function(){
-                                          window.app.status.got_url_html = false
-                                      }, 3000)
-                                    }
-                                }})
-                            }
-                        })
+                    cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')},{success:function(){
+                        // Prevent 409 conflict error when local rev doesn't match server's
+                        cgroup.fetch({success:function(){
+                            // Monitor and handle a response from the Node app?
+                            // Watch for Node changes listener's response
+                            var changes = db.changes();
+                            changes.onChange(function(change){
+                                // Determine if the changed document is the one we are editing 
+                                var change_id = change.results[0].id
+                                var rev = change.results[0].changes[0].rev
+                                // Only fetch the new contents if the _rev has been updated;
+                                //  otherwise we create an infinite loop
+                                if (change_id == dir.get('_id') && rev != dir.get('_rev')){
+                                    // Fetch document's new contents from db
+                                    // TODO: Why doesn't backbone-couchdb automatically update the
+                                    //  model object for me?
+                                    dir.fetch({success:function(model,response){
+                                        // Start here
+                                        // TODO: We've gotten the URL's HTML now.  Somehow I need to 
+                                        //  report this event to (or detect it from) the Jasmine 
+                                        //  unit tests.
+                                        // TODO: Why doesn't this get to the console in the tests?
+                                        window.app.status.got_url_html = true
+                                        var html = dir.get('url_html')
+                                        if (html){
+                                          // In the controller & output to form, handle whether this is an RSS feed or an HTML page
+                                          // Determine whether url_html contains HTML or RSS
+                                          if (html.indexOf("</html>") > -1){
+                                              console.log('we have html')
+                                              $("#directory_type").show(1000);
+                                              $("#rss_feed").hide(1000);
+                                              dir.set('pagetype', 'html')
+                                          }
+                                          else if (html.indexOf("</rss>") > -1){
+                                              // TODO: Display the right form controls for an RSS page
+                                              $("#directory_type").hide(1000);
+                                              $("#rss_feed").show(1000);
+                                              dir.set('pagetype', 'rss')
+                                          }
+                                          else { // We got an error code
+                                              // Hide the form controls.
+                                              elem.trigger('hide_subform');
+                                          }
+                                          $("#url_result_div").innerHTML = dir.get('pagetype');
+                                          // TODO: Is this the right place to save the dir?
+                                          //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
+                                          //dir.save({_id:dir.get('_id')})
+                                          setTimeout(function(){
+                                              window.app.status.got_url_html = false
+                                          }, 3000)
+                                        }
+                                    }})
+                                }
+                            })                            
+                        }})
                     }})
                 }
                 
@@ -234,7 +235,7 @@ define(
                     dir.set('display_type', type)
                     // Populate state_drop_down_selector div with contents of church directory page, 
                     //  maybe in a scrollable div
-                    $('#state_drop_down_selector').html(dir.url_html);
+                    $('#state_drop_down_selector').html(dir.get('url_html'));
                     // We bind the event here because the select element didn't exist at this Evently widget's 
                     //  initialization
                     $('#state_drop_down_selector select').mousedown(function(){elem.trigger('show_state_page')})
@@ -250,14 +251,22 @@ define(
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
                 // TODO: Disable the select box immediately after the user clicks on it, so they can't 
                 //          click on one of its options and fire a page load event.
+                // TODO: rewrite this to find the element that was clicked, which is also
+                //  referenced on line 241 above.  Apparently the "this" variable is not
+                //  the right one to use here.  Try to find out what variable in the local scope
+                //  refers to the element which was clicked.  If no such variable is available,
+                //  then you'll need to create that variable in the function body on line
+                //  241 above so you can reference it here.  One way to view all the variables in
+                //  the local scope is to set a breakpoint in Chrome's Developer Tools on the
+                //  next line of code here that is not a comment, then look at the "Local
+                //  Variables" pane in those tools.
                 var el = $(this),
-                db = $$(this).app.require('db').db,
                 options = $(el).children(),
                 values = [];
                 for (var i=0; i<options.length; i++){
                     values[i] = $(options[i]).val();
                 }
-                dir.state_page_values = values;
+                dir.set('state_page_values', values)
                 // Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
                 // TODO: But, this URL only works for the OPC site, so we'll have to generalize this code
                 //          to work for other sites too.
@@ -271,15 +280,21 @@ define(
                 //          provides a value.
                 // Get only the first state name for now
                 for (var i=0; i<values.length; i++){
+                    // TODO: It appears this line is not even being called.  Why not?  I think
+                    //  it's because line 255 is written incorrectly
+                    console.log(values[i])
                     if (values[i] !== ""){
                         var state_name = values[i];
                         break;
                     }
                 }
-                dir.state_url = 'http://opc.org/locator.html?state=' + state_name + '&search_go=Y'
-                db.saveDoc(dir, {
-                    success:function(msg){
+                dir.set('state_url','http://opc.org/locator.html?state=' + state_name + '&search_go=Y')
+                // TODO: Rewrite this to use Backbone objects
+                console.log('on line 281')
+                console.log(dir)
+                dir.save({success:function(model, response, options){
                         // Display the contents of the state page
+                        console.log('line 286')
                         db.openDoc(msg.id, {
                             success:function(doc){
                                 // Hide divs we don't need now
