@@ -4,7 +4,6 @@ define(
     'config',
     'model', 
     'views/view_loader',
-    'async!https://maps.googleapis.com/maps/api/js?sensor=false',
     'lib/jquery.couchLogin'
     ], 
     function(config, model, views){
@@ -18,9 +17,11 @@ define(
             initialize : function(){
                 // Create global status message object
                 this.status = {}
-                // TODO: Move tests into a View that displays in a suitable location on the page,
-                //  and run them only if config.run_jasmine_tests == true
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/put-tests-in-backbone-view
+                // Run tests only if config.run_jasmine_tests == true
+                if (config.run_jasmine_tests == true) {
+                    $('head').append('<link rel="stylesheet" href="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.css" type="text/css" />')
+                    this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
+                }
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
@@ -40,6 +41,7 @@ define(
             //    and dynamically create this.routes in the correct data format, 
             //    which is {'url':'function_name',...}.
             //    (misunderstood_url)
+            
             routes: {
                 "index.html":                 "index.html",
                 "find_a_church":                 "find_a_church",
@@ -81,7 +83,7 @@ define(
             if (!passThrough && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey){
                 event.preventDefault()
                 // Instruct Backbone to trigger routing events
-                app.navigate(href, { trigger: false })
+                app.navigate(href, { trigger: true })
                 return false
             }
         })

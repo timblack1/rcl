@@ -33,6 +33,7 @@ define(
            db_name:db_name,
            db:db,
            render_to_id:render_to_id,
+           run_jasmine_tests:run_jasmine_tests,
            test_home_page:test_home_page,
            test_home_address:test_home_address,
            default_view:default_view

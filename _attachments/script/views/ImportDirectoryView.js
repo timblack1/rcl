@@ -49,12 +49,6 @@ define(
                                     // TODO: Why doesn't backbone-couchdb automatically update the
                                     //  model object for me?
                                     dir.fetch({success:function(model,response){
-                                        // Start here
-                                        // TODO: We've gotten the URL's HTML now.  Somehow I need to 
-                                        //  report this event to (or detect it from) the Jasmine 
-                                        //  unit tests.
-                                        // TODO: Why doesn't this get to the console in the tests?
-                                        window.app.status.got_url_html = true
                                         var html = dir.get('url_html')
                                         if (html){
                                           // In the controller & output to form, handle whether this is an RSS feed or an HTML page
@@ -79,9 +73,6 @@ define(
                                           // TODO: Is this the right place to save the dir?
                                           //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
                                           //dir.save({_id:dir.get('_id')})
-                                          setTimeout(function(){
-                                              window.app.status.got_url_html = false
-                                          }, 3000)
                                         }
                                     }})
                                 }
@@ -130,8 +121,6 @@ define(
                 
                 // --------- Main code section begins here ----------
                 
-                // Record status for test purposes
-                window.app.status.got_url_html = false
                 // If we have already created a directory on this page, get it
                 if (typeof(dir) === 'undefined'){
                     // The dir hasn't been created in the browser yet

@@ -1,13 +1,13 @@
 define([
         'config',
-        'async!https://maps.googleapis.com/maps/api/js?sensor=false'
+        'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
         function(config){
-
+    
     var MapView = Backbone.View.extend({
         initialize: function(){
             this.render();
-
+            
             // TODO: Migrate the code below into Backbone events
             //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/migrate-map-events-into-backbone-events
 
