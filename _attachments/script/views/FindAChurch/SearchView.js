@@ -1,9 +1,9 @@
 define([
         'config',
-        'async!https://maps.googleapis.com/maps/api/js?sensor=false'
+        'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
         function(config){
-
+    
     var SearchView = Backbone.View.extend({
         initialize: function(){
             this.render();
@@ -13,12 +13,13 @@ define([
         },
         events: {
             // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
-            //  but no luck so far. 
+            //  but no luck so far.
             //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/searchview-search-onkeyup
             "click #search": "doSearch"
         },
         doSearch: function( event ){
             var address = document.getElementById("search_the_map").value;
+            var geocoder = new google.maps.Geocoder();
             geocoder.geocode( { 'address': address}, function(results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     // Use Circle() as a helper to avoid doing math. 
