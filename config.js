@@ -19,7 +19,7 @@ if (env=='client'){
 }else if (env=='server'){
 	var get_db = require('./lib').get_db,
 		fs = require('fs');
-	exports.port = fs.readFileSync('./port.txt', 'ascii').trim();
+	exports.port = '5984';
 	exports.auth = fs.readFileSync('./auth.txt', 'ascii').trim();
 	exports.db = get_db(exports.port);
 }
