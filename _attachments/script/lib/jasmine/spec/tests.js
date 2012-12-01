@@ -2,7 +2,6 @@ describe("Reformed Churches Locator", function() {
 
     afterEach(function() {
         // Returns the page to display the home page as it should
-        app.navigate(config.test_home_page, {trigger:true})
         app.navigate(config.test_home_address, {trigger:true})
     });
 
@@ -11,8 +10,7 @@ describe("Reformed Churches Locator", function() {
         it("should not display an error", function() {
             app.navigate('find_a_church', { trigger: true })
             var content = $('#content').html()
-            expect(content).toMatch('Congregations')
-            expect(content).not.toMatch('"error":"not_found"')
+            expect(content).toMatch('Find a church')
         });
 
     });
@@ -23,11 +21,12 @@ describe("Reformed Churches Locator", function() {
             app.navigate('import_directory', { trigger: true })
             var content = $('#content').html()
             expect(content).toMatch('downloading')
-            expect(content).not.toMatch('"error":"not_found"')
         });
         
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
+                // TODO: Because this test writes to the database, decide whether 
+                //  the tests should run in a test copy of the database.
                 runs(function(){
                     $('#url').val('http://opc.org/locator.html')
                     $('#url').focus().keyup()
@@ -36,9 +35,13 @@ describe("Reformed Churches Locator", function() {
                     // The test should wait until the AJAX call completes
                     // Check to see if the AJAX call returned here
                     return $('#directory_type').is(':visible')
-                }, "Get URL HTML", 2000)
+                }, "AJAX call to get URL HTML", 2000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
+                    // Remove the docs we just created
+                    // TODO: Improve this to only remove the docs created by this test, rather
+                    //  than all docs.
+                    $('#delete_all_docs').click()
                 })
             })
         })

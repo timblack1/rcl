@@ -16,11 +16,11 @@
         <script type="text/template" id="find_a_church_template">
             <div id="congregations">
                 <div id="account" style="float: right"></div>
-                <h2>Congregations</h2>
+                <h1>Find a church</h1>
                 <div class="ui-widget ui-widget-content ui-corner-all">
                     <div>
-                        <div id="map"></div>
                         <div id="search_container"></div>
+                        <div id="map"></div>
                         <div id="congregations_container"></div>
                     </div>
 
@@ -164,6 +164,7 @@
     			</tbody>
 			</table>
 		</script>
+		
 		<script type="text/template" id="menu_template">
 			<li class="first"><a href="/find_a_church" id="find_a_church">Find a church</a></li>
 			<li><a href="/import_directory" id="import_directory">Import a directory</a></li>
@@ -176,11 +177,10 @@
 		
 		<script type="text/template" id="test_template">
 				<!-- Jasmine unit testing files -->
-			    <script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.js"></script2>
-			    <script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine-html.js"></script2>
-			    
+			    <script2 type="text/javascript" src="script/lib/jasmine/lib/jasmine-1.3.0/jasmine.js"></script2>
+			    <script2 type="text/javascript" src="script/lib/jasmine/lib/jasmine-1.3.0/jasmine-html.js"></script2>
 			    <!-- include test spec files here... -->
-    			<script2 type="text/javascript" src="script/lib/jasmine-standalone-1.2.0/spec/tests.js"></script2>
+    			<script2 type="text/javascript" src="script/lib/jasmine/spec/tests.js"></script2>
 		</script>
 
 		<script type="text/template" id="search_template">
@@ -252,23 +252,23 @@
 	</script>
 
 	<!-- Reformed Churches Locator JavaScript files -->
-	<!-- TODO: Put these script & CSS loads into their associated widgets -->
 
 	<script src="script/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
 	<link rel="stylesheet" type="text/css" href="script/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
+
+    <!-- TODO: Put these script & CSS loads into their associated Backbone views -->
 	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/ui.css" media="all">
 	<script src="script/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
 	<script src="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
 	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
 	<script src="script/jquery.watermark/jquery.watermark.min_.js"></script>
+
 	<!-- TODO: Put this script into app.js -->
 	<!-- <script src="script/search_the_map.js"></script> -->
 	<script type="text/javascript" src="script/lib/underscore.js"></script>
 	<script type="text/javascript" src="script/lib/backbone.js"></script>
 	<script type="text/javascript" src="script/lib/backbone-relational.js"></script>
 	<script type="text/javascript" src="script/lib/backbone-couchdb.js"></script>
-	<!-- <script type="text/javascript" src="script/lib/backbone.couch.js"></script> -->
-	<!-- <script type="text/javascript" src="script/lib/backbone.couchdb.js"></script> -->
 
 	<script data-main="script/main" src="script/require.js"></script>
 	<script src="script/app.js"></script>
