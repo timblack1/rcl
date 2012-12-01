@@ -15,11 +15,9 @@ define(
        // Create main application
         var App = Backbone.Router.extend({
             initialize : function(){
-                // Create global status message object
-                this.status = {}
-                // Run tests only if config.run_jasmine_tests == true
+                // Run tests only if configured to do so
                 if (config.run_jasmine_tests == true) {
-                    $('head').append('<link rel="stylesheet" href="script/lib/jasmine-standalone-1.2.0/lib/jasmine-1.2.0/jasmine.css" type="text/css" />')
+                    $('head').append('<link rel="stylesheet" href="script/lib/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
                     this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
                 }
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
