@@ -12,9 +12,6 @@ define(
            //default_view = 'find_a_church_view',
            default_view = 'import_directory_view',
            // After running tests,
-           //   Navigate to this page:
-           test_home_page = 'import_directory',
-           //test_home_page = 'find_a_church',
            //   Display this in the address bar: (to facilitate manually refreshing the page by
            //   hitting F5)
            test_home_address = 'index.html';
@@ -34,7 +31,6 @@ define(
            db:db,
            render_to_id:render_to_id,
            run_jasmine_tests:run_jasmine_tests,
-           test_home_page:test_home_page,
            test_home_address:test_home_address,
            default_view:default_view
        }
