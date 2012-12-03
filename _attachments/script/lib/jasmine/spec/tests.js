@@ -6,23 +6,19 @@ describe("Reformed Churches Locator", function() {
     });
 
     describe("'Find a church' page", function() {
-
         it("should not display an error", function() {
             app.navigate('find_a_church', { trigger: true })
             var content = $('#content').html()
             expect(content).toMatch('Find a church')
         });
-
     });
 
     describe("'Import a directory' page", function() {
-
         it("should not display an error", function() {
             app.navigate('import_directory', { trigger: true })
             var content = $('#content').html()
             expect(content).toMatch('downloading')
         });
-        
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether 
@@ -66,15 +62,14 @@ describe("Reformed Churches Locator", function() {
                 }, 'state page to display', 1000)
                 runs(function(){
                     expect($('#state_page').is(':visible').toBe(true))
+                    console.log('does this run?')
                     // Remove the docs we just created
 //                    dir.destroy()
 //                    $('#delete_all_docs').click()
                 })
             })
         })
-
     });
-
 });
 
 // General test-runner code
