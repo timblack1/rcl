@@ -35,13 +35,40 @@ describe("Reformed Churches Locator", function() {
                     // The test should wait until the AJAX call completes
                     // Check to see if the AJAX call returned here
                     return $('#directory_type').is(':visible')
-                }, "AJAX call to get URL HTML", 2000)
+                }, "AJAX call to get URL HTML")
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                     // Remove the docs we just created
+//                    dir.destroy()
                     // TODO: Improve this to only remove the docs created by this test, rather
                     //  than all docs.
-                    $('#delete_all_docs').click()
+//                    $('#delete_all_docs').click()
+                })
+            })
+        })
+
+        describe('state page', function(){
+            it('should display when radio button is clicked', function(){
+                runs(function(){
+                    $('#url').val('http://opc.org/locator.html')
+                    $('#url').focus().keyup()
+                })
+                waitsFor(function(){
+                    // The test should wait until the AJAX call completes
+                    // Check to see if the AJAX call returned here
+                    return $('#directory_type').is(':visible')
+                }, "AJAX call to get URL HTML")
+                runs(function(){
+                    $("#one_state_per_page").click()
+                })
+                waitsFor(function(){
+                    return $('#state_page').is(':visible')
+                }, 'state page to display', 1000)
+                runs(function(){
+                    expect($('#state_page').is(':visible').toBe(true))
+                    // Remove the docs we just created
+//                    dir.destroy()
+//                    $('#delete_all_docs').click()
                 })
             })
         })

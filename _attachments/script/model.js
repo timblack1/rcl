@@ -83,7 +83,7 @@ define([
         }
     }) 
     
-    // Define model objects
+    // Define model objects & collections for querying the database
     
     // Define link objects for many-to-many relations
     CGroup_Cong = Backbone.RelationalModel.extend({})
@@ -395,7 +395,6 @@ define([
         model:Role,
         url:'/roles'
     })
-    // Define collections for querying the database
     
     // Define convenience functions
     // TODO: Put these convenience functions into a base class/object that can be used as a mixin
