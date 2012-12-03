@@ -21,8 +21,11 @@ define(
                             // TODO: Why doesn't backbone-couchdb automatically update the
                             //  model object for me when the asociated doc changes in the db?
                             dir.fetch({success:function(model,response){
-                                var html = dir.get('url_html')
-                                if (html){
+                                
+                                // Get directory's first page of content
+                                if (dir.get('url_html') && 
+                                        dir.get('get_url_html') == 'gotten'){
+                                    var html = dir.get('url_html')
                                     // In the controller & output to form, handle whether this is an RSS feed or an HTML page
                                     // Determine whether url_html contains HTML or RSS
                                     if (html.indexOf("</html>") > -1){
@@ -37,6 +40,8 @@ define(
                                         dir.set('pagetype', 'rss')
                                     }
                                     else { // We got an error code
+                                        // TODO: Finesse this condition to be consistent 
+                                        //  with the nested conditions above
                                         // Hide the form controls.
                                         elem.trigger('hide_subform');
                                     }
@@ -44,6 +49,23 @@ define(
                                     // TODO: Is this the right place to save the dir?
                                     //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
                                     //dir.save({_id:dir.get('_id')})
+                                }
+                                
+                                // Get state details page content
+                                if (dir.get('state_url_html') && 
+                                        dir.get('get_state_url_html') == 'gotten'){
+                                    // Display the contents of the state page
+                                    // TODO: This displays only one state's page.  Create a way
+                                    //  to iterate through the other states' pages after getting
+                                    //  a regex that works from this first state page.
+                                    console.log(dir.get('state_url_html'))
+                                    $('#cong_details_url_selector').html(dir.get('state_url_html')[0])
+                                    // Show state details page div
+                                    $("#cong_details_url, #cong_details_url_selector").show(1000);
+                                    $('#cong_details_url_selector a').click(function(e){
+                                        this.show_select_cong_details(e, this);
+                                    });
+                                    $("#url_result_div").innerHTML = dir.get('pagetype');
                                 }
                             }})
                         }                                
@@ -72,7 +94,13 @@ define(
                 function save_cgroup_and_dir(cgroup, dir){
                     // Save the dir so if the URL has changed in the browser, it gets 
                     //  updated in the db too
-                    dir.save({_id:dir.get('_id'), _rev:dir.get('_rev'),url:$('#url').val()},{success:function(){
+                    dir.save({
+                                _id:dir.get('_id'), 
+                                _rev:dir.get('_rev'),
+                                url:$('#url').val(),
+                                get_url_html:'requested'
+                            },
+                            {success:function(){
                         // Append dir to CGroup
                         cgroup.get('directories').add([{_id:dir.get('_id')}])
                         // Save cgroup to db
@@ -138,7 +166,7 @@ define(
                             model.create_one(model.Directories,
                                              {
                                                  url:$('#url').val(),
-                                                 get_url_contents:true
+                                                 get_url_contents:'requested'
                                              },
                                              {success:function(dir){
                                                  // TODO: If the other form fields are empty, 
@@ -264,25 +292,14 @@ define(
                     }
                 }
                 dir.save({
-                    state_url:'http://opc.org/locator.html?state=' + state_name + '&search_go=Y'
+                    state_url:'http://opc.org/locator.html?state={state_name}&search_go=Y',
+                    get_state_url_html:'requested',
+                    state_url_html:''
                     },
                     {
                         success:function(){
-                            // Display the contents of the state page
-                            // TODO: Start here.
-                            console.log('line 286')
-                            db.openDoc(msg.id, {
-                                success:function(doc){
-                                    // Hide divs we don't need now
-                                    $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
-                                    $('#cong_details_url_selector').html(doc.state_url_html)
-                                    // Show state details page div
-                                    $("#cong_details_url, #cong_details_url_selector").show(1000);
-                                    $('#cong_details_url_selector a').click(function(e){
-                                        this.show_select_cong_details(e, this);
-                                    });
-                                }
-                            })
+                            // Hide divs we don't need now
+                            $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
                         }
                     }
                 )

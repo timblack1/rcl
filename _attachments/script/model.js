@@ -298,14 +298,15 @@ define([
     Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
         urlRoot:'/directory',
-//        defaults:{
-//            get_url_contents:'', // true or false
-//            pagetype:'', // html or rss
-//            url:'', // url of directory's main page
-//            url_html:'', // HTML of directory's main page
-//            state_url:'', // URL of state page
-//            state_url_html:'', // HTML of state page
-//            state_page_values:[] // list of select box options for this directory's states
+//          defaults:{
+//          url:'', // url of directory's main page
+//          url_html:'', // HTML of directory's main page
+//          get_url_html:'', // 'requested', 'getting', or 'gotten'
+//          pagetype:'', // html or rss
+//          state_url:'', // URL of state page
+//          state_url_html:'', // HTML of state page
+//          get_state_url_html:'', // 'requested' or 'gotten'
+//          state_page_values:[] // list of select box options for this directory's states
 //        },
         relations:[
                    {
