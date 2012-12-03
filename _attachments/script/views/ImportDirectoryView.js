@@ -8,6 +8,48 @@ define(
         var ImportDirectoryView = Backbone.View.extend({
             initialize : function(){
                 db = config.db
+                // Set up browser changes listener to watch for and handle Node changes 
+                //  listener's response
+                var changes = db.changes();
+                if (typeof watching_import_directory_view_changes == 'undefined'){
+                    changes.onChange(function(change){
+                        var change_id = change.results[0].id
+                        var rev = change.results[0].changes[0].rev
+                        // Determine if the changed document is the dir we are editing 
+                        if (typeof dir != 'undefined' && change_id == dir.get('_id')){
+                            // Fetch document's new contents from db
+                            // TODO: Why doesn't backbone-couchdb automatically update the
+                            //  model object for me when the asociated doc changes in the db?
+                            dir.fetch({success:function(model,response){
+                                var html = dir.get('url_html')
+                                if (html){
+                                    // In the controller & output to form, handle whether this is an RSS feed or an HTML page
+                                    // Determine whether url_html contains HTML or RSS
+                                    if (html.indexOf("</html>") > -1){
+                                        $("#directory_type").show(1000);
+                                        $("#rss_feed").hide(1000);
+                                        dir.set('pagetype', 'html')
+                                    }
+                                    else if (html.indexOf("</rss>") > -1){
+                                        // TODO: Display the right form controls for an RSS page
+                                        $("#directory_type").hide(1000);
+                                        $("#rss_feed").show(1000);
+                                        dir.set('pagetype', 'rss')
+                                    }
+                                    else { // We got an error code
+                                        // Hide the form controls.
+                                        elem.trigger('hide_subform');
+                                    }
+                                    $("#url_result_div").innerHTML = dir.get('pagetype');
+                                    // TODO: Is this the right place to save the dir?
+                                    //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
+                                    //dir.save({_id:dir.get('_id')})
+                                }
+                            }})
+                        }                                
+                    })
+                    watching_import_directory_view_changes = true;
+                }
             },
             render: function(){
                 config.render_to_id(this, "#import_directory_template")
@@ -27,57 +69,16 @@ define(
     
                 // Declare several utility functions for use further below
     
-                function save_cgroup(cgroup, dir){
-                    // Append dir to CGroup
-                    cgroup.get('directories').add([{_id:dir.get('_id')}])
-                    // Save cgroup to db
-                    // TODO: Does the relation appear on the dir in the db also?
-                    cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')},{success:function(){
-                        // Prevent 409 conflict error when local rev doesn't match server's
-                        cgroup.fetch({success:function(){
-                            // Monitor and handle a response from the Node app?
-                            // Watch for Node changes listener's response
-                            var changes = db.changes();
-                            changes.onChange(function(change){
-                                // Determine if the changed document is the one we are editing 
-                                var change_id = change.results[0].id
-                                var rev = change.results[0].changes[0].rev
-                                // Only fetch the new contents if the _rev has been updated;
-                                //  otherwise we create an infinite loop
-                                if (change_id == dir.get('_id') && rev != dir.get('_rev')){
-                                    // Fetch document's new contents from db
-                                    // TODO: Why doesn't backbone-couchdb automatically update the
-                                    //  model object for me?
-                                    dir.fetch({success:function(model,response){
-                                        var html = dir.get('url_html')
-                                        if (html){
-                                          // In the controller & output to form, handle whether this is an RSS feed or an HTML page
-                                          // Determine whether url_html contains HTML or RSS
-                                          if (html.indexOf("</html>") > -1){
-                                              console.log('we have html')
-                                              $("#directory_type").show(1000);
-                                              $("#rss_feed").hide(1000);
-                                              dir.set('pagetype', 'html')
-                                          }
-                                          else if (html.indexOf("</rss>") > -1){
-                                              // TODO: Display the right form controls for an RSS page
-                                              $("#directory_type").hide(1000);
-                                              $("#rss_feed").show(1000);
-                                              dir.set('pagetype', 'rss')
-                                          }
-                                          else { // We got an error code
-                                              // Hide the form controls.
-                                              elem.trigger('hide_subform');
-                                          }
-                                          $("#url_result_div").innerHTML = dir.get('pagetype');
-                                          // TODO: Is this the right place to save the dir?
-                                          //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                                          //dir.save({_id:dir.get('_id')})
-                                        }
-                                    }})
-                                }
-                            })                            
-                        }})
+                function save_cgroup_and_dir(cgroup, dir){
+                    // Save the dir so if the URL has changed in the browser, it gets 
+                    //  updated in the db too
+                    dir.save({_id:dir.get('_id'), _rev:dir.get('_rev'),url:$('#url').val()},{success:function(){
+                        // Append dir to CGroup
+                        cgroup.get('directories').add([{_id:dir.get('_id')}])
+                        // Save cgroup to db
+                        // TODO: Does the relation appear on the dir in the db also?
+                        cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
+                        // This will trigger the Node changes listener's response
                     }})
                 }
                 
@@ -108,12 +109,12 @@ define(
                                                            abbreviation:abbr
                                                        },
                                                        {success:function(cgroup){
-                                                           save_cgroup(cgroup, dir)
+                                                           save_cgroup_and_dir(cgroup, dir)
                                                        }}
                                       )
                                   }else{
                                       // The cgroup did exist in the db, so use it
-                                      save_cgroup(cgroup, dir)
+                                      save_cgroup_and_dir(cgroup, dir)
                                   }
                               }})
                     }
@@ -129,8 +130,9 @@ define(
                         // If it does not exist in the db, then create it
                         if (typeof(dir) === 'undefined'){
                             // TODO: Don't create the dir if the URL is not valid.
-                            //  Maybe mark the dir's URL as invalid in the node.js script, and/or
-                            //  just delete the dir from node.js.
+                            //  Maybe mark the dir's URL as invalid in the node.js script (by
+                            //  checking for a 404 response), and/or
+                            //  just delete the dir from node.js in an asynchronous cleanup task.
                             // TODO: Provide a list of similar URLs in an autocompleter
                             // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                             model.create_one(model.Directories,
@@ -155,8 +157,6 @@ define(
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
-                    // TODO: This doesn't seem to be getting the global dir object correctly yet.
-                    //  Instead, the code creates many duplicate dir docs in the db
                     get_cgroup(dir)
                 }
                 
@@ -206,8 +206,6 @@ define(
             },
             show_directory_type:function(){
                 var type = $('input:radio[name=type]:checked').val();
-                var elem = $(this)
-                // TODO: Why doesn't this allow the other radio button to be selected once one button is selected?
                 if (type=='one page'){
                     // Show the one page divs
                     $("#state_page").hide(1000);
@@ -225,13 +223,13 @@ define(
                     // Populate state_drop_down_selector div with contents of church directory page, 
                     //  maybe in a scrollable div
                     $('#state_drop_down_selector').html(dir.get('url_html'));
-                    // We bind the event here because the select element didn't exist at this Evently widget's 
+                    // We bind the event here because the select element didn't exist at this Backbone view's 
                     //  initialization
-                    $('#state_drop_down_selector select').mousedown(function(){elem.trigger('show_state_page')})
+                    $('#state_drop_down_selector select').mousedown({this_ob:this},function(event){ event.data.this_ob.show_state_page(event)})
                 }
-                elem.trigger('hide_dir_and_display_type')
+                this.hide_dir_and_display_type()
             },
-            show_state_page:function(){
+            show_state_page:function(event){
                 // Get the list of state page URLS out of its option values
                 // That is a bit challenging, because the format may be different for each directory.
                 // So, I think we need a regular expression editor here.
@@ -240,18 +238,9 @@ define(
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
                 // TODO: Disable the select box immediately after the user clicks on it, so they can't 
                 //          click on one of its options and fire a page load event.
-                // TODO: rewrite this to find the element that was clicked, which is also
-                //  referenced on line 241 above.  Apparently the "this" variable is not
-                //  the right one to use here.  Try to find out what variable in the local scope
-                //  refers to the element which was clicked.  If no such variable is available,
-                //  then you'll need to create that variable in the function body on line
-                //  241 above so you can reference it here.  One way to view all the variables in
-                //  the local scope is to set a breakpoint in Chrome's Developer Tools on the
-                //  next line of code here that is not a comment, then look at the "Local
-                //  Variables" pane in those tools.
-                var el = $(this),
-                options = $(el).children(),
-                values = [];
+                var el = $(event.target),
+                    options = $(el).children(),
+                    values = [];
                 for (var i=0; i<options.length; i++){
                     values[i] = $(options[i]).val();
                 }
@@ -269,35 +258,34 @@ define(
                 //          provides a value.
                 // Get only the first state name for now
                 for (var i=0; i<values.length; i++){
-                    // TODO: It appears this line is not even being called.  Why not?  I think
-                    //  it's because line 255 is written incorrectly
-                    console.log(values[i])
                     if (values[i] !== ""){
                         var state_name = values[i];
                         break;
                     }
                 }
-                dir.set('state_url','http://opc.org/locator.html?state=' + state_name + '&search_go=Y')
-                // TODO: Rewrite this to use Backbone objects
-                console.log('on line 281')
-                console.log(dir)
-                dir.save({success:function(model, response, options){
-                        // Display the contents of the state page
-                        console.log('line 286')
-                        db.openDoc(msg.id, {
-                            success:function(doc){
-                                // Hide divs we don't need now
-                                $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
-                                $('#cong_details_url_selector').html(doc.state_url_html)
-                                // Show state details page div
-                                $("#cong_details_url, #cong_details_url_selector").show(1000);
-                                $('#cong_details_url_selector a').click(function(e){
-                                    show_select_cong_details(e, this);
-                                });
-                            }
-                        })
+                dir.save({
+                    state_url:'http://opc.org/locator.html?state=' + state_name + '&search_go=Y'
+                    },
+                    {
+                        success:function(){
+                            // Display the contents of the state page
+                            // TODO: Start here.
+                            console.log('line 286')
+                            db.openDoc(msg.id, {
+                                success:function(doc){
+                                    // Hide divs we don't need now
+                                    $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
+                                    $('#cong_details_url_selector').html(doc.state_url_html)
+                                    // Show state details page div
+                                    $("#cong_details_url, #cong_details_url_selector").show(1000);
+                                    $('#cong_details_url_selector a').click(function(e){
+                                        this.show_select_cong_details(e, this);
+                                    });
+                                }
+                            })
+                        }
                     }
-                })
+                )
                 //TODO else notify user that they did not click into a select element
             } 
         })

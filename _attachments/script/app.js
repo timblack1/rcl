@@ -23,6 +23,8 @@ define(
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
+                // Make it easy to reference this object in event handlers
+                _.bindAll(this.import_directory_view)
                 $("#account").couchLogin({});
                 // This renders the default view for the app
                 // TODO:  If the page loaded from a different view's URL, load that view instead
