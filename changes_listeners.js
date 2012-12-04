@@ -10,14 +10,15 @@
 
 var buffer = '',
 	http = require('http'),
-	config = require('./rcl/config'),
+	cwd = process.cwd(),
+	config = require(cwd + '/config'),
 	db = config.db,
-	log = require('./rcl/lib').log;
+	log = require(cwd + '/lib').log;
 	//$ = require('jquery');
 //var model = require('model.js').model
 	//stdin = process.openStdin();
 if (config.debug)
-	var longjohn = require('longjohn/')
+	var longjohn = require(cwd + '/node_modules/longjohn')
 	
 //stdin.setEncoding('utf8');
 	
