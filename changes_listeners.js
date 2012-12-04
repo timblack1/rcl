@@ -17,8 +17,8 @@ var buffer = '',
 //var model = require('model.js').model
 	//stdin = process.openStdin();
 if (config.debug)
-	var longjohn = require('./rcl/node_modules/longjohn')
-
+	var longjohn = require('longjohn/')
+	
 //stdin.setEncoding('utf8');
 	
 // Declare utility functions
