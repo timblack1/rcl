@@ -185,6 +185,7 @@ define(
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
+                
                     get_cgroup(dir)
                 }
                 
@@ -234,7 +235,7 @@ define(
             },
             show_directory_type:function(){
                 var type = $('input:radio[name=type]:checked').val();
-                if (type=='one page'){
+          	  if (type=='one page'){
                     // Show the one page divs
                     $("#state_page").hide(1000);
                     // TODO: If "One Page" is selected, then show page containing list of all congs.
@@ -286,6 +287,7 @@ define(
                 //          provides a value.
                 // Get only the first state name for now
                 for (var i=0; i<values.length; i++){
+
                     if (values[i] !== ""){
                         var state_name = values[i];
                         break;
