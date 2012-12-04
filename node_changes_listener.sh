@@ -5,10 +5,10 @@ PORT=5984
 AUTH=$(cat auth.txt)
 
 # Uncomment for debugging
-#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node --debug-brk
+#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs --debug-brk
 
 # Uncomment when not debugging
-curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node
+curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs
 
 # Uncomment for production - runs as a background process
-#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | node &
+#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs &
