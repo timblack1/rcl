@@ -78,9 +78,7 @@ define(
                                             // Handle the user's click on the congregation 
                                             //  details link
                                             $('#cong_details_url_selector a').click(function(e){
-                                                var thiz = window.app.import_directory_view
-                                                e.preventDefault()
-                                                thiz.show_select_cong_details(e);
+                                                window.app.import_directory_view.show_select_cong_details(e);
                                             });
                                         }
                                     }
@@ -312,13 +310,17 @@ define(
                 // TODO: But, this URL only works for the OPC site, so we'll have to generalize this code
                 //          to work for other sites too.
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/generalize-state-page-url-creation
+                // TODO: Start here
                 // TODO: Maybe the way to do that is to ask the user to confirm or enter what the URL is
                 //          for an example state page ("To what URL does this link normally lead? 
                 //          <input type='text' />")
                 //          and to enter what other URL or POST parameters are necessary to make that page
                 //          load a state correctly,
                 //          and ask the user what the parameter name is for which the state drop-down box
-                //          provides a value.
+                //          provides a value (though this can probably be gotten dynamically).
+                // TODO: Automatically get the containing form's action, and method, and any hidden inputs, 
+                //  and turn that into a URL or POST data, so its form submission can be replicated.
+                // TODO: Display these bits of data to the user so they can edit them.
                 dir.save({
                     state_url:'http://opc.org/locator.html?state={state_name}&search_go=Y',
                     get_state_url_html:'requested',
@@ -336,12 +338,27 @@ define(
                         }
                     }
                 )
-                //TODO else notify user that they did not click into a select element
             },
             show_select_cong_details:function(event){
-                // TODO: Start here
-                // TODO: Hide step 4
+                // Hide step 4
                 $('#cong_details_url').hide(1000)
+                // Prevent the link from making the browser navigate away from this page
+                event.preventDefault()
+                // TODO: Record the pattern of the URL the user clicked
+                // TODO: Ask the user which part of the URL that was clicked is the
+                //  congregation ID.  This should probably be made a sub-seection
+                //  of the current step.
+                var href = $(event.target).attr('href')
+                // TODO: If the URL is only partial, prepend the root of the URL
+                if (href.indexOf('/') == 0){
+                    // TODO: Prepend the root of the URL
+                }
+                if(!href.match(/^http/)){
+                    // TODO: Prepend the root of the URL relative to the directory's URL
+                }
+                console.log(href)
+                // TODO: Probably this step should not yet be called here, but only after 
+                //  the user responds
                 $('#cong_details_fields').show(1000)
             }
         })
