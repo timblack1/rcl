@@ -12,7 +12,7 @@ if (typeof window !== 'undefined'){
 // Export configuration settings
 exports.require = require
 exports.env = env
-exports.debug = false; // true or false; turns log() on or off
+exports.debug = true; // true or false; turns log() on or off
 if (env=='client'){
 	// TODO: Get db
 	exports.db = require('db').db

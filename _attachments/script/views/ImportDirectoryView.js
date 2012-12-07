@@ -19,10 +19,14 @@ define(
                         if (typeof dir != 'undefined' && change_id == dir.get('_id')){
                             // Fetch document's new contents from db
                             // TODO: Why doesn't backbone-couchdb automatically update the
-                            //  model object for me when the asociated doc changes in the db?
+                            //  model object for me when the associated doc changes in the db?
                             dir.fetch({success:function(model,response){
                                 
-                                // Get directory's first page of content
+                                // ----------------------------------------------------------
+                                // These are the main cases - different types of changes that
+                                //  need to be handled
+                                
+                                // Display directory's first page of content
                                 if (dir.get('url_html') && 
                                         dir.get('get_url_html') == 'gotten'){
                                     var html = dir.get('url_html')
@@ -45,28 +49,50 @@ define(
                                         // Hide the form controls.
                                         elem.trigger('hide_subform');
                                     }
-                                    $("#url_result_div").innerHTML = dir.get('pagetype');
+                                    dir.set('get_url_html', '')
                                     // TODO: Is this the right place to save the dir?
                                     //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
                                     //dir.save({_id:dir.get('_id')})
                                 }
                                 
-                                // Get state details page content
-                                if (dir.get('state_url_html') && 
-                                        dir.get('get_state_url_html') == 'gotten'){
-                                    // Display the contents of the state page
-                                    // TODO: This displays only one state's page.  Create a way
-                                    //  to iterate through the other states' pages after getting
-                                    //  a regex that works from this first state page.
-                                    console.log(dir.get('state_url_html'))
-                                    $('#cong_details_url_selector').html(dir.get('state_url_html')[0])
-                                    // Show state details page div
-                                    $("#cong_details_url, #cong_details_url_selector").show(1000);
-                                    $('#cong_details_url_selector a').click(function(e){
-                                        this.show_select_cong_details(e, this);
-                                    });
-                                    $("#url_result_div").innerHTML = dir.get('pagetype');
+                                // Display state details page's content
+                                if (dir.get('state_url_html')){
+                                    if (dir.get('get_state_url_html') == 'getting'){
+                                        $('#cong_details_url #status').html('Getting state page data for # ' + 
+                                             (Number(dir.get('state_url_html').length)+1) + ' of ' + 
+                                             dir.get('state_page_values').length + ' state pages (this may take a while)...')
+                                        if (dir.get('state_url_html').length >1 && 
+                                                typeof displayed_state_page == 'undefined'){
+                                            // Display the contents of the state page
+                                            // TODO: This displays only one state's page.  Create a way
+                                            //  to iterate through the other states' pages after getting
+                                            //  a regex that works from this first state page.
+                                            // TODO: Change the URL array prior to this point so
+                                            //  we can select item 0 instead of 1.
+                                            try{
+                                                // It's best to catch and ignore errors
+                                                //  generated from the web-scraped HTML
+                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[1]).show(1000)
+                                            }catch(err){}
+                                            displayed_state_page = true
+                                            // Handle the user's click on the congregation 
+                                            //  details link
+                                            $('#cong_details_url_selector a').click(function(e){
+                                                var thiz = window.app.import_directory_view
+                                                e.preventDefault()
+                                                thiz.show_select_cong_details(e);
+                                            });
+                                        }
+                                    }
+                                    if (dir.get('get_state_url_html') == 'gotten'){
+                                        // Notify user
+                                        $('#cong_details_url #status').html('Downloaded data for all states!')
+                                        $('#cong_details_url #status').delay(5000).fadeOut(1000).slideUp(1000)
+                                    }
                                 }
+                                
+                                // ----------------------------------------------------------
+
                             }})
                         }                                
                     })
@@ -114,6 +140,8 @@ define(
                     // Make the dir available globally so it can be reused if the user causes
                     //  this function to be invoked again
                     window.dir = dir
+                    // Reset status flag so the status messages will display
+                    dir.set('get_state_url_html', '')
                     var cgroup_name = $('#cgroup_name').val()
                     var abbr = $('#abbreviation').val()
                     // Don't do anything if the CGroup info isn't entered yet
@@ -166,7 +194,7 @@ define(
                             model.create_one(model.Directories,
                                              {
                                                  url:$('#url').val(),
-                                                 get_url_contents:'requested'
+                                                 get_url_html:'requested'
                                              },
                                              {success:function(dir){
                                                  // TODO: If the other form fields are empty, 
@@ -185,7 +213,6 @@ define(
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
-                
                     get_cgroup(dir)
                 }
                 
@@ -262,16 +289,23 @@ define(
                 // Get the list of state page URLS out of its option values
                 // That is a bit challenging, because the format may be different for each directory.
                 // So, I think we need a regular expression editor here.
-                // TODO: Get the select box via a user's click, and record its xpath so it can be found later.
-                // TODO: Get the user to confirm that this select box is found by that xpath
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
-                // TODO: Disable the select box immediately after the user clicks on it, so they can't 
-                //          click on one of its options and fire a page load event.
                 var el = $(event.target),
                     options = $(el).children(),
                     values = [];
+                // Get the select box the user clicked, and record its xpath so it 
+                //  can be found later.
+                var xpath = config.getXPath(event.target).replace(config.getXPath(document.getElementById('state_page')),'')
+                dir.set('select_element_xpath', xpath)
+                // TODO: Get the user to confirm that this select box is found by that xpath
+                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
+                // Disable the select box immediately after the user clicks on it, so they can't 
+                //  click on one of its options and fire a page load event.
+                event.preventDefault()
                 for (var i=0; i<options.length; i++){
-                    values[i] = $(options[i]).val();
+                    var val = $(options[i]).val()
+                    if (val != ''){
+                        values[i] = val;
+                    }
                 }
                 dir.set('state_page_values', values)
                 // Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
@@ -285,14 +319,6 @@ define(
                 //          load a state correctly,
                 //          and ask the user what the parameter name is for which the state drop-down box
                 //          provides a value.
-                // Get only the first state name for now
-                for (var i=0; i<values.length; i++){
-
-                    if (values[i] !== ""){
-                        var state_name = values[i];
-                        break;
-                    }
-                }
                 dir.save({
                     state_url:'http://opc.org/locator.html?state={state_name}&search_go=Y',
                     get_state_url_html:'requested',
@@ -302,11 +328,22 @@ define(
                         success:function(){
                             // Hide divs we don't need now
                             $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
+                            // Notify the user that we are downloading the requested data
+                            $('#cong_details_url #status').html('Getting state page data for # 1 of ' + 
+                                 values.length + ' state pages (this may take a while)...')
+                            // Show state details page div
+                            $("#cong_details_url").fadeIn(1000);
                         }
                     }
                 )
                 //TODO else notify user that they did not click into a select element
-            } 
+            },
+            show_select_cong_details:function(event){
+                // TODO: Start here
+                // TODO: Hide step 4
+                $('#cong_details_url').hide(1000)
+                $('#cong_details_fields').show(1000)
+            }
         })
         return ImportDirectoryView
 
