@@ -41,35 +41,46 @@ function get_url(doc, from_url, to_html, status_flag){
         })
     });
 }
-function get_url_set(doc, from_urls, to_html, status_flag){
-    for (var i=0; i<doc[from_urls].length; i++){
+function get_url_set(doc, from_urls, to_html, status_flag, options){
+    var i = 0
+    // Use a recursive function to allow throttling the rate of web-scraping requests
+    //  per second to avoid getting banned by some servers.
+    function recurse_urls(i){
         doc[status_flag] = 'getting'
-        http.get(doc[from_urls][i], function(res){
-            var pageData = ''
-            res.on('data', function(chunk){
-                pageData += chunk
-            })
-            res.on('end', function(){
-                // TODO: Check to see if we got a 404 response
-                // Write the contents of the html variable back to the database
-                if (!doc[to_html] || doc[to_html] == ''){
-                    doc[to_html] = new Array() // declare as array
-                }
-                var temp_items = doc[to_html]
-                var num_items = temp_items.push(pageData)
-                doc[to_html] = temp_items
-                // TODO: Start here
-                if (num_items==doc[from_urls].length){
-                    // We've gotten all the items' html!
-                    doc[status_flag] = 'gotten'
-                }
-                // TODO: Use Backbone here instead of cradle
-                db.save(doc._id, doc._rev, doc, function(err, res){
-                    // TODO: Do anything more that needs to be done here
-                });
-            })
-        });
+        if (doc[from_urls][i] != '' && typeof doc[from_urls][i] != 'undefined'){
+            http.get(doc[from_urls][i], function(res){
+                var pageData = ''
+                res.on('data', function(chunk){
+                    pageData += chunk
+                })
+                res.on('end', function(){
+                    // TODO: Check to see if we got a 404 response
+                    // Write the contents of the html variable back to the database
+                    if (!doc[to_html] || doc[to_html] == ''){
+                        doc[to_html] = new Array() // declare as array
+                    }
+                    var temp_items = doc[to_html]
+                    var num_items = temp_items.push(pageData)
+                    doc[to_html] = temp_items
+                    if (num_items==doc[from_urls].length){
+                        // We've gotten all the items' html!
+                        doc[status_flag] = 'gotten'
+                    }
+                    // TODO: Use Backbone here instead of cradle
+                    db.save(doc._id, doc._rev, doc, function(err, res){
+                        // Do anything more that needs to be done here
+                        doc._rev = res.rev
+                        if (typeof options.success != 'undefined'){
+                            options.success()
+                            // Call this function recursively
+                            recurse_urls(i+1)
+                        }
+                    });
+                })
+            });
+        }
     }
+    recurse_urls(i)
 }
 
 // Handle all changes
@@ -84,6 +95,17 @@ process.on('message', function(doc){
 	}
 	// Watch for requests to get the contents of a state page URL
     if (doc.collection == 'directory' && doc.get_state_url_html=='requested' && doc.state_url){
-            get_url(doc, 'state_page_values', 'state_url_html', 'get_state_url_html')
+        // Interpolate state names into URLs
+        var state_page_urls = new Array()
+        for (var i=0; i<doc.state_page_values.length; i++){
+            if (doc.state_page_values[i] != ''){
+                state_page_urls.push(doc.state_url.replace('{state_name}', doc.state_page_values[i]))
+            }
+        }
+        doc.state_page_urls = state_page_urls
+        get_url_set(doc, 'state_page_urls', 'state_url_html', 'get_state_url_html', {success:function(){
+            // TODO: Cleanup unnecessary doc attributes here?  Probably that should be done in
+            //  ImportDirectoryView.js instead.
+        }})
     }
 });

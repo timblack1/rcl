@@ -301,12 +301,13 @@ define([
 //          defaults:{
 //          url:'', // url of directory's main page
 //          url_html:'', // HTML of directory's main page
-//          get_url_html:'', // 'requested', 'getting', or 'gotten'
+//          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
 //          pagetype:'', // html or rss
-//          state_url:'', // URL of state page
+//          state_page_urls:'', // template URL of state pages
 //          state_url_html:'', // HTML of state page
-//          get_state_url_html:'', // 'requested' or 'gotten'
-//          state_page_values:[] // list of select box options for this directory's states
+//          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
+//          state_page_values:[], // list of select box options for this directory's states
+//          select_element_xpath:'' // xpath of the select element containing state IDs
 //        },
         relations:[
                    {

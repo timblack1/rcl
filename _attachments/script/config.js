@@ -25,6 +25,16 @@ define(
            var template = _.template( $(id).html(), {} );
            $(obj.el).html( template );
        }
+       
+       function getXPath( element ){
+           var xpath = '';
+           for ( ; element && element.nodeType == 1; element = element.parentNode ){
+               var id = $(element.parentNode).children(element.tagName).index(element) + 1;
+               id = id > 1 ? '[' + id + ']' : '';
+               xpath = '/' + element.tagName.toLowerCase() + id + xpath;
+           }
+           return xpath;
+       }
 
        return {
            db_name:db_name,
@@ -32,7 +42,8 @@ define(
            render_to_id:render_to_id,
            run_jasmine_tests:run_jasmine_tests,
            test_home_address:test_home_address,
-           default_view:default_view
+           default_view:default_view,
+           getXPath:getXPath
        }
     }
 )
