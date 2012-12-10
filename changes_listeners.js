@@ -41,13 +41,14 @@ function get_url(doc, from_url, to_html, status_flag){
         })
     });
 }
-function get_url_set(doc, from_urls, to_html, status_flag, options){
+function get_url_set(doc, from_urls, method, to_html, status_flag, options){
     var i = 0
     // Use a recursive function to allow throttling the rate of web-scraping requests
     //  per second to avoid getting banned by some servers.
     function recurse_urls(i){
         doc[status_flag] = 'getting'
         if (doc[from_urls][i] != '' && typeof doc[from_urls][i] != 'undefined'){
+            // TODO: Make this handle doc[method] == 'post'
             http.get(doc[from_urls][i], function(res){
                 var pageData = ''
                 res.on('data', function(chunk){
@@ -103,7 +104,7 @@ process.on('message', function(doc){
             }
         }
         doc.state_page_urls = state_page_urls
-        get_url_set(doc, 'state_page_urls', 'state_url_html', 'get_state_url_html', {success:function(){
+        get_url_set(doc, 'state_page_urls', 'state_url_method', 'state_url_html', 'get_state_url_html', {success:function(){
             // TODO: Cleanup unnecessary doc attributes here?  Probably that should be done in
             //  ImportDirectoryView.js instead.
         }})

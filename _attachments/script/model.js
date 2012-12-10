@@ -305,6 +305,7 @@ define([
 //          pagetype:'', // html or rss
 //          state_page_urls:'', // template URL of state pages
 //          state_url_html:'', // HTML of state page
+//          state_url_method:'', // 'get' or 'post', tells Node script which to use
 //          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
 //          state_page_values:[], // list of select box options for this directory's states
 //          select_element_xpath:'' // xpath of the select element containing state IDs

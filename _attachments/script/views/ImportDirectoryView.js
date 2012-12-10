@@ -72,7 +72,7 @@ define(
                                             try{
                                                 // It's best to catch and ignore errors
                                                 //  generated from the web-scraped HTML
-                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[1]).show(1000)
+                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[2]).show(1000)
                                             }catch(err){}
                                             displayed_state_page = true
                                             // Handle the user's click on the congregation 
@@ -294,10 +294,9 @@ define(
                 //  can be found later.
                 var xpath = config.getXPath(event.target).replace(config.getXPath(document.getElementById('state_page')),'')
                 dir.set('select_element_xpath', xpath)
-                // TODO: Get the user to confirm that this select box is found by that xpath
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/user-confirm-correct-select-box
                 // Disable the select box immediately after the user clicks on it, so they can't 
                 //  click on one of its options and fire a page load event.
+                $(event.target).prop('disabled',true)
                 event.preventDefault()
                 for (var i=0; i<options.length; i++){
                     var val = $(options[i]).val()
@@ -306,30 +305,45 @@ define(
                     }
                 }
                 dir.set('state_page_values', values)
+                // Hide divs we don't need now
+                $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
                 // Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
-                // TODO: But, this URL only works for the OPC site, so we'll have to generalize this code
-                //          to work for other sites too.
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/generalize-state-page-url-creation
-                // TODO: Start here
-                // TODO: Maybe the way to do that is to ask the user to confirm or enter what the URL is
-                //          for an example state page ("To what URL does this link normally lead? 
-                //          <input type='text' />")
-                //          and to enter what other URL or POST parameters are necessary to make that page
-                //          load a state correctly,
-                //          and ask the user what the parameter name is for which the state drop-down box
-                //          provides a value (though this can probably be gotten dynamically).
-                // TODO: Automatically get the containing form's action, and method, and any hidden inputs, 
-                //  and turn that into a URL or POST data, so its form submission can be replicated.
-                // TODO: Display these bits of data to the user so they can edit them.
+                // TODO: Record whether to send a GET or POST
+                // Display these bits of data to the user so they can edit them.
+                // Show confirmation div
+                $('#cong_details_url').show(1000)
+                var form = el.closest('form')
+                // Handle cases where there is or is not a final slash in base_url, or
+                //  an initial slash in form.attr('action').
+                var base_url = dir.get('url').replace(/\/+$/,'')
+                if (form.attr('action').indexOf('/') == 0){
+                    // action is a partial absolute URL, so attach it to the domain name
+                    var state_url_parts = base_url.split('/').slice(0,3)
+                    state_url_parts.push(form.attr('action').replace(/^\//,''))
+                    var state_url = state_url_parts.join('/')
+                }else if (form.attr('action').indexOf('http') == 0){
+                    // action is a complete absolute URL
+                    var state_url = form.attr('action')
+                }else{
+                    // action is a relative URL
+                    var base_url_shortened = base_url.slice(0,base_url.lastIndexOf('/'))
+                    var state_url = base_url_shortened + '/' + form.attr('action')
+                }
+                state_url += '?' + el.attr('name') + '=' + '{state_name}'
+                // Append other form inputs
+                $.each($(form).find('input'),function(index,element){
+                    var input = $(element)
+                    state_url += '&' + input.attr('name') + '=' + input.val()
+                })
+                console.log(state_url)
                 dir.save({
-                    state_url:'http://opc.org/locator.html?state={state_name}&search_go=Y',
+                    state_url:state_url,
                     get_state_url_html:'requested',
-                    state_url_html:''
+                    state_url_html:'',
+                    state_url_method:form.attr('method')
                     },
                     {
                         success:function(){
-                            // Hide divs we don't need now
-                            $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
                             // Notify the user that we are downloading the requested data
                             $('#cong_details_url #status').html('Getting state page data for # 1 of ' + 
                                  values.length + ' state pages (this may take a while)...')
