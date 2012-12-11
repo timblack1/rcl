@@ -102,6 +102,7 @@
                         </li> 
                     </ul>
                 </p>
+                //This is where the text boxes go
                 <table id='fields_table'>
                     <tr py:for="f in fields">
                         <td>
@@ -183,6 +184,26 @@
 			    <!-- include test spec files here... -->
     			<script2 type="text/javascript" src="script/lib/jasmine/spec/tests.js"></script2>
 		</script>
+
+
+//START HERE		                
+		<script type="text/template" id="fields_template">
+			        <table id='fields_table'>
+			            {{ _.each( fields, function( field ){ }}	
+			                <tr>
+			               	
+                        <td>
+                            {{- field.pretty_name }}
+                        </td>
+                        <td>
+                            <input type='text' name='${f["db_name"]}' id='${f["db_name"]}' />
+                            <br />
+                            <button id='${f["db_name"]}_button' style='display:none'>No, this isn't right</button>
+                        </td>
+                    </tr>
+                       <% }); %>
+                </table>
+		</script>		
 
 		<script type="text/template" id="search_template">
 
