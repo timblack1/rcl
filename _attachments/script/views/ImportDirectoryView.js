@@ -362,9 +362,20 @@ define(
                 // Start here
                 // TODO: Record the pattern of the URL the user clicked
                 // TODO: Ask the user which part of the URL that was clicked is the
-                //  congregation ID.  This should probably be made a sub-seection
+                //  congregation ID.  This should probably be made a sub-section
                 //  of the current step.
                 var href = $(event.target).attr('href')
+                // TODO: Display step 4.5
+                // TODO: Put href into div
+                // TODO: Try to guess the id with a regular expression, and display that id to 
+                //  the user in a div.  Ask the user if it is the part of the URL that contains
+                //  the congregation's id.
+                //  Make it so the user only has
+                //  to click a "Yes" button to confirm if we got it right.
+                // TODO: Otherwise, ask the user to highlight the congregation's id
+                console.log('the URL is: ' + href)
+                // church.html?church_id=3
+                // church.html?church_id={cong_id}
                 // TODO: If the URL is only partial, prepend the root of the URL
                 if (href.indexOf('/') == 0){
                     // TODO: Prepend the root of the URL
@@ -372,7 +383,6 @@ define(
                 if(!href.match(/^http/)){
                     // TODO: Prepend the root of the URL relative to the directory's URL
                 }
-                console.log(href)
                 // TODO: Probably this step should not yet be called here, but only after 
                 //  the user responds
                 // Show step 5
@@ -412,6 +422,8 @@ define(
                 var tmpl = $('#fields_template').html();
                 var fields_html = Mustache.render(tmpl, {fields:fields})
                 $('#fields_table_container').append(fields_html);
+                // TODO: Attach a mouseover/focus event to each text box to display the button, 
+                //  and hide all the other similar buttons
             }
         })
         return ImportDirectoryView
