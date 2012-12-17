@@ -35,6 +35,9 @@ define(
            }
            return xpath;
        }
+       function capitalize(str){
+           return str.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+       }
 
        return {
            db_name:db_name,
@@ -43,7 +46,8 @@ define(
            run_jasmine_tests:run_jasmine_tests,
            test_home_address:test_home_address,
            default_view:default_view,
-           getXPath:getXPath
+           getXPath:getXPath,
+           capitalize:capitalize
        }
     }
 )

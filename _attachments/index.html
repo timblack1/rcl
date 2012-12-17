@@ -102,19 +102,7 @@
                         </li> 
                     </ul>
                 </p>
-                //This is where the text boxes go
-                <table id='fields_table'>
-                    <tr py:for="f in fields">
-                        <td>
-                            ${f['pretty_name']}
-                        </td>
-                        <td>
-                            <input type='text' name='${f["db_name"]}' id='${f["db_name"]}' />
-                            <br />
-                            <button id='${f["db_name"]}_button' style='display:none'>No, this isn't right</button>
-                        </td>
-                    </tr>
-                </table>
+                <div id="fields_table_container"></div>
                 <div id='cong_details_fields_selector' class='content_frame content_frame_narrow'></div>
                 <h2>Edit regex here</h2>
                 <p>
@@ -185,25 +173,22 @@
     			<script2 type="text/javascript" src="script/lib/jasmine/spec/tests.js"></script2>
 		</script>
 
-
-<!-- START HERE	-->	                
-		<script type="text/template" id="fields_template">
-			        <table id='fields_table'>
-			            {{ _.each( fields, function( field ){ }}	
-			                <tr>
-			               	
+        <script type="text/template" id="fields_template">
+            <table id='fields_table_mustache'>
+                {{#fields}}    
+                    <tr>
                         <td>
-                            {{- field.pretty_name }}
+                            {{ pretty_name }}
                         </td>
                         <td>
-                            <input type='text' name='${f["db_name"]}' id='${f["db_name"]}' />
+                            <input type='text' name='{{ db_name }}' id='{{ db_name }}' />
                             <br />
-                            <button id='${f["db_name"]}_button' style='display:none'>No, this isn't right</button>
+                            <button id='{{ db_name }}_button' style='display:none'>No, this isn't right</button>
                         </td>
                     </tr>
-                       <% }); %>
-                </table>
-		</script>		
+                {{/fields}}    
+            </table>
+        </script>       
 
 		<script type="text/template" id="search_template">
 

@@ -1,9 +1,10 @@
 define(
    [
     '../config',
-    '../model'
+    '../model',
+    '../lib/mustache'
     ], 
-    function(config, model){
+    function(config, model, Mustache){
 
         var ImportDirectoryView = Backbone.View.extend({
             initialize : function(){
@@ -61,7 +62,7 @@ define(
                                         $('#cong_details_url #status').html('Getting state page data for # ' + 
                                              (Number(dir.get('state_url_html').length)+1) + ' of ' + 
                                              dir.get('state_page_values').length + ' state pages (this may take a while)...')
-                                        if (dir.get('state_url_html').length >1 && 
+                                        if (dir.get('state_url_html').length >2 && 
                                                 typeof displayed_state_page == 'undefined'){
                                             // Display the contents of the state page
                                             // TODO: This displays only one state's page.  Create a way
@@ -358,6 +359,7 @@ define(
                 $('#cong_details_url').hide(1000)
                 // Prevent the link from making the browser navigate away from this page
                 event.preventDefault()
+                // Start here
                 // TODO: Record the pattern of the URL the user clicked
                 // TODO: Ask the user which part of the URL that was clicked is the
                 //  congregation ID.  This should probably be made a sub-seection
@@ -373,7 +375,43 @@ define(
                 console.log(href)
                 // TODO: Probably this step should not yet be called here, but only after 
                 //  the user responds
+                // Show step 5
                 $('#cong_details_fields').show(1000)
+                
+                // List field names
+                var field_names = [
+                          'name',
+                          'meeting_address1',
+                          'meeting_address2',
+                          'meeting_city',
+                          'meeting_state',
+                          'meeting_zip',
+                          'meeting_country',
+                          'mailing_address1',
+                          'mailing_address2',
+                          'mailing_city',
+                          'mailing_state',
+                          'mailing_zip',
+                          'mailing_country',
+                          'phone',
+                          'fax',
+                          'email',
+                          'website',
+                          'service_info',
+                          'date_founded'
+                        ]
+                // Format field names
+                fields = []
+                for (var i=0; i < field_names.length; i++){
+                    fields.push({
+                      pretty_name:config.capitalize(field_names[i].replace('_', ' ')),
+                      db_name:field_names[i]
+                    })
+                }
+                // Render Mustache template
+                var tmpl = $('#fields_template').html();
+                var fields_html = Mustache.render(tmpl, {fields:fields})
+                $('#fields_table_container').append(fields_html);
             }
         })
         return ImportDirectoryView
