@@ -422,8 +422,6 @@ define(
                 var tmpl = $('#fields_template').html();
                 var fields_html = Mustache.render(tmpl, {fields:fields})
                 $('#fields_table_container').append(fields_html);
-                // TODO: Attach a mouseover/focus event to each text box to display the button, 
-                //  and hide all the other similar buttons
             }
         })
         return ImportDirectoryView
