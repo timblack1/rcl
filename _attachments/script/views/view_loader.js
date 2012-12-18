@@ -1,7 +1,7 @@
 define(
    [
             'views/MenuView',
-            'views/ImportDirectoryView/main',
+            'views/ImportDirectory/main',
             'views/FindAChurch/main',
             'views/RunTestsView'
     ], 

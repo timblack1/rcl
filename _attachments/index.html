@@ -41,6 +41,7 @@
             <h1>Congregations - configure downloading congregation data from one directory</h1>
             <p>If you make a mistake, just <a href='/import_directory'>reload this page</a> and start over.</p>
             
+            <div id='ConfirmID'></div>
             <div id='dir_and_display_type'>
                 <h2>Step 1:  Please enter the URL of the church directory page or RSS feed</h2>
                 <input type='text' name='url' id='url' value='http://opc.org/locator.html'/>
@@ -70,7 +71,6 @@
                 <h2>Step 4:  Click the link that leads to the page that displays the details of one congregation</h2>
                 <div id='status'></div>
                 <div id='cong_details_url_selector' class='content_frame'></div>
-                <div id='ConfirmID'></div>
             </div>
             <div id='cong_details_fields' style='display:none'>
                 <h2>Step 5:  Select congregation details</h2>
@@ -192,9 +192,13 @@
         </script>       
 
 		<script type="text/template" id="confirm_cong_id_template">
+        	<h2>Step 4.5: Confirm which URL parameter is the congregation ID</h2>
+        	<p>Here is the URL of the link you clicked:</p>
         	<div id="href"></div>
-        	<input type="button" id="YES" value="YES"/>
-        	<input type="button" id="NO" value="NO"/>
+        	<p>Is the congregation's ID the portion of that URL which is underlined below?</p>
+        	<div id="href_underlined"></div>
+        	<input type="button" id="yes" value="Yes" />
+        	<input type="button" id="no" value="No" />
         </script>       
 
 		<script type="text/template" id="search_template">

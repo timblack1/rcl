@@ -3,7 +3,7 @@ define(
     '../../config',
     '../../model',
     '../../lib/mustache',
-    'ConfirmCongIDView'
+    './ConfirmCongIDView'
     ], 
     function(config, model, Mustache, ConfirmCongIDView){
 
@@ -14,6 +14,7 @@ define(
                 // Set up browser changes listener to watch for and handle Node changes 
                 //  listener's response
                 var changes = db.changes();
+                // TODO: convert to this.watching_import_directory_view_changes
                 if (typeof watching_import_directory_view_changes == 'undefined'){
                     changes.onChange(function(change){
                         var change_id = change.results[0].id
@@ -361,71 +362,8 @@ define(
                 $('#cong_details_url').hide(1000)
                 // Prevent the link from making the browser navigate away from this page
                 event.preventDefault()
-                // Start here
-                // TODO: Record the pattern of the URL the user clicked
-                // TODO: Ask the user which part of the URL that was clicked is the
-                //  congregation ID.  This should probably be made a sub-section
-                //  of the current step.
-                var href = $(event.target).attr('href')
-                // TODO: Display step 4.5
-                // Render child views
-            this.confirm_cong_id_view = new ConfirmCongIDView({ el: $("#ConfirmID") });
-                // TODO: Put href into div
-                // TODO: Try to guess the id with a regular expression, and display that id to 
-                //  the user in a div.  Ask the user if it is the part of the URL that contains
-                //  the congregation's id.
-                //  Make it so the user only has
-                //  to click a "Yes" button to confirm if we got it right.
-                // TODO: Otherwise, ask the user to highlight the congregation's id
-                console.log('the URL is: ' + href)
-                // church.html?church_id=3
-                // church.html?church_id={cong_id}
-                // TODO: If the URL is only partial, prepend the root of the URL
-                if (href.indexOf('/') == 0){
-                    // TODO: Prepend the root of the URL
-                }
-                if(!href.match(/^http/)){
-                    // TODO: Prepend the root of the URL relative to the directory's URL
-                }
-                // TODO: Probably this step should not yet be called here, but only after 
-                //  the user responds
-                // Show step 5
-                $('#cong_details_fields').show(1000)
-                
-                // List field names
-                var field_names = [
-                          'name',
-                          'meeting_address1',
-                          'meeting_address2',
-                          'meeting_city',
-                          'meeting_state',
-                          'meeting_zip',
-                          'meeting_country',
-                          'mailing_address1',
-                          'mailing_address2',
-                          'mailing_city',
-                          'mailing_state',
-                          'mailing_zip',
-                          'mailing_country',
-                          'phone',
-                          'fax',
-                          'email',
-                          'website',
-                          'service_info',
-                          'date_founded'
-                        ]
-                // Format field names
-                fields = []
-                for (var i=0; i < field_names.length; i++){
-                    fields.push({
-                      pretty_name:config.capitalize(field_names[i].replace('_', ' ')),
-                      db_name:field_names[i]
-                    })
-                }
-                // Render Mustache template
-                var tmpl = $('#fields_template').html();
-                var fields_html = Mustache.render(tmpl, {fields:fields})
-                $('#fields_table_container').append(fields_html);
+                // Display step 4.5 in a child view
+                this.confirm_cong_id_view = new ConfirmCongIDView({el:'#ConfirmID'})
             }
         })
         return ImportDirectoryView
