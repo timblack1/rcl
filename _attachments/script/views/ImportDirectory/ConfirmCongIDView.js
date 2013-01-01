@@ -1,7 +1,8 @@
 define([
-        'config'
+        'config',
+        '../../lib/mustache'
         ], 
-        function(config){
+        function(config, Mustache){
     
     var ConfirmCongIDView = Backbone.View.extend({
         initialize:function(){
@@ -25,7 +26,10 @@ define([
             this.$('#href_underlined').html(href_underlined)
         },
         render: function(){
-            config.render_to_id(this, "#confirm_cong_id_template")
+            var id = "#confirm_cong_id_template"
+            $(id).hide()
+            config.render_to_id(this, id)
+            $(id).show(3000)
         },
         events: {
             "click #yes": "yes",
@@ -41,6 +45,11 @@ define([
         },
         no:function(){
             // TODO: Otherwise, ask the user to highlight the congregation's id
+            // TODO: Display the above request
+            // TODO: Put the below in an event listener
+            // TODO: Get the id the user highlighted, and replace it in the URL with {cong_id}
+            var url = this.href
+            this.record_id_format(url)
         },
         record_id_format:function(url){
             // TODO: start here
@@ -53,8 +62,8 @@ define([
             if(!href.match(/^http/)){
                 // TODO: Prepend the root of the URL relative to the directory's URL
             }
-            // TODO: Probably this step should not yet be called here, but only after 
-            //  the user responds
+            this.$el.hide(1000)
+            // TODO: Make this into its own Backbone view
             // Show step 5
             $('#cong_details_fields').show(1000)
             

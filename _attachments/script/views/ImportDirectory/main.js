@@ -358,12 +358,13 @@ define(
                 )
             },
             show_select_cong_details:function(event){
-                // Hide step 4
-                $('#cong_details_url').hide(1000)
+                // Hide step 4's header, letting the status message continue to display
+                $('#cong_details_url>h2').hide(1000)
                 // Prevent the link from making the browser navigate away from this page
                 event.preventDefault()
                 // Display step 4.5 in a child view
-                this.confirm_cong_id_view = new ConfirmCongIDView({el:'#ConfirmID'})
+                //this.confirm_cong_id_view = new ConfirmCongIDView({el:'#ConfirmID'})
+                this.confirm_cong_id_view = new ConfirmCongIDView({el:'#cong_details_url_selector'})
             }
         })
         return ImportDirectoryView
