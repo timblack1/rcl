@@ -19,19 +19,21 @@ describe("Reformed Churches Locator", function() {
             var content = $('#content').html()
             expect(content).toMatch('downloading')
         });
+        function trigger_url_field(){
+            $('#url').val('http://opc.org/locator.html')
+            $('#url').focus().keyup()
+        }
+        function directory_type_is_visible(){
+            // The test should wait until the AJAX call completes
+            // Check to see if the AJAX call returned here
+            return $('#directory_type').is(':visible')
+        }
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether 
                 //  the tests should run in a test copy of the database.
-                runs(function(){
-                    $('#url').val('http://opc.org/locator.html')
-                    $('#url').focus().keyup()
-                })
-                waitsFor(function(){
-                    // The test should wait until the AJAX call completes
-                    // Check to see if the AJAX call returned here
-                    return $('#directory_type').is(':visible')
-                }, "AJAX call to get URL HTML")
+                runs(trigger_url_field)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                     // Remove the docs we just created
@@ -45,19 +47,14 @@ describe("Reformed Churches Locator", function() {
 
         describe('state page', function(){
             it('should display when radio button is clicked', function(){
+                runs(trigger_url_field)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(function(){
-                    $('#url').val('http://opc.org/locator.html')
-                    $('#url').focus().keyup()
-                })
-                waitsFor(function(){
-                    // The test should wait until the AJAX call completes
-                    // Check to see if the AJAX call returned here
-                    return $('#directory_type').is(':visible')
-                }, "AJAX call to get URL HTML")
-                runs(function(){
+                    // TODO: Is the problem that the URL HTML has not yet been returned?
                     $("#one_state_per_page").click()
                 })
                 waitsFor(function(){
+                    console.log($('#state_page').is(':visible'))
                     return $('#state_page').is(':visible')
                 }, 'state page to display', 1000)
                 runs(function(){
