@@ -43,7 +43,7 @@ define(
             //    (misunderstood_url)
             
             routes: {
-                "index.html":                 "index.html",
+                "index.html":                    "index.html",
                 "find_a_church":                 "find_a_church",
                 "import_directory":              "import_directory"
             },

@@ -8,18 +8,18 @@
 
 PORT=5984
 # Get the admin username and password for couchdb
-AUTH=$(cat auth.txt)
+LOGIN=$(cat login.txt)
 
 # Create .couchapprc file if this has not been done yet
 if [ ! -e .couchapprc ];
 then
     cp .couchapprc.template .couchapprc
-    sed -i "s/username:password/$AUTH/g" .couchapprc
+    sed -i "s/username:password/$LOGIN/g" .couchapprc
     sed -i "s/5984/$PORT/g" .couchapprc
 fi
 
 # Push app into database in case this has not been done yet
-couchapp push http://$AUTH@localhost:$PORT/rcl
+couchapp push http://$LOGIN@localhost:$PORT/rcl
 
 #echo "Starting the Node.js changes listener as a forked child process..."
 #( ./node_changes_listener.sh & )
@@ -49,10 +49,12 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-couchapp browse . http://$AUTH@localhost:$PORT/rcl &
+couchapp browse . http://$LOGIN@localhost:$PORT/rcl &
 
 # Start watching the filesystem for changes, and push new changes into the database
 # TODO: This loops--it pushes every second, regardless of whether a file changed.  I'd rather
 #   have it only push when a file changes.
-#couchapp autopush --update-delay 1 http://$AUTH@localhost:$PORT/rcl
-watchmedo shell-command --wait --recursive --command="couchapp push http://$AUTH@localhost:$PORT/rcl" .
+#couchapp autopush --update-delay 1 http://$LOGIN@localhost:$PORT/rcl
+watchmedo shell-command --wait --recursive --command="couchapp push http://$LOGIN@localhost:$PORT/rcl" .
+# TODO: Convert to use Erica
+# iwatch . -c erica push

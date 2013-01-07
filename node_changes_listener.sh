@@ -2,13 +2,13 @@
 
 PORT=5984
 # Get the admin username and password for couchdb
-AUTH=$(cat auth.txt)
+LOGIN=$(cat login.txt)
 
 # Uncomment for debugging
-#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs --debug-brk
+#curl -s "http://$LOGIN@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs --debug-brk
 
 # Uncomment when not debugging
-curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs
+curl -s "http://$LOGIN@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs
 
 # Uncomment for production - runs as a background process
-#curl -s "http://$AUTH@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs &
+#curl -s "http://$LOGIN@localhost:$PORT/rcl/_design/rcl" | python -c "import json, sys; print(json.loads(''.join(sys.stdin.readlines()))['changes'])" | nodejs &
