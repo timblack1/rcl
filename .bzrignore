@@ -1,5 +1,5 @@
 .couchapprc
-auth.txt
+login.txt
 changes_listeners_temp.js
 stdout.txt
 sync.txt

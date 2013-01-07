@@ -14,18 +14,18 @@
    height="1052.3622047"
    id="svg2"
    version="1.1"
-   inkscape:version="0.47 r22583"
-   sodipodi:docname="New document 1">
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="headerbg.svg">
   <defs
      id="defs4">
     <linearGradient
        id="linearGradient3602">
       <stop
-         style="stop-color:#286470;stop-opacity:1;"
+         style="stop-color:#179292;stop-opacity:1;"
          offset="0"
          id="stop3604" />
       <stop
-         style="stop-color:#3a9eaa;stop-opacity:1;"
+         style="stop-color:#0edaf3;stop-opacity:1;"
          offset="1"
          id="stop3606" />
     </linearGradient>
@@ -54,7 +54,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="497.08429"
+     inkscape:cx="245.65572"
      inkscape:cy="817.98367"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -89,7 +89,7 @@
        y="415.28592"
        rx="15.138284"
        ry="13.873188"
-       inkscape:export-filename="/home/tim/Documents/MyWebPages/CaneyPUGgies/code/trunk/reformedchurcheslocator/rcl/public/images/headerbg.png"
+       inkscape:export-filename="/home/tim/Documents/MyWebPages/CaneyPUGgies/code/trunk/couchapp/rcl-backbone-test_for_directory_type/_attachments/images/headerbg.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path

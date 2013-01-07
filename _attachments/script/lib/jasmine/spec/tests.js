@@ -50,12 +50,17 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(function(){
-                    // TODO: Is the problem that the URL HTML has not yet been returned?
+                    // TODO: For some reason this click's effect is not being detected in the waitsFor call below
+                    // TODO: Is the problem that the click handler hasn't been set before the waitsFor call runs?
+                    //  This may be the case.
+                    $("#one_state_per_page").on('click',function(){
+                        console.log($('#one_state_per_page').data('events').click)
+                    })
                     $("#one_state_per_page").click()
                 })
                 waitsFor(function(){
-                    console.log($('#state_page').is(':visible'))
-                    return $('#state_page').is(':visible')
+                    //console.log($('#state_page').is(':visible'))
+                    return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
                 }, 'state page to display', 1000)
                 runs(function(){
                     expect($('#state_page').is(':visible').toBe(true))
