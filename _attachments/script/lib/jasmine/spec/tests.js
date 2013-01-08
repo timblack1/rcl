@@ -28,6 +28,10 @@ describe("Reformed Churches Locator", function() {
             // Check to see if the AJAX call returned here
             return $('#directory_type').is(':visible')
         }
+        function click_state_radio_button(){
+            $("#one_state_per_page").prop("checked",true)
+            $("#one_state_per_page").click()
+        }
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether 
@@ -56,8 +60,27 @@ describe("Reformed Churches Locator", function() {
                     $("#one_state_per_page").on('click',function(){
                         console.log($('#one_state_per_page').data('events').click)
                     })
+                    $("#one_state_per_page").prop("checked",true)
                     $("#one_state_per_page").click()
                 })
+                waitsFor(function(){
+                    //console.log($('#state_page').is(':visible'))
+                    return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
+                }, 'state page to display', 1000)
+                runs(function(){
+                    expect($('#state_page').is(':visible').toBe(true))
+                    console.log('does this run?')
+                    // Remove the docs we just created
+//                    dir.destroy()
+//                    $('#delete_all_docs').click()
+                })
+            })
+        })
+        describe('cong details', function(){
+            it('should display when select box is clicked', function(){
+                runs(trigger_url_field)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
+                runs(click_state_radio_button)
                 waitsFor(function(){
                     //console.log($('#state_page').is(':visible'))
                     return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
