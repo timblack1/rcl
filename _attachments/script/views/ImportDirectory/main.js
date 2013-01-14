@@ -14,6 +14,7 @@ define(
                 // Set up browser changes listener to watch for and handle Node changes 
                 //  listener's response
                 var changes = db.changes();
+                var thiz = this
                 // TODO: convert to this.watching_import_directory_view_changes
                 if (typeof watching_import_directory_view_changes == 'undefined'){
                     changes.onChange(function(change){
@@ -38,6 +39,11 @@ define(
                                     // Determine whether url_html contains HTML or RSS
                                     if (html.indexOf("</html>") > -1){
                                         $("#directory_type").show(1000);
+                                        // This event handler needs to be attached here because otherwise it is 
+                                        //  unavailable in the tests
+                                        console.log('before registering click handler')
+                                        $('#directory_type input').click(thiz.show_directory)
+                                        console.log('after registering click handler')
                                         $("#rss_feed").hide(1000);
                                         dir.set('pagetype', 'html')
                                     }
@@ -105,8 +111,7 @@ define(
                 config.render_to_id(this, "#import_directory_template")
             },
             events: {
-                'keyup #url':"get_church_dir_from_url",
-                'click #directory_type input': 'show_directory_type'
+                'keyup #url':"get_church_dir_from_url"
             },
             get_church_dir_from_url:function(){
 
@@ -262,9 +267,11 @@ define(
             hide_subform:function(){
                 $("#directory_type, #rss_feed, #cong_details, #state_page, #church_directory_page").hide(1000);
             },
-            show_directory_type:function(){
+            show_directory:function(){
                 var type = $('input:radio[name=type]:checked').val();
-          	  if (type=='one page'){
+                console.log($('input:radio[name=type]:checked'))
+                console.log('This was clicked: ' + type)
+                if (type=='one page'){
                     // Show the one page divs
                     $("#state_page").hide(1000);
                     // TODO: If "One Page" is selected, then show page containing list of all congs.
@@ -276,6 +283,7 @@ define(
                 //  If "One state per page" is selected, then drop down box showing state options.
                 if (type=='one state per page'){
                     // Show the state page divs
+                    console.log('in the conditional section')
                     $("#state_page").show(1000);
                     dir.set('display_type', type)
                     // Populate state_drop_down_selector div with contents of church directory page, 
