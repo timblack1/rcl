@@ -32,6 +32,9 @@ describe("Reformed Churches Locator", function() {
             $("#one_state_per_page").prop("checked",true)
             $("#one_state_per_page").click()
         }
+        function state_page_is_visible(){
+            return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
+        }
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether 
@@ -41,6 +44,7 @@ describe("Reformed Churches Locator", function() {
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                     // Remove the docs we just created
+                    // TODO: Figure out how to refactor this into a general function that can be used in all tests
 //                    dir.destroy()
                     // TODO: Improve this to only remove the docs created by this test, rather
                     //  than all docs.
@@ -53,33 +57,31 @@ describe("Reformed Churches Locator", function() {
             it('should display when radio button is clicked', function(){
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
-                runs(function(){
-                    $("#one_state_per_page").prop('checked',true)
-                    $("#one_state_per_page").click()
-                })
-                waitsFor(function(){
-                    return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
-                }, 'state page to display', 1000)
+                runs(click_state_radio_button)
+                waitsFor(state_page_is_visible, 'state page to display', 1000)
                 runs(function(){
                     expect($('#state_page').is(':visible')).toBe(true)
-                    console.log('does this run?')
                     // Remove the docs we just created
 //                    dir.destroy()
 //                    $('#delete_all_docs').click()
                 })
             })
         })
-describe('cong details', function(){
+        describe('cong details', function(){
             it('should display when select box is clicked', function(){
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
-                waitsFor(function(){
-                    //console.log($('#state_page').is(':visible'))
-                    return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
-                }, 'state page to display', 1000)
+                waitsFor(state_page_is_visible, 'state page to display', 1000)
                 runs(function(){
-                    expect($('#state_page').is(':visible').toBe(true))
+                    // TODO: This might not click the right select element, since it simply clicks all of them
+                    $('#state_drop_down_selector select[name=state]').click()
+                })
+                waitsFor(function(){
+                    return $('#cong_details_url_selector').is(':visible')
+                },'cong_details_url_selector to be visible', 1000)
+                runs(function(){
+                    expect($('#cong_details_url_selector').is(':visible').toBe(true))
                     console.log('does this run?')
                     // Remove the docs we just created
 //                    dir.destroy()
