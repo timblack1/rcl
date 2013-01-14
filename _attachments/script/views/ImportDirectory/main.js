@@ -41,9 +41,7 @@ define(
                                         $("#directory_type").show(1000);
                                         // This event handler needs to be attached here because otherwise it is 
                                         //  unavailable in the tests
-                                        console.log('before registering click handler')
                                         $('#directory_type input').click(thiz.show_directory)
-                                        console.log('after registering click handler')
                                         $("#rss_feed").hide(1000);
                                         dir.set('pagetype', 'html')
                                     }
@@ -269,8 +267,6 @@ define(
             },
             show_directory:function(){
                 var type = $('input:radio[name=type]:checked').val();
-                console.log($('input:radio[name=type]:checked'))
-                console.log('This was clicked: ' + type)
                 if (type=='one page'){
                     // Show the one page divs
                     $("#state_page").hide(1000);
@@ -283,7 +279,6 @@ define(
                 //  If "One state per page" is selected, then drop down box showing state options.
                 if (type=='one state per page'){
                     // Show the state page divs
-                    console.log('in the conditional section')
                     $("#state_page").show(1000);
                     dir.set('display_type', type)
                     // Populate state_drop_down_selector div with contents of church directory page, 
@@ -328,12 +323,12 @@ define(
                 // Handle cases where there is or is not a final slash in base_url, or
                 //  an initial slash in form.attr('action').
                 var base_url = dir.get('url').replace(/\/+$/,'')
-                if (form.attr('action').indexOf('/') == 0){
+                if (form.attr('action').indexOf('/') === 0){
                     // action is a partial absolute URL, so attach it to the domain name
                     var state_url_parts = base_url.split('/').slice(0,3)
                     state_url_parts.push(form.attr('action').replace(/^\//,''))
                     var state_url = state_url_parts.join('/')
-                }else if (form.attr('action').indexOf('http') == 0){
+                }else if (form.attr('action').indexOf('http') === 0){
                     // action is a complete absolute URL
                     var state_url = form.attr('action')
                 }else{
@@ -347,7 +342,6 @@ define(
                     var input = $(element)
                     state_url += '&' + input.attr('name') + '=' + input.val()
                 })
-                console.log(state_url)
                 dir.save({
                     state_url:state_url,
                     get_state_url_html:'requested',
