@@ -40,7 +40,7 @@ describe("Reformed Churches Locator", function() {
                 // TODO: Because this test writes to the database, decide whether 
                 //  the tests should run in a test copy of the database.
                 runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 20000)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 40000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                     // Remove the docs we just created
@@ -77,15 +77,10 @@ describe("Reformed Churches Locator", function() {
                     $('#state_drop_down_selector select[name=state]').click()
                 })
                 waitsFor(function(){
-                    // console.log('line 80')
-                    // console.log($('#cong_details_url_selector').is(':visible'))
                     return $('#cong_details_url_selector').is(':visible')
                 },'cong_details_url_selector to be visible', 20000)
                 runs(function(){
-                    console.log($('#cong_details_url_selector').is(':visible'))
                     expect($('#cong_details_url_selector').is(':visible')).toBe(true)
-                    // console.log(($('#cong_details_url_selector').css('display') != 'none'))
-                    // expect(($('#cong_details_url_selector').css('display') != 'none').toBe(true))
                     // Remove the docs we just created
 //                    dir.destroy()
 //                    $('#delete_all_docs').click()
