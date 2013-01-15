@@ -40,7 +40,7 @@ describe("Reformed Churches Locator", function() {
                 // TODO: Because this test writes to the database, decide whether 
                 //  the tests should run in a test copy of the database.
                 runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 40000)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 60000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                     // Remove the docs we just created
@@ -89,8 +89,38 @@ describe("Reformed Churches Locator", function() {
         })
         // TODO: Write test to click on the element with this XPATH:
         //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
+        describe('get congregation id', function(){
+            it('should display when link is clicked', function(){
+                runs(trigger_url_field)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
+                runs(click_state_radio_button)
+                waitsFor(state_page_is_visible, 'state page to display', 20000)
+                runs(function(){
+                    $('#state_drop_down_selector select[name=state]').click()
+                })
+                waitsFor(function(){
+                    return $('#cong_details_url_selector').is(':visible')
+                },'cong_details_url_selector to be visible', 60000)
+                runs(function(){
+                    expect($('#cong_details_url_selector').is(':visible')).toBe(true)
+                    // Remove the docs we just created
+//                    dir.destroy()
+//                    $('#delete_all_docs').click()
+                })
+                waitsFor(function(){
+                    return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
+                },'cong_details_url_selector to display step 4.5', 60000)
+                runs(function(){
+                    expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
+                    // Remove the docs we just created
+//                    dir.destroy()
+//                    $('#delete_all_docs').click()
+                })
+            })
+        })  
     });
 });
+
 
 // General test-runner code
 (function() {
