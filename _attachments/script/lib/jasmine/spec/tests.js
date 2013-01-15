@@ -92,6 +92,8 @@ describe("Reformed Churches Locator", function() {
                 })
             })
         })
+        // TODO: Write test to click on the element with this XPATH:
+        //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
     });
 });
 
