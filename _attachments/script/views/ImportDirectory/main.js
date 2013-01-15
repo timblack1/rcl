@@ -281,12 +281,12 @@ define(
                     // Show the state page divs
                     $("#state_page").show(1000);
                     dir.set('display_type', type)
-                    // Populate state_drop_down_selector div with contents of church directory page, 
+                    // Populate state_drop_down_selector div with contents of church directory page,
                     //  maybe in a scrollable div
                     $('#state_drop_down_selector').html(dir.get('url_html'));
-                    // We bind the event here because the select element didn't exist at this Backbone view's 
+                    // We bind the event here because the select element didn't exist at this Backbone view's
                     //  initialization
-                    $('#state_drop_down_selector select').mousedown({this_ob:this},function(event){ event.data.this_ob.show_state_page(event)})
+                    $('#state_drop_down_selector select').click({this_ob:this},function(event){ event.data.this_ob.show_state_page(event)})
                 }
                 this.hide_dir_and_display_type()
             },
