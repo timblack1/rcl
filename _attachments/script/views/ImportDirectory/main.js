@@ -299,21 +299,19 @@ define(
                 var el = $(event.target),
                     options = $(el).children(),
                     values = [];
-                // Get the select box the user clicked, and record its xpath so it 
-                //  can be found later.
-                // var xpath = config.getXPath(event.target).replace(config.getXPath(document.getElementById('state_page')),'')
-                // TODO: Start here
-                console.log($(el))
-                console.log($(el)[0].xpath())
-                var xpath = $(el).xpath().replace($(document.getElementById('state_page')).xpath(),'')
+                
+                // Get the select box the user clicked, and record its xpath so it can be found later.
+                // Note this xpath is recorded relative to the container of the directory website's body element
+                var xpath = config.getXPath($(el)[0]).replace(config.getXPath($('#state_page')[0]),'')
                 dir.set('select_element_xpath', xpath)
-                // Disable the select box immediately after the user clicks on it, so they can't 
+                
+                // Disable the select box immediately after the user clicks on it, so they can't
                 //  click on one of its options and fire a page load event.
                 $(event.target).prop('disabled',true)
                 event.preventDefault()
                 for (var i=0; i<options.length; i++){
                     var val = $(options[i]).val()
-                    if (val != ''){
+                    if (val !== ''){
                         values[i] = val;
                     }
                 }
