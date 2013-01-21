@@ -92,16 +92,18 @@ describe("Reformed Churches Locator", function() {
                 })
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible')
-                },'cong_details_url_selector to be visible', 60000)
+                },'cong_details_url_selector to be visible', 5000)
                 runs(function(){
                     // TODO: Write test to click on the element with this XPATH:
                     //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
                     // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
-                    $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
+                    // $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
+                    console.log($('a[class=lista]'))
+                    $('a[class=lista]')[0].click()
                 })
                 waitsFor(function(){
                     return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
-                },'cong_details_url_selector to display step 4.5', 60000)
+                },'cong_details_url_selector to display step 4.5', 4000)
                 runs(function(){
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
