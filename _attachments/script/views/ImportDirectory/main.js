@@ -10,6 +10,7 @@ define(
         var ImportDirectoryView = Backbone.View.extend({
             initialize : function(){
                 db = config.db
+                wgxpath.install()
                 
                 // Set up browser changes listener to watch for and handle Node changes 
                 //  listener's response
@@ -286,7 +287,8 @@ define(
                     $('#state_drop_down_selector').html(dir.get('url_html'));
                     // We bind the event here because the select element didn't exist at this Backbone view's
                     //  initialization
-                    $('#state_drop_down_selector select').click({this_ob:this},function(event){ event.data.this_ob.show_state_page(event)})
+                    $('#state_drop_down_selector select')
+                        .click({this_ob:this},function(event){ event.data.this_ob.show_state_page(event)})
                 }
                 this.hide_dir_and_display_type()
             },
@@ -299,7 +301,11 @@ define(
                     values = [];
                 // Get the select box the user clicked, and record its xpath so it 
                 //  can be found later.
-                var xpath = config.getXPath(event.target).replace(config.getXPath(document.getElementById('state_page')),'')
+                // var xpath = config.getXPath(event.target).replace(config.getXPath(document.getElementById('state_page')),'')
+                // TODO: Start here
+                console.log($(el))
+                console.log($(el)[0].xpath())
+                var xpath = $(el).xpath().replace($(document.getElementById('state_page')).xpath(),'')
                 dir.set('select_element_xpath', xpath)
                 // Disable the select box immediately after the user clicks on it, so they can't 
                 //  click on one of its options and fire a page load event.
