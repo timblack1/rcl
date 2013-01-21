@@ -1,6 +1,12 @@
 describe("Reformed Churches Locator", function() {
 
     afterEach(function() {
+        // Remove the docs we just created
+        // TODO: Figure out how to refactor this into a general function that can be used in all tests
+        // dir.destroy()
+        // TODO: Improve this to only remove the docs created by this test, rather
+        //  than all docs.
+        // $('#delete_all_docs').click()
         // Returns the page to display the home page as it should
         app.navigate(config.test_home_address, {trigger:true})
     });
@@ -43,12 +49,6 @@ describe("Reformed Churches Locator", function() {
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 60000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
-                    // Remove the docs we just created
-                    // TODO: Figure out how to refactor this into a general function that can be used in all tests
-//                    dir.destroy()
-                    // TODO: Improve this to only remove the docs created by this test, rather
-                    //  than all docs.
-//                    $('#delete_all_docs').click()
                 })
             })
         })
@@ -61,9 +61,6 @@ describe("Reformed Churches Locator", function() {
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
                 runs(function(){
                     expect($('#state_page').is(':visible')).toBe(true)
-                    // Remove the docs we just created
-//                    dir.destroy()
-//                    $('#delete_all_docs').click()
                 })
             })
         })
@@ -81,14 +78,9 @@ describe("Reformed Churches Locator", function() {
                 },'cong_details_url_selector to be visible', 20000)
                 runs(function(){
                     expect($('#cong_details_url_selector').is(':visible')).toBe(true)
-                    // Remove the docs we just created
-//                    dir.destroy()
-//                    $('#delete_all_docs').click()
                 })
             })
         })
-        // TODO: Write test to click on the element with this XPATH:
-        //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
         describe('get congregation id', function(){
             it('should display when link is clicked', function(){
                 runs(trigger_url_field)
@@ -102,19 +94,16 @@ describe("Reformed Churches Locator", function() {
                     return $('#cong_details_url_selector').is(':visible')
                 },'cong_details_url_selector to be visible', 60000)
                 runs(function(){
-                    expect($('#cong_details_url_selector').is(':visible')).toBe(true)
-                    // Remove the docs we just created
-//                    dir.destroy()
-//                    $('#delete_all_docs').click()
+                    // TODO: Write test to click on the element with this XPATH:
+                    //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
+                    // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
+                    $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
                 })
                 waitsFor(function(){
                     return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
                 },'cong_details_url_selector to display step 4.5', 60000)
                 runs(function(){
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
-                    // Remove the docs we just created
-//                    dir.destroy()
-//                    $('#delete_all_docs').click()
                 })
             })
         })  
