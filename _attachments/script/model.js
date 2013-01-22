@@ -144,10 +144,10 @@ define([
                        relatedModel: 'Directory',
                        collectionType:'Directories',
                        includeInJSON:'_id',
-                       reverseRelation: {
-                           key: 'cgroup',
-                           includeInJSON:'_id'
-                       }
+                       // reverseRelation: {
+                       //     key: 'cgroup',
+                       //     includeInJSON:'_id'
+                       // }
                    }
                    ]
     })
@@ -314,14 +314,14 @@ define([
                    {
                        type:'HasOne', // many-to-one
                        key: 'cgroup',
-                       relatedModel: 'CGroup_Directory',
+                       relatedModel: 'CGroup', // was 'CGroup_Directory'
                        collectionType:'CGroups',
                        includeInJSON:'_id',
-                       reverseRelation: {
-                           key: 'directories',
-                           // TODO: Is this needed?
-                           includeInJSON:'_id'
-                       }
+                       // reverseRelation: {
+                       //     key: 'directories',
+                       //     // TODO: Is this needed?
+                       //     includeInJSON:'_id'
+                       // }
                    }
                    ]
     })
