@@ -46,7 +46,7 @@ describe("Reformed Churches Locator", function() {
                 // TODO: Because this test writes to the database, decide whether 
                 //  the tests should run in a test copy of the database.
                 runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 60000)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 120000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                 })
@@ -93,7 +93,7 @@ describe("Reformed Churches Locator", function() {
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible') && 
                         $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
-                },'cong_details_url_selector to be visible', 5000)
+                },'cong_details_url_selector to be visible', 20000)
                 runs(function(){
                     // TODO: Write test to click on the element with this XPATH:
                     //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
