@@ -1,4 +1,4 @@
-fdefine(
+define(
    [
     '../../config',
     '../../model',
@@ -82,7 +82,19 @@ fdefine(
                                                 // It's best to catch and ignore errors
                                                 //  generated from the web-scraped HTML
                                                 // TODO: append the root URL to every relative URL in this HTML
-                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[2])
+                                            	var url = dir.get('state_url')
+                                            	var a = document.createElement('a');
+                                        		a.href = url;
+                                                var base = a.origin + a.pathname
+                                                var base2 = base.slice(0,base.lastIndexOf('/')+1)
+                                                var original_url = dir.get('state_url_html').match(/href\s*=\s*['"]{1}((^http).*?)['"]{1}/g)
+                                                console.log (original_url)
+                                                console.log ('You are here')
+                                                // if original_url starts with /:
+                                                    // then prepend base2 (without ending slash)
+                                                // else if original_url does not start with /:
+                                                    // then prepend base2 + /
+                                        		$('#cong_details_url_selector').html(dir.get('state_url_html')[2])
                                                 $('#cong_details_url_selector').show(1000)
                                             }catch(err){}
                                             displayed_state_page = true
