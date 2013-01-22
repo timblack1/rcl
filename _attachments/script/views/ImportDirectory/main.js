@@ -1,4 +1,4 @@
-define(
+fdefine(
    [
     '../../config',
     '../../model',
@@ -81,6 +81,7 @@ define(
                                             try{
                                                 // It's best to catch and ignore errors
                                                 //  generated from the web-scraped HTML
+                                                // TODO: append the root URL to every relative URL in this HTML
                                                 $('#cong_details_url_selector').html(dir.get('state_url_html')[2])
                                                 $('#cong_details_url_selector').show(1000)
                                             }catch(err){}
