@@ -1,5 +1,9 @@
+require.config({
+  waitSeconds: 15000,
+})
 // Define require() from require.js using the standard AMD define
-define(
+
+require(
    [
     'config',
     'model', 
