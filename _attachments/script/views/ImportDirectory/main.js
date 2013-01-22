@@ -81,7 +81,8 @@ define(
                                             try{
                                                 // It's best to catch and ignore errors
                                                 //  generated from the web-scraped HTML
-                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[2]).show(1000)
+                                                $('#cong_details_url_selector').html(dir.get('state_url_html')[2])
+                                                $('#cong_details_url_selector').show(1000)
                                             }catch(err){}
                                             displayed_state_page = true
                                             // Handle the user's click on the congregation 

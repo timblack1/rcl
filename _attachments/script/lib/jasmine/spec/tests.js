@@ -91,14 +91,15 @@ describe("Reformed Churches Locator", function() {
                     $('#state_drop_down_selector select[name=state]').click()
                 })
                 waitsFor(function(){
-                    return $('#cong_details_url_selector').is(':visible')
+                    return $('#cong_details_url_selector').is(':visible') && 
+                        $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
                 },'cong_details_url_selector to be visible', 5000)
                 runs(function(){
                     // TODO: Write test to click on the element with this XPATH:
                     //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
                     // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
                     // $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
-                    console.log($('a[class=lista]'))
+                    console.log($('a[class=lista]')[0])
                     $('a[class=lista]')[0].click()
                 })
                 waitsFor(function(){
