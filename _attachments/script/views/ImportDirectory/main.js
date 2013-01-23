@@ -53,7 +53,7 @@ define(
                                         dir.set('pagetype', 'rss')
                                     }
                                     else { // We got an error code
-                                        // TODO: Finesse this condition to be consistent 
+                                        // TODO: Finesse this condition to be consistent
                                         //  with the nested conditions above
                                         // Hide the form controls.
                                         elem.trigger('hide_subform');
@@ -67,40 +67,31 @@ define(
                                 // Display state details page's content
                                 if (dir.get('state_url_html')){
                                     if (dir.get('get_state_url_html') == 'getting'){
-                                        $('#cong_details_url #status').html('Getting state page data for # ' + 
-                                             (Number(dir.get('state_url_html').length)+1) + ' of ' + 
-                                             dir.get('state_page_values').length + ' state pages (this may take a while)...')
-                                        if (dir.get('state_url_html').length >2 && 
+                                        $('#cong_details_url #status').html('Getting state page data for # ' +
+                                             (Number(dir.get('state_url_html').length)+1) + ' of ' +
+                                             (Number(dir.get('state_page_values').length)+1) + ' state pages (this may take a while)...')
+                                        if (dir.get('state_url_html').length >2 &&
                                                 typeof displayed_state_page == 'undefined'){
                                             // Display the contents of the state page
                                             // TODO: This displays only one state's page.  Create a way
-                                            //  to iterate through the other states' pages after getting
+                                            //  to iterate through the other states' pages to test them
+                                            //  to see if the regex works on them, after getting
                                             //  a regex that works from this first state page.
-                                            // TODO: Change the URL array prior to this point so
-                                            //  we can select item 0 instead of 1.
                                             try{
                                                 // It's best to catch and ignore errors
                                                 //  generated from the web-scraped HTML
-                                                // TODO: append the root URL to every relative URL in this HTML
-                                            	var url = dir.get('state_url')
-                                            	var a = document.createElement('a');
-                                        		a.href = url;
-                                                var base = a.origin + a.pathname
-                                                var base2 = base.slice(0,base.lastIndexOf('/')+1)
-                                                var original_url = dir.get('state_url_html').match(/href\s*=\s*['"]{1}((^http).*?)['"]{1}/g)
-                                                console.log (original_url)
-                                                console.log ('You are here')
-                                                // if original_url starts with /:
-                                                    // then prepend base2 (without ending slash)
-                                                // else if original_url does not start with /:
-                                                    // then prepend base2 + /
-                                        		$('#cong_details_url_selector').html(dir.get('state_url_html')[2])
+                                                var index = 0
+                                                var new_html_set = thiz.rewrite_urls(dir.get('state_url'), dir.get('state_url_html'), index)
+                                                $('#cong_details_url_selector').html(new_html_set[index])
                                                 $('#cong_details_url_selector').show(1000)
-                                            }catch(err){}
+                                            }catch(err){
+                                                console.log("The remote site's code output the following error: " + err)
+                                            }
                                             displayed_state_page = true
-                                            // Handle the user's click on the congregation 
+                                            // Handle the user's click on the congregation
                                             //  details link
                                             $('#cong_details_url_selector a').click(function(e){
+                                                e.preventDefault()
                                                 window.app.import_directory_view.show_select_cong_details(e);
                                             });
                                         }
@@ -115,7 +106,7 @@ define(
                                 // ----------------------------------------------------------
 
                             }})
-                        }                                
+                        }
                     })
                     watching_import_directory_view_changes = true;
                 }
@@ -125,6 +116,42 @@ define(
             },
             events: {
                 'keyup #url':"get_church_dir_from_url"
+            },
+            rewrite_urls:function(page_url, page_html_set, index){
+                // Prepend the root URL to every partial URL in this HTML
+                // Get root URL
+                var a = document.createElement('a')
+                a.href = page_url
+                var base = a.origin + a.pathname
+                var root_url = base.slice(0,base.lastIndexOf('/'))
+                if (typeof page_html_set[index] == 'string'){
+                    // Find the URLs to replace
+                    var regex = /(href|src)\s*=\s*['"]{1}(.*?)['"]{1}/g
+                    // In every page
+                    for (var i=0; i<page_html_set.length; i++){
+                        // Replace the URLs
+                        page_html_set[i] = page_html_set[i].replace(regex, function(match, p1, p2, offset, string){
+                            var output;
+                            // Absolute, partial URL:  /locator.html
+                            if (p2.indexOf('/') === 0){
+                                output = a.origin + p2
+                            }
+                            // Absolute, full URL:  http://opc.org/locator.html
+                            else if (p2.indexOf('http') === 0){
+                                output = p2
+                            }
+                            // Relative, partial URL:  locator.html
+                            else{
+                                output = root_url + '/' + p2
+                            }
+                            // Include the href='' or src='' portion in what goes back into the HTML
+                            return match.replace(p2, output)
+                        })
+                    }
+                    return page_html_set
+                }else{
+                    console.error('the page_url was not defined, but should have been')
+                }
             },
             get_church_dir_from_url:function(){
 
@@ -298,7 +325,8 @@ define(
                     dir.set('display_type', type)
                     // Populate state_drop_down_selector div with contents of church directory page,
                     //  maybe in a scrollable div
-                    $('#state_drop_down_selector').html(dir.get('url_html'));
+                    var new_html_set = this.rewrite_urls(dir.get('url'), [dir.get('url_html')], 0)
+                    $('#state_drop_down_selector').html(new_html_set[0]);
                     // We bind the event here because the select element didn't exist at this Backbone view's
                     //  initialization
                     $('#state_drop_down_selector select')
@@ -325,8 +353,8 @@ define(
                 event.preventDefault()
                 for (var i=0; i<options.length; i++){
                     var val = $(options[i]).val()
-                    if (val !== ''){
-                        values[i] = val;
+                    if (val !== '' && val !== null && val !== 'null'){
+                        values.push(val);
                     }
                 }
                 dir.set('state_page_values', values)
