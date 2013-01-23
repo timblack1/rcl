@@ -314,6 +314,7 @@ define([
                    {
                        type:'HasOne', // many-to-one
                        key: 'cgroup',
+                       // TODO: the directory's 'cgroup' is null in the db
                        relatedModel: 'CGroup', // was 'CGroup_Directory'
                        collectionType:'CGroups',
                        includeInJSON:'_id',
