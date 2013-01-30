@@ -40,7 +40,7 @@ define(
                                     // Determine whether url_html contains HTML or RSS
                                     if (html.indexOf("</html>") > -1){
                                         $("#directory_type").show(1000);
-                                        // This event handler needs to be attached here because otherwise it is 
+                                        // This event handler needs to be attached here because otherwise it is
                                         //  unavailable in the tests
                                         $('#directory_type input').click(thiz.show_directory)
                                         $("#rss_feed").hide(1000);
@@ -68,9 +68,9 @@ define(
                                 if (dir.get('state_url_html')){
                                     if (dir.get('get_state_url_html') == 'getting'){
                                         $('#cong_details_url #status').html('Getting state page data for # ' +
-                                             (Number(dir.get('state_url_html').length)+1) + ' of ' +
-                                             (Number(dir.get('state_page_values').length)+1) + ' state pages (this may take a while)...')
-                                        if (dir.get('state_url_html').length >2 &&
+                                             dir.get('state_url_html').length + ' of ' +
+                                             dir.get('state_page_values').length + ' state pages (this may take a while)...')
+                                        if (dir.get('state_url_html').length >0 &&
                                                 typeof displayed_state_page == 'undefined'){
                                             // Display the contents of the state page
                                             // TODO: This displays only one state's page.  Create a way
@@ -309,6 +309,10 @@ define(
             },
             show_directory:function(){
                 var type = $('input:radio[name=type]:checked').val();
+                // TODO: The PCA has a KML file at http://batchgeo.com/map/kml/c78fa06a3fbdf2642daae48ca62bbb82
+                //  Some (all?) data is also in JSON at http://static.batchgeo.com/map/json/c78fa06a3fbdf2642daae48ca62bbb82/1357687276
+                //  After trimming off the non-JSON, the cong details are in the obj.mapRS array
+                //  You can pretty-print it at http://www.cerny-online.com/cerny.js/demos/json-pretty-printing
                 if (type=='one page'){
                     // Show the one page divs
                     $("#state_page").hide(1000);

@@ -1,11 +1,11 @@
-// This code (and its parent process in changes.js) is a Node.JS listener 
+// This code (and its parent process in changes.js) is a Node.JS listener
 //	listening to CouchDB's _changes feed, and is derived from
-//	https://github.com/mikeal/node.couch.js and 
+//	https://github.com/mikeal/node.couch.js and
 //	http://dominicbarnes.us/node-couchdb-api/api/database/changes.html
 // It monitors when requests are submitted to:
 //	(when configuring a directory's settings) get a url in general
 //	(when a directory is already configured) download all cong data for a directory
-// TODO: Could we use backbone-couch.js here instead of cradle, in order to use our 
+// TODO: Could we use backbone-couch.js here instead of cradle, in order to use our
 //	Backbone model here?
 
 var buffer = '',
@@ -47,7 +47,7 @@ function get_url_set(doc, from_urls, method, to_html, status_flag, options){
     //  per second to avoid getting banned by some servers.
     function recurse_urls(i){
         doc[status_flag] = 'getting'
-        if (doc[from_urls][i] != '' && typeof doc[from_urls][i] != 'undefined'){
+        if (doc[from_urls][i] !== '' && typeof doc[from_urls][i] != 'undefined'){
             // TODO: Make this handle doc[method] == 'post'
             http.get(doc[from_urls][i], function(res){
                 var pageData = ''
@@ -57,8 +57,8 @@ function get_url_set(doc, from_urls, method, to_html, status_flag, options){
                 res.on('end', function(){
                     // TODO: Check to see if we got a 404 response
                     // Write the contents of the html variable back to the database
-                    if (!doc[to_html] || doc[to_html] == ''){
-                        doc[to_html] = new Array() // declare as array
+                    if (!doc[to_html] || doc[to_html] === ''){
+                        doc[to_html] = [] // declare as array
                     }
                     var temp_items = doc[to_html]
                     var num_items = temp_items.push(pageData)
@@ -68,13 +68,18 @@ function get_url_set(doc, from_urls, method, to_html, status_flag, options){
                         doc[status_flag] = 'gotten'
                     }
                     // TODO: Use Backbone here instead of cradle
-                    db.save(doc._id, doc._rev, doc, function(err, res){
+                    db.save(doc._id, doc._rev, doc, function(err, response2){
                         // Do anything more that needs to be done here
-                        doc._rev = res.rev
-                        if (typeof options.success != 'undefined'){
-                            options.success()
-                            // Call this function recursively
-                            recurse_urls(i+1)
+                        // TODO: Start here
+                        console.log(doc._rev)
+                        console.log(response2, err)
+                        if (typeof response2 != 'undefined'){
+                            doc._rev = response2.rev
+                            if (typeof options.success != 'undefined'){
+                                options.success()
+                                // Call this function recursively
+                                recurse_urls(i+1)
+                            }
                         }
                     });
                 })
