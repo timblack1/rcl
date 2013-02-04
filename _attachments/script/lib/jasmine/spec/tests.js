@@ -38,6 +38,9 @@ describe("Reformed Churches Locator", function() {
             $("#one_state_per_page").prop("checked",true)
             $("#one_state_per_page").click()
         }
+        function state_drop_down_selector(){ 
+        	$('#state_drop_down_selector select[name=state]').click()
+        }
         function state_page_is_visible(){
             return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
         }
@@ -70,8 +73,7 @@ describe("Reformed Churches Locator", function() {
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
-                runs(function(){
-                    $('#state_drop_down_selector select[name=state]').click()
+                runs(state_drop_down_selector)
                 })
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible')
@@ -87,9 +89,8 @@ describe("Reformed Churches Locator", function() {
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
-                runs(function(){
-                    $('#state_drop_down_selector select[name=state]').click()
-                })
+                runs(state_drop_down_selector)
+                
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible') && 
                         $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
@@ -109,8 +110,7 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
             })
-        })  
-    });
+      })  
 });
 
 
