@@ -4,7 +4,7 @@ define(
     '../../model',
     '../../lib/mustache',
     './ConfirmCongIDView'
-    ], 
+    ],
     function(config, model, Mustache, ConfirmCongIDView){
 
         var ImportDirectoryView = Backbone.View.extend({
@@ -12,7 +12,7 @@ define(
                 db = config.db
                 wgxpath.install()
                 
-                // Set up browser changes listener to watch for and handle Node changes 
+                // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
                 var changes = db.changes();
                 var thiz = this
@@ -21,7 +21,7 @@ define(
                     changes.onChange(function(change){
                         var change_id = change.results[0].id
                         var rev = change.results[0].changes[0].rev
-                        // Determine if the changed document is the dir we are editing 
+                        // Determine if the changed document is the dir we are editing
                         if (typeof dir != 'undefined' && change_id == dir.get('_id')){
                             // Fetch document's new contents from db
                             // TODO: Why doesn't backbone-couchdb automatically update the
@@ -33,7 +33,7 @@ define(
                                 //  need to be handled
                                 
                                 // Display directory's first page of content
-                                if (dir.get('url_html') && 
+                                if (dir.get('url_html') &&
                                         dir.get('get_url_html') == 'gotten'){
                                     var html = dir.get('url_html')
                                     // In the controller & output to form, handle whether this is an RSS feed or an HTML page
@@ -352,10 +352,9 @@ define(
                     options = $(el).children(),
                     values = [];
                 
-                // Get the select box the user clicked, and record its xpath so it can be found later.
+                // Get the select box the user clicked, and record its xpath below so it can be found later.
                 // Note this xpath is recorded relative to the container of the directory website's body element
                 var xpath = config.getXPath($(el)[0]).replace(config.getXPath($('#state_page')[0]),'')
-                dir.set('select_element_xpath', xpath)
                 
                 // Disable the select box immediately after the user clicks on it, so they can't
                 //  click on one of its options and fire a page load event.
@@ -364,10 +363,9 @@ define(
                 for (var i=0; i<options.length; i++){
                     var val = $(options[i]).val()
                     if (val !== '' && val !== null && val !== 'null'){
-                        values.push(val);
+                        state_page_values.push(val);
                     }
                 }
-                dir.set('state_page_values', values)
                 // Hide divs we don't need now
                 $("#state_page, #url_and_display_type, #directory_type, #cong_details_fields_selector").hide(1000);
                 // Get cong data from a URL like this:  http://opc.org/locator.html?state=WA&search_go=Y
@@ -379,18 +377,19 @@ define(
                 // Handle cases where there is or is not a final slash in base_url, or
                 //  an initial slash in form.attr('action').
                 var base_url = dir.get('url').replace(/\/+$/,'')
+                var state_url = ''
                 if (form.attr('action').indexOf('/') === 0){
                     // action is a partial absolute URL, so attach it to the domain name
                     var state_url_parts = base_url.split('/').slice(0,3)
                     state_url_parts.push(form.attr('action').replace(/^\//,''))
-                    var state_url = state_url_parts.join('/')
+                    state_url = state_url_parts.join('/')
                 }else if (form.attr('action').indexOf('http') === 0){
                     // action is a complete absolute URL
-                    var state_url = form.attr('action')
+                    state_url = form.attr('action')
                 }else{
                     // action is a relative URL
                     var base_url_shortened = base_url.slice(0,base_url.lastIndexOf('/'))
-                    var state_url = base_url_shortened + '/' + form.attr('action')
+                    state_url = base_url_shortened + '/' + form.attr('action')
                 }
                 state_url += '?' + el.attr('name') + '=' + '{state_name}'
                 // Append other form inputs
@@ -398,22 +397,26 @@ define(
                     var input = $(element)
                     state_url += '&' + input.attr('name') + '=' + input.val()
                 })
-                dir.save({
-                    state_url:state_url,
-                    get_state_url_html:'requested',
-                    state_url_html:'',
-                    state_url_method:form.attr('method')
-                    },
-                    {
-                        success:function(){
-                            // Notify the user that we are downloading the requested data
-                            $('#cong_details_url #status').html('Getting state page data for # 1 of ' + 
-                                 values.length + ' state pages (this may take a while)...')
-                            // Show state details page div
-                            $("#cong_details_url").fadeIn(1000);
+                dir.fetch({success:function(model, response, options){
+                    dir.save({
+                        state_url:state_url,
+                        get_state_url_html:'requested',
+                        state_url_html:'',
+                        state_url_method:form.attr('method'),
+                        select_element_xpath:xpath,
+                        state_page_values:state_page_values
+                        },
+                        {
+                            success:function(){
+                                // Notify the user that we are downloading the requested data
+                                $('#cong_details_url #status').html('Getting state page data for # 1 of ' +
+                                     state_page_values.length + ' state pages (this may take a while)...')
+                                // Show state details page div
+                                $("#cong_details_url").fadeIn(1000);
+                            }
                         }
-                    }
-                )
+                    )
+                }})
             },
             show_select_cong_details:function(event){
                 // Hide step 4's header, letting the status message continue to display
