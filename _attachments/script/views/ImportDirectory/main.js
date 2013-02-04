@@ -112,6 +112,7 @@ define(
                 }
             },
             render: function(){
+                // TODO: Consider using assign() as described here:  http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
                 config.render_to_id(this, "#import_directory_template")
             },
             events: {
@@ -165,22 +166,27 @@ define(
                 // Declare several utility functions for use further below
     
                 function save_cgroup_and_dir(cgroup, dir){
-                    // Save the dir so if the URL has changed in the browser, it gets 
+                    // Save the dir so if the URL has changed in the browser, it gets
                     //  updated in the db too
-                    dir.save({
-                                _id:dir.get('_id'), 
-                                _rev:dir.get('_rev'),
-                                url:$('#url').val(),
-                                get_url_html:'requested'
-                            },
-                            {success:function(){
-                        // Append dir to CGroup
-                        cgroup.get('directories').add([{_id:dir.get('_id')}])
-                        // Save cgroup to db
-                        // TODO: Does the relation appear on the dir in the db also?
-                        cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
-                        // This will trigger the Node changes listener's response
-                    }})
+                    dir.fetch({success:function(dir, response, options){
+                        dir.save({
+                                    _id:dir.get('_id'),
+                                    _rev:dir.get('_rev'),
+                                    url:$('#url').val(),
+                                    get_url_html:'requested'
+                                },
+                                {
+                                    success:function(){
+                                        // Append dir to CGroup
+                                        cgroup.get('directories').add([{_id:dir.get('_id')}])
+                                        // Save cgroup to db
+                                        // TODO: Does the relation appear on the dir in the db also?
+                                        cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
+                                        // This will trigger the Node changes listener's response
+                                    }
+                                }
+                        )}
+                    })
                 }
                 
                 function get_cgroup(dir){
@@ -192,15 +198,15 @@ define(
                     var cgroup_name = $('#cgroup_name').val()
                     var abbr = $('#abbreviation').val()
                     // Don't do anything if the CGroup info isn't entered yet
-                    if (cgroup_name != '' && abbr != ''){
+                    if (cgroup_name !== '' && abbr !== ''){
                         // Check if cgroup already exists in db
                         // TODO: Consider whether this pattern can be refactored into a function,
                         //  because it seems we need to use it regularly.
                         //  - I put it into model.get_or_create_one()
-                        // TODO: But in this case, the callback takes two arguments.  How can 
+                        // TODO: But in this case, the callback takes two arguments.  How can
                         //  we handle different numbers of callback arguments?
                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/make-getorcreateone-handle-multiple-callback-args
-                        model.get_one(model.CGroupsByAbbrOrName, 
+                        model.get_one(model.CGroupsByAbbrOrName,
                               [cgroup_name,abbr],
                               {success:function(cgroup){
                                   if (typeof(cgroup) === 'undefined'){
@@ -244,10 +250,10 @@ define(
                                                  get_url_html:'requested'
                                              },
                                              {success:function(dir){
-                                                 // TODO: If the other form fields are empty, 
-                                                 //     auto-populate them with info from this 
+                                                 // TODO: If the other form fields are empty,
+                                                 //     auto-populate them with info from this
                                                  //     directory's cgroup to help the user
-                                                 // TODO: Maybe only display those fields after 
+                                                 // TODO: Maybe only display those fields after
                                                  //     the URL is filled in
                                                  //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                                                  get_cgroup(dir)
