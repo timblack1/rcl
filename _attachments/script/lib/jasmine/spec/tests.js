@@ -43,7 +43,7 @@ describe("Reformed Churches Locator", function() {
         }
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
-                // TODO: Because this test writes to the database, decide whether 
+                // TODO: Because this test writes to the database, decide whether
                 //  the tests should run in a test copy of the database.
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 120000)
@@ -91,7 +91,7 @@ describe("Reformed Churches Locator", function() {
                     $('#state_drop_down_selector select[name=state]').click()
                 })
                 waitsFor(function(){
-                    return $('#cong_details_url_selector').is(':visible') && 
+                    return $('#cong_details_url_selector').is(':visible') &&
                         $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
                 },'cong_details_url_selector to be visible', 20000)
                 runs(function(){
@@ -109,7 +109,7 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
             })
-        })  
+        })
     });
 });
 
