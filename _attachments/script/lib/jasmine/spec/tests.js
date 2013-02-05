@@ -84,6 +84,7 @@ describe("Reformed Churches Locator", function() {
         })
         describe('get congregation id', function(){
             it('should display when link is clicked', function(){
+            	console.log (trigger_url_field)
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
