@@ -38,8 +38,8 @@ describe("Reformed Churches Locator", function() {
             $("#one_state_per_page").prop("checked",true)
             $("#one_state_per_page").click()
         }
-        function state_drop_down_selector(){
-            $('#state_drop_down_selector select[name=state]').click()
+        function state_drop_down_selector(){ 
+        	$('#state_drop_down_selector select[name=state]').click()
         }
         function state_page_is_visible(){
             return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
@@ -109,8 +109,8 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
             })
-        })
-    });
+        })  
+    })
 });
 
 
@@ -132,7 +132,7 @@ describe("Reformed Churches Locator", function() {
     };
     function execJasmine() {
         jasmineEnv.execute();
-        // Move Jasmine's symbolSummary to top of page to make it easy to see if
+        // Move Jasmine's symbolSummary to top of page to make it easy to see if 
         //    some tests are not passing
         $('body').prepend('<div id="HTMLReporter" class="jasmine_reporter"><div class="banner"></div></div>')
         $('.banner').first().prepend($('.symbolSummary'))
