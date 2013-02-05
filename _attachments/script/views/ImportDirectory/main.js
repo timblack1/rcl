@@ -360,6 +360,7 @@ define(
                 //  click on one of its options and fire a page load event.
                 $(event.target).prop('disabled',true)
                 event.preventDefault()
+                var state_page_values = []
                 for (var i=0; i<options.length; i++){
                     var val = $(options[i]).val()
                     if (val !== '' && val !== null && val !== 'null'){
