@@ -74,7 +74,7 @@ describe("Reformed Churches Locator", function() {
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
                 runs(state_drop_down_selector)
-                })
+                
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible')
                 },'cong_details_url_selector to be visible', 20000)
@@ -82,7 +82,7 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').is(':visible')).toBe(true)
                 })
             })
-        })
+        }) 
         describe('get congregation id', function(){
             it('should display when link is clicked', function(){
                 runs(trigger_url_field)
@@ -110,7 +110,8 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
             })
-      })  
+        })  
+    })
 });
 
 
