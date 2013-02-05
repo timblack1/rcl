@@ -38,8 +38,8 @@ describe("Reformed Churches Locator", function() {
             $("#one_state_per_page").prop("checked",true)
             $("#one_state_per_page").click()
         }
-        function state_drop_down_selector(){ 
-        	$('#state_drop_down_selector select[name=state]').click()
+        function state_drop_down_selector(){
+            $('#state_drop_down_selector select[name=state]').click()
         }
         function state_page_is_visible(){
             return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
@@ -74,7 +74,6 @@ describe("Reformed Churches Locator", function() {
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
                 runs(state_drop_down_selector)
-                })
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible')
                 },'cong_details_url_selector to be visible', 20000)
@@ -110,8 +109,8 @@ describe("Reformed Churches Locator", function() {
                     expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
                 })
             })
-(??)        })  
-(??)    });
+        })
+    });
 });
 
 
