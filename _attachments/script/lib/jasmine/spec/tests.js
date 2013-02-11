@@ -44,6 +44,21 @@ describe("Reformed Churches Locator", function() {
         function state_page_is_visible(){
             return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
         }
+        function click_cong_anchor(){
+            // TODO: Write test to click on the element with this XPATH:
+            //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
+            // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
+            // $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
+            $('a[class=lista]')[0].click()
+        }
+        function cong_details_url_selector_visible(){
+            return $('#cong_details_url_selector').is(':visible') &&
+                $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
+        }
+        function cong_details_id_selector_visible(){
+            return $('#cong_details_url_selector').is(':visible') &&
+                $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
+        }
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether
@@ -84,24 +99,13 @@ describe("Reformed Churches Locator", function() {
         })
         describe('get congregation id', function(){
             it('should display when link is clicked', function(){
-            	console.log (trigger_url_field)
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
                 runs(state_drop_down_selector)
-                waitsFor(function(){
-                    return $('#cong_details_url_selector').is(':visible') &&
-                        $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
-                },'cong_details_url_selector to be visible', 20000)
-                runs(function(){
-                    // TODO: Write test to click on the element with this XPATH:
-                    //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
-                    // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
-                    // $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
-                    console.log($('a[class=lista]')[0])
-                    $('a[class=lista]')[0].click()
-                })
+                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 20000)
+                runs(click_cong_anchor)
                 waitsFor(function(){
                     return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
                 },'cong_details_url_selector to display step 4.5', 4000)
@@ -110,37 +114,22 @@ describe("Reformed Churches Locator", function() {
                 })
             })
         })
-     describe('cong_details_selector_page', function(){
+        describe('cong_details_selector_page', function(){
             it('should display when button is clicked', function(){
-            	console.log (trigger_url_field)
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
                 waitsFor(state_page_is_visible, 'state page to display', 20000)
                 runs(state_drop_down_selector)
-                
-                waitsFor(function(){
-                    return $('#cong_details_url_selector').is(':visible') &&
-                        $('#cong_details_url_selector').html().indexOf('Confirm which URL parameter') != -1
-                },'cong_details_url_selector to be visible', 20000)
-                 runs(function(){
-                    // TODO: Write test to click on the element with this XPATH:
-                    //  //*[@id="churchListTable"]/tbody/tr[2]/td[1]/a
-                    // console.log($.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a'))
-                    // $.xpath('//*[@id="churchListTable"]/tbody/tr[2]/td[1]/a').click()
-                    console.log($('a[class=lista]')[0])
-                    $('a[class=lista]')[0].click()
-                })
-                
-                waitsFor(function(){          	
-                    return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
-                },'cong_details_url_selector to display step 4.5', 4000)
+                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 20000)
+                runs(click_cong_anchor)
+                waitsFor(cong_details_id_selector_visible,'cong_details_url_selector to display Step 4.5', 4000)
                 runs(function(){
                     $('#cong_details_url_selector #yes').click()
                 })
                 runs(function(){
-                    expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
-                    //TODO Start Here: modify this section to work in this test
+                    // TODO: Start Here: modify this section to work in this test
+                    expect($('#cong_details_fields').html()).toMatch('Step 5')
                 })
             })
         })
