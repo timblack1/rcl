@@ -64,7 +64,7 @@ describe("Reformed Churches Locator", function() {
                 // TODO: Because this test writes to the database, decide whether
                 //  the tests should run in a test copy of the database.
                 runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 120000)
+                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", 1120000)
                 runs(function(){
                     expect($('#directory_type').is(':visible')).toBe(true)
                 })
@@ -76,7 +76,7 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', 20000)
+                waitsFor(state_page_is_visible, 'state page to display', 1120000)
                 runs(function(){
                     expect($('#state_page').is(':visible')).toBe(true)
                 })
@@ -87,11 +87,11 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', 20000)
+                waitsFor(state_page_is_visible, 'state page to display', 1120000)
                 runs(state_drop_down_selector)
                 waitsFor(function(){
                     return $('#cong_details_url_selector').is(':visible')
-                },'cong_details_url_selector to be visible', 20000)
+                },'cong_details_url_selector to be visible', 120000)
                 runs(function(){
                     expect($('#cong_details_url_selector').is(':visible')).toBe(true)
                 })
@@ -102,9 +102,9 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', 20000)
+                waitsFor(state_page_is_visible, 'state page to display', 120000)
                 runs(state_drop_down_selector)
-                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 20000)
+                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 120000)
                 runs(click_cong_anchor)
                 waitsFor(function(){
                     return $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
@@ -119,14 +119,22 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
                 runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', 20000)
+                waitsFor(state_page_is_visible, 'state page to display', 120000)
                 runs(state_drop_down_selector)
-                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 20000)
+                	console.log ('After State Drop Down Selector')
+                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', 120000)
+                	console.log ('After Cong Details url Selector')
                 runs(click_cong_anchor)
+                	console.log ('After Click Cong Anchor')
                 waitsFor(cong_details_id_selector_visible,'cong_details_url_selector to display Step 4.5', 4000)
+                	console.log ('After Cong Details ID Selector Visible')
                 runs(function(){
+                	console.log($('#cong_details_url_selector #yes'))
                     $('#cong_details_url_selector #yes').click()
                 })
+                waitsFor(function(){
+                    return $('#cong_details_fields').html().indexOf('Step 5') != -1
+                },'cong_details_fields to display step 5', 12000)
                 runs(function(){
                     // TODO: Start Here: modify this section to work in this test
                     expect($('#cong_details_fields').html()).toMatch('Step 5')
