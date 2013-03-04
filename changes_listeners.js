@@ -42,7 +42,7 @@ function get_url(doc, from_url, to_html, status_flag){
     });
 }
 currently_getting = []
-function get_url_set(doc, options){
+function get_url_set(options){
     // TODO: Will these globals interfere with each other if there are multiple downloads happening simultaneously?
     var output_array = []
     var output_array_saved = false
@@ -55,11 +55,11 @@ function get_url_set(doc, options){
         //  per second to avoid getting banned by some servers.
         function recurse_urls(i, options){
             // Stop running if we have reached the end of the list of URLs,
-            if (doc[options.from_urls][i] !== '' && typeof doc[options.from_urls][i] !== 'undefined' &&
+            if (options.doc[options.from_urls][i] !== '' && typeof options.doc[options.from_urls][i] !== 'undefined' &&
                     // and don't run if we've already downloaded the HTML for this URL
-                    typeof doc[i] == 'undefined'){
-                // TODO: Make this handle doc[options.method] == 'post'
-                http.get(doc[options.from_urls][i], function(res){
+                    typeof options.doc[i] == 'undefined'){
+                // TODO: Make this handle options.doc[options.method] == 'post'
+                http.get(options.doc[options.from_urls][i], function(res){
                     var pageData = ''
                     res.on('data', function(chunk){
                         pageData += chunk
@@ -68,35 +68,37 @@ function get_url_set(doc, options){
                         // TODO: Check to see if we got a 404 response
                         // Append result to output_array
                         output_array[i] = pageData
-                        if (doc[options.status_flag] !== 'getting'){
+                        if (options.doc[options.status_flag] !== 'getting'){
                             // TODO: It seems this is getting reset to "requested" by the next unit test, because the db
                             //  contains "requested" rather than "getting" soon after this runs
-                            doc[options.status_flag] = 'getting'
+                            options.doc[options.status_flag] = 'getting'
                             // report to the db the fact we are getting the HTML
-                            db.save(doc._id, doc._rev, doc)
+                            db.save(options.doc._id, options.doc._rev, options.doc)
                         }
                         // Record the number downloaded
-                        db.get(doc._id, function(err, doc){
-                            doc[options.number_downloaded] = i
-                            db.save(doc._id, doc._rev, doc, function(err, response){
+                        db.get(options.doc._id, function(err, doc){
+                            options.doc = doc
+                            options.doc[options.number_downloaded] = i
+                            db.save(options.doc._id, options.doc._rev, options.doc, function(err, response){
                                 console.log('i: ' + i)
                                 // If we've downloaded all the HTML, and haven't saved to the db yet
-                                if (output_array.length == doc[options.from_urls].length && output_array_saved !== true){
+                                if (output_array.length == options.doc[options.from_urls].length && output_array_saved !== true){
                                     // TODO: Start here.  This recursion has a memory leak, maybe because the script
                                     //  keeps downloading even after output_array_saved == true
                                     var save_attempts = 0
                                     options.output_array_saved = output_array_saved
-                                    function save_again(doc, options){
-                                        db.get(doc._id, function(err, doc){
-                                            if (!err && doc && doc._id && typeof doc._id !== 'undefined'){
+                                    function save_again(options){
+                                        db.get(options.doc._id, function(err, doc){
+                                            options.doc = doc
+                                            if (!err && options.doc && options.doc._id && typeof options.doc._id !== 'undefined'){
                                                 // Save to the db all the HTML we've gotten
                                                 // TODO: This is running several times in series
                                                 console.log('output_array.length: ' + output_array.length)
-                                                doc[options.to_html] = output_array
-                                                doc[options.status_flag] = 'gotten'
+                                                options.doc[options.to_html] = output_array
+                                                options.doc[options.status_flag] = 'gotten'
                                                 // Deletes number downloaded since it's not needed anymore
-                                                delete doc[options.number_downloaded]
-                                                db.save(doc._id, doc._rev, doc, function(err, response){
+                                                delete options.doc[options.number_downloaded]
+                                                db.save(options.doc._id, options.doc._rev, options.doc, function(err, response){
                                                     if (typeof err !== 'undefined'){
                                                         console.error(err)
                                                         // Recurse to try saving again
@@ -104,9 +106,9 @@ function get_url_set(doc, options){
                                                         if (save_attempts < 0){
                                                             save_attempts++;
                                                             console.log('save_attempts: ' + save_attempts)
-                                                            save_again(doc, options.output_array_saved)
+                                                            save_again(options)
                                                         }else{
-                                                            console.error('Failed to save doc: ' + doc._id, doc._rev)
+                                                            console.error('Failed to save doc: ' + options.doc._id, options.doc._rev)
                                                         }
                                                     }else{
                                                         options.output_array_saved = true
@@ -120,7 +122,7 @@ function get_url_set(doc, options){
                                         })
                                     }
                                     if (options.output_array_saved !== true){
-                                        save_again(doc, options)
+                                        save_again(options)
                                     }
                                 }
                             })
@@ -158,7 +160,8 @@ process.on('message', function(doc){
             }
         }
         doc.state_page_urls = state_page_urls
-        get_url_set(doc, {
+        get_url_set({
+            doc:               doc,
             from_urls:          'state_page_urls',
             method:             'state_url_method',
             to_html:            'state_url_html',
