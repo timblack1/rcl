@@ -66,9 +66,12 @@ define(
                                 
                                 // Display state details page's content
                                 if (dir.get('state_url_html')){
+                                    console.log('---------------')
+                                    console.log('get_state_url_html: ' + dir.get('get_state_url_html'))
                                     if (dir.get('get_state_url_html') == 'getting'){
+                                        console.log('gotten: ' + dir.get('state_urls_gotten'))
                                         $('#cong_details_url #status').html('Getting state page data for # ' +
-                                             dir.get('state_url_html').length + ' of ' +
+                                             dir.get('state_urls_gotten') + ' of ' +
                                              dir.get('state_page_values').length + ' state pages (this may take a while)...')
                                         if (dir.get('state_url_html').length >0 &&
                                                 typeof displayed_state_page == 'undefined'){
@@ -120,6 +123,23 @@ define(
             },
             rewrite_urls:function(page_url, page_html_set, index){
                 // Prepend the root URL to every partial URL in this HTML
+                function replacer(match, p1, p2, offset, string){
+                    var output;
+                    // Absolute, partial URL:  /locator.html
+                    if (p2.indexOf('/') === 0){
+                        output = a.origin + p2
+                    }
+                    // Absolute, full URL:  http://opc.org/locator.html
+                    else if (p2.indexOf('http') === 0){
+                        output = p2
+                    }
+                    // Relative, partial URL:  locator.html
+                    else{
+                        output = root_url + '/' + p2
+                    }
+                    // Include the href='' or src='' portion in what goes back into the HTML
+                    return match.replace(p2, output)
+                }
                 // Get root URL
                 var a = document.createElement('a')
                 a.href = page_url
@@ -131,23 +151,7 @@ define(
                     // In every page
                     for (var i=0; i<page_html_set.length; i++){
                         // Replace the URLs
-                        page_html_set[i] = page_html_set[i].replace(regex, function(match, p1, p2, offset, string){
-                            var output;
-                            // Absolute, partial URL:  /locator.html
-                            if (p2.indexOf('/') === 0){
-                                output = a.origin + p2
-                            }
-                            // Absolute, full URL:  http://opc.org/locator.html
-                            else if (p2.indexOf('http') === 0){
-                                output = p2
-                            }
-                            // Relative, partial URL:  locator.html
-                            else{
-                                output = root_url + '/' + p2
-                            }
-                            // Include the href='' or src='' portion in what goes back into the HTML
-                            return match.replace(p2, output)
-                        })
+                        page_html_set[i] = page_html_set[i].replace(regex, replacer)
                     }
                     return page_html_set
                 }else{
@@ -156,37 +160,51 @@ define(
             },
             get_church_dir_from_url:function(){
 
-                // Delay this to run after typing has stopped for 2 seconds, so we don't 
+                // Delay this to run after typing has stopped for 2 seconds, so we don't
                 //  send too many requests
                 // TODO: Don't fire on every key event, but only once after delay.
-                //  The way to do this is not via setTimeout, but probably something 
+                //  The way to do this is not via setTimeout, but probably something
                 //  like a while loop
                 //setTimeout(function(){
     
                 // Declare several utility functions for use further below
-    
                 function save_cgroup_and_dir(cgroup, dir){
                     // Save the dir so if the URL has changed in the browser, it gets
                     //  updated in the db too
-                    dir.fetch({success:function(dir, response, options){
-                        dir.save({
-                                    _id:dir.get('_id'),
-                                    _rev:dir.get('_rev'),
-                                    url:$('#url').val(),
-                                    get_url_html:'requested'
-                                },
-                                {
-                                    success:function(){
-                                        // Append dir to CGroup
-                                        cgroup.get('directories').add([{_id:dir.get('_id')}])
-                                        // Save cgroup to db
-                                        // TODO: Does the relation appear on the dir in the db also?
-                                        cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
-                                        // This will trigger the Node changes listener's response
-                                    }
-                                }
-                        )}
-                    })
+                    var iterations = 0
+                    // Note this is a recursive function!
+                    function save_dir(cgroup, dir){
+                        iterations++;
+                        dir.fetch({success:function(dir, response, options){
+                            var get_url_html = dir.get('get_url_html')
+                            // Prevent import from running multiple times simultaneously
+                            if (get_url_html != 'getting'){
+                                get_url_html = 'requested'
+                            }
+                            // TODO: This generates a 409 conflict
+                            dir.save({
+                                        _id:dir.get('_id'),
+                                        _rev:dir.get('_rev'),
+                                        url:$('#url').val(),
+                                        get_url_html:get_url_html
+                                    },
+                                    {
+                                        success:function(){
+                                            // Append dir to CGroup
+                                            cgroup.get('directories').add([{_id:dir.get('_id')}])
+                                            // Save cgroup to db
+                                            // TODO: Does the relation appear on the dir in the db also?
+                                            cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
+                                            // This will trigger the Node changes listener's response
+                                        },
+                                        error:function(model, xhr, options){
+                                            console.error('We got the 181 error '+ iterations)
+                                            save_dir(cgroup, dir)
+                                        }
+                                    })
+                        }})
+                    }
+                    save_dir(cgroup, dir)
                 }
                 
                 function get_cgroup(dir){
@@ -398,26 +416,50 @@ define(
                     var input = $(element)
                     state_url += '&' + input.attr('name') + '=' + input.val()
                 })
-                dir.fetch({success:function(model, response, options){
-                    dir.save({
-                        state_url:state_url,
-                        get_state_url_html:'requested',
-                        state_url_html:'',
-                        state_url_method:form.attr('method'),
-                        select_element_xpath:xpath,
-                        state_page_values:state_page_values
-                        },
-                        {
-                            success:function(){
-                                // Notify the user that we are downloading the requested data
-                                $('#cong_details_url #status').html('Getting state page data for # 1 of ' +
-                                     state_page_values.length + ' state pages (this may take a while)...')
-                                // Show state details page div
-                                $("#cong_details_url").fadeIn(1000);
-                            }
+                var it = 0
+                // Note this is a recursive function!  It tries to save until it succeeds.
+                function save_dir(dir){
+                    it++;
+                    dir.fetch({success:function(model, response, options){
+                        // console.log(model.get("_rev"))
+                        // console.log(dir.get("_rev"))
+                        // console.log(response)
+                        // TODO: There is a document update conflict here.  The local and remote copies appear to
+                        //  have the same _rev from here.  But in the DB, the _rev is 2 beyond that detected
+                        //  here.
+                        var get_state_url_html = dir.get('get_state_url_html')
+                        // Prevent import from running multiple times simultaneously
+                        // TODO: Start here.  This seems to prevent the import from running at all.
+                        console.log('get_state_url_html: ' + get_state_url_html)
+                        if (get_state_url_html != 'getting'){
+                            get_state_url_html = 'requested'
                         }
-                    )
-                }})
+                        console.log('get_state_url_html: ' + get_state_url_html)
+                        dir.save({
+                            state_url:state_url,
+                            get_state_url_html:get_state_url_html,
+                            state_url_html:'',
+                            state_url_method:form.attr('method'),
+                            select_element_xpath:xpath,
+                            state_page_values:state_page_values
+                            },
+                            {
+                                success:function(){
+                                    // Notify the user that we are downloading the requested data
+                                    $('#cong_details_url #status').html('Getting state page data for # 1 of ' +
+                                         state_page_values.length + ' state pages (this may take a while)...')
+                                    // Show state details page div
+                                    $("#cong_details_url").fadeIn(1000);
+                                },
+                                error:function(model, xhr, options){
+                                    console.error('we got an error')
+                                    save_dir(dir)
+                                }
+                            }
+                        )
+                    }})
+                }
+                save_dir(dir)
             },
             show_select_cong_details:function(event){
                 // Hide step 4's header, letting the status message continue to display
