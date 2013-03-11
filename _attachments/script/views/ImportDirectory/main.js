@@ -182,27 +182,35 @@ define(
                                 get_url_html = 'requested'
                             }
                             // TODO: This generates a 409 conflict
-                            dir.save({
-                                        _id:dir.get('_id'),
-                                        _rev:dir.get('_rev'),
-                                        url:$('#url').val(),
-                                        get_url_html:get_url_html
-                                    },
-                                    {
-                                        success:function(){
-                                            // Append dir to CGroup
-                                            cgroup.get('directories').add([{_id:dir.get('_id')}])
-                                            // Save cgroup to db
-                                            // TODO: Does the relation appear on the dir in the db also?
-                                            cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
-                                            // This will trigger the Node changes listener's response
+                            console.log(iterations, dir.get('_rev'))
+                            if (dir.get('rev_currently_being_saved') !== dir.get ('_rev')){
+                                dir.set('rev_currently_being_saved', dir.get('_rev'))
+                                dir.save({
+                                            _id:dir.get('_id'),
+                                            _rev:dir.get('_rev'),
+                                            url:$('#url').val(),
+                                            get_url_html:get_url_html
                                         },
-                                        error:function(model, xhr, options){
-                                            console.error('We got the 181 error '+ iterations)
-                                            save_dir(cgroup, dir)
-                                        }
-                                    })
-                        }})
+                                        {
+                                            success:function(){
+                                            	dir.unset('rev_currently_being_saved')
+                                                // Append dir to CGroup
+                                                cgroup.get('directories').add([{_id:dir.get('_id')}])
+                                                // Save cgroup to db
+                                                // TODO: Does the relation appear on the dir in the db also?
+                                                cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
+                                                // This will trigger the Node changes listener's response
+                                            },
+                                            error:function(model, xhr, options){
+                                                console.error('We got the 181 error '+ iterations)
+                                                save_dir(cgroup, dir)
+                                            }
+                                        })
+                            	}
+                            }
+                            
+                  
+                        })
                     }
                     save_dir(cgroup, dir)
                 }
