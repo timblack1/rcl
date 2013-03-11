@@ -12,6 +12,10 @@ define(
                 db = config.db
                 wgxpath.install()
                 
+                // Make it easy to reference this object in event handlers
+                _.bindAll(this)
+                
+
                 // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
                 var changes = db.changes();
@@ -166,6 +170,7 @@ define(
                 //  The way to do this is not via setTimeout, but probably something
                 //  like a while loop
                 //setTimeout(function(){
+                var thiz = this
     
                 // Declare several utility functions for use further below
                 function save_cgroup_and_dir(cgroup, dir){
@@ -175,34 +180,46 @@ define(
                     // Note this is a recursive function!
                     function save_dir(cgroup, dir){
                         iterations++;
-                        dir.fetch({success:function(dir, response, options){
+                        dir.fetch({success:function(dir, response, options, thiz){
                             var get_url_html = dir.get('get_url_html')
                             // Prevent import from running multiple times simultaneously
                             if (get_url_html != 'getting'){
                                 get_url_html = 'requested'
                             }
                             // TODO: This generates a 409 conflict
-                            dir.save({
-                                        _id:dir.get('_id'),
-                                        _rev:dir.get('_rev'),
-                                        url:$('#url').val(),
-                                        get_url_html:get_url_html
-                                    },
-                                    {
-                                        success:function(){
-                                            // Append dir to CGroup
-                                            cgroup.get('directories').add([{_id:dir.get('_id')}])
-                                            // Save cgroup to db
-                                            // TODO: Does the relation appear on the dir in the db also?
-                                            cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
-                                            // This will trigger the Node changes listener's response
+                            console.log(iterations, dir.get('_rev'))
+                            if (typeof thiz.rev_currently_being_saved === 'undefined'){
+                                thiz.rev_currently_being_saved = dir.get('_rev')
+                                console.log("Don't save rev " + thiz.rev_currently_being_saved + ' twice simultaneously')
+                            }
+                            if (typeof thiz.rev_currently_being_saved !== 'undefined' && 
+                                    thiz.rev_currently_being_saved !== dir.get('_rev')){
+                                dir.save({
+                                            _id:dir.get('_id'),
+                                            _rev:dir.get('_rev'),
+                                            url:$('#url').val(),
+                                            get_url_html:get_url_html
                                         },
-                                        error:function(model, xhr, options){
-                                            console.error('We got the 181 error '+ iterations)
-                                            save_dir(cgroup, dir)
-                                        }
-                                    })
-                        }})
+                                        {
+                                            success:function(){
+                                                // Report that it's OK for other calls to save_dir to run
+                                                delete thiz.rev_currently_being_saved
+                                                // Append dir to CGroup
+                                                cgroup.get('directories').add([{_id:dir.get('_id')}])
+                                                // Save cgroup to db
+                                                // TODO: Does the relation appear on the dir in the db also?
+                                                cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
+                                                // This will trigger the Node changes listener's response
+                                            },
+                                            error:function(model, xhr, options){
+                                                console.error('We got the 181 error '+ iterations)
+                                                save_dir(cgroup, dir)
+                                            }
+                                        })
+                                }
+                            
+                            }
+                        })
                     }
                     save_dir(cgroup, dir)
                 }
