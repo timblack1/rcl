@@ -47,6 +47,7 @@ function save_again(options){
         if (!err && options.doc && options.doc._id && typeof options.doc._id !== 'undefined'){
             // Save to the db all the HTML we've gotten
             // TODO: This is running several times in series
+
             options.doc[options.to_html] = options.output_array
             options.doc[options.status_flag] = 'gotten'
             // Deletes number downloaded since it's not needed anymore
