@@ -180,7 +180,11 @@ define(
                     // Note this is a recursive function!
                     function save_dir(cgroup, dir){
                         iterations++;
-                        dir.fetch({success:function(dir, response, options, thiz){
+                        // TODO: We need to be able to pass in the global thiz object (or at least the
+                        //  rev_currently_being_saved variable) here so it is available within the scope of
+                        //  the calls to fetch() and save() below.
+                        // TODO: Start here (3/11/2013)
+                        dir.fetch({success:function(dir, response, options){
                             var get_url_html = dir.get('get_url_html')
                             // Prevent import from running multiple times simultaneously
                             if (get_url_html != 'getting'){
