@@ -180,7 +180,7 @@ define(
                     // Note this is a recursive function!
                     function save_dir(cgroup, dir){
                         iterations++;
-                        dir.fetch({success:function(dir, response, options, thiz){
+                        dir.fetch({success:function(dir, response, options){
                             var get_url_html = dir.get('get_url_html')
                             // Prevent import from running multiple times simultaneously
                             if (get_url_html != 'getting'){
