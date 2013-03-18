@@ -15,7 +15,6 @@ define(
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this)
                 
-
                 // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
                 var changes = db.changes();
@@ -70,13 +69,11 @@ define(
                                 
                                 // Display state details page's content
                                 if (dir.get('state_url_html')){
-                                    console.log('---------------')
                                     console.log('get_state_url_html: ' + dir.get('get_state_url_html'))
-                                    if (dir.get('get_state_url_html') == 'getting'){
-                                        console.log('gotten: ' + dir.get('state_urls_gotten'))
-                                        $('#cong_details_url #status').html('Getting state page data for # ' +
-                                             dir.get('state_urls_gotten') + ' of ' +
-                                             dir.get('state_page_values').length + ' state pages (this may take a while)...')
+                                    if (dir.get('get_state_url_html') == 'gotten'){
+                                        // Notify user
+                                        $('#cong_details_url #status').html('Downloaded data for all states!')
+                                        $('#cong_details_url #status').delay(5000).fadeOut(1000).slideUp(1000)
                                         if (dir.get('state_url_html').length >0 &&
                                                 typeof displayed_state_page == 'undefined'){
                                             // Display the contents of the state page
@@ -102,11 +99,6 @@ define(
                                                 window.app.import_directory_view.show_select_cong_details(e);
                                             });
                                         }
-                                    }
-                                    if (dir.get('get_state_url_html') == 'gotten'){
-                                        // Notify user
-                                        $('#cong_details_url #status').html('Downloaded data for all states!')
-                                        $('#cong_details_url #status').delay(5000).fadeOut(1000).slideUp(1000)
                                     }
                                 }
                                 
@@ -167,37 +159,39 @@ define(
                 // Delay this to run after typing has stopped for 2 seconds, so we don't
                 //  send too many requests
                 // TODO: Don't fire on every key event, but only once after delay.
-                //  The way to do this is not via setTimeout, but probably something
-                //  like a while loop
+                //  The way to do this is probably with a recursive function that checks 
+                //  the time elapsed, then runs setTimeout
                 //setTimeout(function(){
-                var thiz = this
-    
+
                 // Declare several utility functions for use further below
                 function save_cgroup_and_dir(cgroup, dir){
                     // Save the dir so if the URL has changed in the browser, it gets
                     //  updated in the db too
                     var iterations = 0
                     // Note this is a recursive function!
+                    // TODO: Consider refactoring this into a separate function
                     function save_dir(cgroup, dir){
                         iterations++;
-                        // TODO: We need to be able to pass in the global thiz object (or at least the
-                        //  rev_currently_being_saved variable) here so it is available within the scope of
-                        //  the calls to fetch() and save() below.
-                        // TODO: Start here (3/11/2013)
+                        // Make this function wait until this rev is not being saved anymore
+                        if (typeof window.app.import_directory_view.rev_currently_being_saved !== 'undefined' &&
+                            window.app.import_directory_view.rev_currently_being_saved === dir.get('_rev')){
+                            setTimeout(function(){ save_dir(cgroup, dir) }, 1000)
+                            return;
+                        }
                         dir.fetch({success:function(dir, response, options){
                             var get_url_html = dir.get('get_url_html')
                             // Prevent import from running multiple times simultaneously
                             if (get_url_html != 'getting'){
                                 get_url_html = 'requested'
                             }
-                            // TODO: This generates a 409 conflict
-                            console.log(iterations, dir.get('_rev'))
-                            if (typeof thiz.rev_currently_being_saved === 'undefined'){
-                                thiz.rev_currently_being_saved = dir.get('_rev')
-                                console.log("Don't save rev " + thiz.rev_currently_being_saved + ' twice simultaneously')
-                            }
-                            if (typeof thiz.rev_currently_being_saved !== 'undefined' && 
-                                    thiz.rev_currently_being_saved !== dir.get('_rev')){
+                            // Only save this revision if it's not currently being saved already
+                            if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined' || 
+                                    window.app.import_directory_view.rev_currently_being_saved !== dir.get('_rev')){
+                                console.log(iterations + ' 196 saving', dir.get('_rev'))
+                                // Prevent saving the same revision twice simultaneously
+                                if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
+                                    window.app.import_directory_view.rev_currently_being_saved = dir.get('_rev')
+                                }
                                 dir.save({
                                             _id:dir.get('_id'),
                                             _rev:dir.get('_rev'),
@@ -207,7 +201,7 @@ define(
                                         {
                                             success:function(){
                                                 // Report that it's OK for other calls to save_dir to run
-                                                delete thiz.rev_currently_being_saved
+                                                delete window.app.import_directory_view.rev_currently_being_saved
                                                 // Append dir to CGroup
                                                 cgroup.get('directories').add([{_id:dir.get('_id')}])
                                                 // Save cgroup to db
@@ -216,12 +210,11 @@ define(
                                                 // This will trigger the Node changes listener's response
                                             },
                                             error:function(model, xhr, options){
-                                                console.error('We got the 181 error '+ iterations)
+                                                console.error('We got the 196 error '+ iterations)
                                                 save_dir(cgroup, dir)
                                             }
                                         })
                                 }
-                            
                             }
                         })
                     }
@@ -442,9 +435,6 @@ define(
                 function save_dir(dir){
                     it++;
                     dir.fetch({success:function(model, response, options){
-                        // console.log(model.get("_rev"))
-                        // console.log(dir.get("_rev"))
-                        // console.log(response)
                         // TODO: There is a document update conflict here.  The local and remote copies appear to
                         //  have the same _rev from here.  But in the DB, the _rev is 2 beyond that detected
                         //  here.
@@ -456,28 +446,45 @@ define(
                             get_state_url_html = 'requested'
                         }
                         console.log('get_state_url_html: ' + get_state_url_html)
-                        dir.save({
-                            state_url:state_url,
-                            get_state_url_html:get_state_url_html,
-                            state_url_html:'',
-                            state_url_method:form.attr('method'),
-                            select_element_xpath:xpath,
-                            state_page_values:state_page_values
+                        // Prevent this function from attempting to save the same revision twice simultaneously
+                        if (typeof window.app.import_directory_view.rev_currently_being_saved !== 'undefined' &&
+                            window.app.import_directory_view.rev_currently_being_saved === dir.get('_rev')){
+                            // Wait 1 second and try again
+                            setTimeout(function(){ save_dir(dir) }, 1000)
+                            return;
+                        }
+                        // Only save this revision if it's not currently being saved already
+                        if (window.app.import_directory_view.rev_currently_being_saved !== dir.get('_rev')){
+                            // Prevent saving the same revision twice simultaneously
+                            if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
+                                window.app.import_directory_view.rev_currently_being_saved = dir.get('_rev')
+                            }
+                            console.log(it + ' 459', dir.get('_rev'))
+                            dir.save({
+                                state_url:state_url,
+                                get_state_url_html:get_state_url_html,
+                                state_url_html:'',
+                                state_url_method:form.attr('method'),
+                                select_element_xpath:xpath,
+                                state_page_values:state_page_values
                             },
                             {
                                 success:function(){
+                                    // Allow other asynchronous calls to this same function to save to the db
+                                    delete window.app.import_directory_view.rev_currently_being_saved
                                     // Notify the user that we are downloading the requested data
-                                    $('#cong_details_url #status').html('Getting state page data for # 1 of ' +
+                                    $('#cong_details_url #status').html('Getting state page data for ' +
                                          state_page_values.length + ' state pages (this may take a while)...')
                                     // Show state details page div
                                     $("#cong_details_url").fadeIn(1000);
                                 },
                                 error:function(model, xhr, options){
-                                    console.error('we got an error')
+                                    console.error('we got the 454 error')
                                     save_dir(dir)
                                 }
-                            }
-                        )
+                            })
+
+                        }
                     }})
                 }
                 save_dir(dir)
