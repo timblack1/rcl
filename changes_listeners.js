@@ -41,27 +41,29 @@ function get_url(doc, from_url, to_html, status_flag){
         })
     });
 }
-function save_again(options){
+function save(options){
     db.get(options.doc._id, function(err, doc){
         options.doc = doc
         if (!err && options.doc && options.doc._id && typeof options.doc._id !== 'undefined'){
             // Save to the db all the HTML we've gotten
             // TODO: This is running several times in series
-
             options.doc[options.to_html] = options.output_array
-            options.doc[options.status_flag] = 'gotten'
+            options.doc[options.status_flag] = 'gotten';
             // Deletes number downloaded since it's not needed anymore
             delete options.doc[options.number_downloaded]
             db.save(options.doc._id, options.doc._rev, options.doc, function(err, response){
                 if (err !== null){
                     console.error(err)
                     // Recurse to try saving again
-                    // Only recurse 10 times, then fail, to avoid a memory leak
+                    // Only recurse a certain number of times, then fail, to avoid a memory leak
                     if (options.save_attempts <= 5){
                         options.save_attempts++;
                         console.log('options.save_attempts: ' + options.save_attempts)
-                        save_again(options)
+                        save(options)
                     }else{
+                        // TODO: Start here.  This is where we get an error.  For some reason sometimes,
+                        //  but not always, we have the wrong revision here, and this causes get_state_url_html
+                        //  to never == 'gotten', (so the state details page doesn't display?)
                         console.error('Failed to save doc: ' + options.doc._id, options.doc._rev)
                     }
                 }else{
@@ -76,12 +78,12 @@ function save_again(options){
         }
     })
 }
-function record_number_downloaded(i, options){
+function recurse_then_save(i, options){
     // If we've downloaded all the HTML, and haven't saved to the db yet
     if (options.output_array.length == options.doc[options.from_urls].length && options.output_array_saved !== true){
         options.save_attempts = 0
         if (options.output_array_saved !== true){
-            save_again(options)
+            save(options)
         }
     }
     // Call the parent function recursively to enable throttling the rate of web-scraping requests
@@ -89,10 +91,10 @@ function record_number_downloaded(i, options){
     recurse_urls(i+1, options)
 }
 function recurse_urls(i, options){
-    // Stop running if we have reached the end of the list of URLs,
     if (typeof options.doc[options.from_urls] == 'undefined'){
         console.log(options.doc[options.from_urls])
     }
+    // Stop running if we have reached the end of the list of URLs,
     if (options.doc[options.from_urls][i] !== '' && typeof options.doc[options.from_urls][i] !== 'undefined' &&
             // and don't run if we've already downloaded the HTML for this URL
             typeof options.doc[i] == 'undefined'){
@@ -112,13 +114,13 @@ function recurse_urls(i, options){
                     options.flag_set = true
                     // report to the db the fact we are getting the HTML
                     db.save(options.doc._id, options.doc._rev, options.doc, function(err, response){
-                        record_number_downloaded(i, options)
+                        recurse_then_save(i, options)
                     })
                 }
                 // Record the number downloaded
                 // Don't run until the status_flag has been set
                 if (typeof options.flag_set !== 'undefined' && options.flag_set === true){
-                    record_number_downloaded(i, options)
+                    recurse_then_save(i, options)
                 }
             })
         })
