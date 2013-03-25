@@ -1,8 +1,9 @@
 define([
         'config',
-        '../../lib/mustache'
+        '../../lib/mustache', 
+        "./Cong_Fields"
         ], 
-        function(config, Mustache){
+        function(config, Mustache, Cong_Fields){
     
     var ConfirmCongIDView = Backbone.View.extend({
         initialize:function(){
@@ -66,42 +67,10 @@ define([
             // TODO: Make this into its own Backbone view
             // Show step 5
             $('#cong_details_fields').show(1000)
-            
-            // List field names
-            var field_names = [
-                      'name',
-                      'meeting_address1',
-                      'meeting_address2',
-                      'meeting_city',
-                      'meeting_state',
-                      'meeting_zip',
-                      'meeting_country',
-                      'mailing_address1',
-                      'mailing_address2',
-                      'mailing_city',
-                      'mailing_state',
-                      'mailing_zip',
-                      'mailing_country',
-                      'phone',
-                      'fax',
-                      'email',
-                      'website',
-                      'service_info',
-                      'date_founded'
-                    ]
-            // Format field names
-            fields = []
-            for (var i=0; i < field_names.length; i++){
-                fields.push({
-                  pretty_name:config.capitalize(field_names[i].replace('_', ' ')),
-                  db_name:field_names[i]
-                })
-            }
-            // Render Mustache template
-            var tmpl = $('#fields_template').html();
-            var fields_html = Mustache.render(tmpl, {fields:fields})
-            $('#fields_table_container').append(fields_html);
-        }
+            //This will show the table of congregation fields.
+            //START HERE: These fields do not display
+            this.cong_fields = new Cong_Fields({el: $("#fields_table_container")})
+        }     
     });
     return ConfirmCongIDView
 
