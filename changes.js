@@ -2,7 +2,7 @@
 // TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
 //	CouchAppObject model here?
 
-var child_process = require('child_process'),
+var child_process = require('./node_modules/child_process.js'),
 	util = require('util'),
 	vm = require('vm'),
 	fs = require('fs'),
@@ -44,6 +44,7 @@ function start_child_process(){
 	return p;
 }
 p = start_child_process();
+console.log('starting child process')
 
 var it = 0;
 
@@ -67,7 +68,7 @@ feed.on('change', function (change) {
 			// Feed the new doc into the changes listeners
 			if (doc) { // Don't handle docs that have been deleted
 				if (p.connected){
-					p.send(doc);
+                    p.send(doc);
 				}
 			}
 		}
