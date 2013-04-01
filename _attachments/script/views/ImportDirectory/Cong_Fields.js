@@ -48,28 +48,28 @@ define([
             $('#fields_table_container').append(fields_html);
         },
         events: {
-            "focus #fields_table_mustache input[type=text]": "display_button",
+            "focus #fields_table_mustache input[type=text]": "display_button"
         },
         display_button:function(event) {
-    		// Record which field's text box was clicked in a global variable
-    		selected_field = $(event.target).attr('id');
-    		// Show this field's "No, this isn't right" button, and hide all others
-    		$('#fields_table_mustache button').hide();
-    		$('#' + selected_field + '_button').show();
-    		// Create global directory.fields object if it doesn't already exist
+            // Record which field's text box was clicked in a global variable
+            selected_field = $(event.target).attr('id');
+            // Show this field's "No, this isn't right" button, and hide all others
+            $('#fields_table_mustache button').hide();
+            $('#' + selected_field + '_button').show();
+            // Create global directory.fields object if it doesn't already exist
             // TODO: directory itself doesn't exist yet, so this throws an error
-    		if (typeof directory.fields === 'undefined') {
-    			directory.fields = {};
-    		}
-    		// TODO:  This doesn't actually work yet, for some reason
-    		// If this field's settings have already been stored in directory.fields, 
-    		//		load it in the textarea
-    		if (directory.fields[selected_field]!=undefined){
-    			$('#details_regex').val(directory.fields[selected_field].regex);
-    		}
-    		// Listen for and handle a selection event
-    		$('#cong_details_fields_selector').mouseup(create_regular_expression());
-    	        
+            if (typeof directory.fields === 'undefined') {
+                directory.fields = {};
+            }
+            // TODO:  This doesn't actually work yet, for some reason
+            // If this field's settings have already been stored in directory.fields, 
+            //      load it in the textarea
+            if (directory.fields[selected_field] !== undefined){
+                $('#details_regex').val(directory.fields[selected_field].regex);
+            }
+            // Listen for and handle a selection event
+            $('#cong_details_fields_selector').mouseup(create_regular_expression());
+                
          
         }
     });
