@@ -1,12 +1,12 @@
 define([
-        'config',
+        '../../config',
         '../../lib/mustache'
         ], 
         function(config, Mustache){
     
     var Cong_Fields = Backbone.View.extend({
         initialize:function(){
-        	 // List field names
+             // List field names
             var field_names = [
                       'name',
                       'meeting_address1',

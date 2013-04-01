@@ -70,6 +70,7 @@ define([
             //This will show the table of congregation fields.
             //START HERE: These fields do not display
             this.cong_fields = new Cong_Fields({el: $("#fields_table_container")})
+            this.cong_fields.render();
         }     
     });
     return ConfirmCongIDView
