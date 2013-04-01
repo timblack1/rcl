@@ -59,7 +59,7 @@ define([
             // Create global directory.fields object if it doesn't already exist
             // TODO: directory itself doesn't exist yet, so this throws an error
             if (typeof dir.get('fields') === 'undefined') {
-                dir.set('fields') = {};
+                dir.set('fields', {});
             }
             // TODO:  This doesn't actually work yet, for some reason
             // If this field's settings have already been stored in dir.fields, 
