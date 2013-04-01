@@ -337,3 +337,15 @@ clear:both;
     border: 1px solid grey;
     float: right;   
 }
+
+/* For download congs page */
+.content_frame {
+    width:900px;
+    height:250px;
+    overflow:scroll;
+}
+.content_frame_narrow {
+    width:530px;
+}
+#fields_table_mustache { float:right }
+#fields_table_mustache td { vertical-align: top }
