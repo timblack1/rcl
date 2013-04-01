@@ -68,7 +68,6 @@ define([
             // Show step 5
             $('#cong_details_fields').show(1000)
             //This will show the table of congregation fields.
-            //START HERE: These fields do not display
             this.cong_fields = new Cong_Fields({el: $("#fields_table_container")})
             this.cong_fields.render();
         }     
