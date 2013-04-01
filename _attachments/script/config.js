@@ -8,7 +8,7 @@ define(
        // TODO: Run unit tests on test copy of the database
        var db_name = 'rcl',
            db = $.couch.db(db_name),
-           run_jasmine_tests = true,
+           run_jasmine_tests = false,
            // Select view to load at root URL
            //default_view = 'find_a_church_view',
            default_view = 'import_directory_view',
