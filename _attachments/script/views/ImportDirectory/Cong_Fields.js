@@ -54,7 +54,7 @@ define([
     		// Record which field's text box was clicked in a global variable
     		selected_field = $(event.target).attr('id');
     		// Show this field's "No, this isn't right" button, and hide all others
-    		$('#fields_table button').hide();
+    		$('#fields_table_mustache button').hide();
     		$('#' + selected_field + '_button').show();
     		// Create global directory.fields object if it doesn't already exist
     		if (typeof directory.fields === 'undefined') {
