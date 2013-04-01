@@ -57,6 +57,7 @@ define([
     		$('#fields_table_mustache button').hide();
     		$('#' + selected_field + '_button').show();
     		// Create global directory.fields object if it doesn't already exist
+            // TODO: directory itself doesn't exist yet, so this throws an error
     		if (typeof directory.fields === 'undefined') {
     			directory.fields = {};
     		}
