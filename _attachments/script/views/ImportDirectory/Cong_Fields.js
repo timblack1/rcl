@@ -69,7 +69,7 @@ define([
             }
             // Listen for and handle a selection event
             $('#cong_details_fields_selector').mouseup(create_regular_expression());
-                
+            
          
         }
     });

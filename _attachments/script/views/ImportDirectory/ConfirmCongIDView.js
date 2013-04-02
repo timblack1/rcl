@@ -34,7 +34,9 @@ define([
         },
         events: {
             "click #yes": "yes",
-            "click #no": "no"
+            "click #no": "no",
+            "click button": "recreate_regex"
+            
         },
         yes:function(){
             // Converts:
@@ -43,6 +45,8 @@ define([
             //  church.html?church_id={cong_id}
             var url = this.href.replace(this.regex, '{cong_id}')
             this.record_id_format(url)
+            $('#cong_details_fields_selector').html(dir.get('state_url_html')[0])	
+            //TODO: Display the pages content here.
         },
         no:function(){
             // TODO: Otherwise, ask the user to highlight the congregation's id
@@ -52,6 +56,16 @@ define([
             var url = this.href
             this.record_id_format(url)
         },
+        //DOUG: START HERE
+        recreate_regex:function(event){
+        	//test to see if this is a button which ends with _button
+        	if ($(event.target).attr("id") == "_button"){
+        		//calculate the associated text boxes id from that button's id
+        		//http://stackoverflow.com/questions/12045675/clearing-the-entry-box-text-when-clicking-a-button
+        		
+        	 }
+        		
+        }
         record_id_format:function(url){
             // TODO: start here
             // TODO: Record the pattern of the URL the user clicked
