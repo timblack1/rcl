@@ -347,5 +347,16 @@ clear:both;
 .content_frame_narrow {
     width:530px;
 }
-#fields_table_mustache { float:right }
-#fields_table_mustache td { vertical-align: top }
+#fields_table_container {
+    /* width: 400px; */
+    float:right;
+}
+/* #fields_table_mustache { float:right } */
+#fields_table_mustache td {
+    vertical-align: top;
+    /* float:left; */
+}
+#cong_details_fields_selector {
+    clear:none;
+    float:right;
+}
