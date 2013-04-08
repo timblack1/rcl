@@ -48,7 +48,14 @@ define([
             // TODO: Display the pages' content here.
             // TODO: Fix this to display not one state's worth of congregations, but rather 
             //  the details of one congregation
-            $('#cong_details_fields_selector').html(dir.get('state_url_html')[0])   
+            // TODO: Write first cong's URL to database, requesting Node to download its HTML
+            // TODO: Write Node listener to catch & handle that request
+            //  Get HTML from URL
+            //  Write HTML back to db
+            // TODO: Write event listener here to catch Node's response
+            //  Get HTML out of db
+            //  Write HTML to remote page container div
+            $('#cong_details_fields_selector').html(HTML)
         },
         no:function(){
             // TODO: Otherwise, ask the user to highlight the congregation's id
