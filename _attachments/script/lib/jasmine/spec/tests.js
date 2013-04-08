@@ -56,7 +56,8 @@ describe("Reformed Churches Locator", function() {
         }
         function cong_details_url_selector_visible(){
             // TODO: Start here.  The second condition should be true in this function
-            console.log($('#cong_details_url_selector').is(':visible'), $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1,
+            console.log($('#cong_details_url_selector').is(':visible'), 
+                $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1,
                 $('#cong_details_url_selector').is(':visible') && $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1)
             return $('#cong_details_url_selector').is(':visible') &&
                 $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
