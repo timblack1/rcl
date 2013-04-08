@@ -2,16 +2,6 @@
 // TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
 //	CouchAppObject model here?
 
-console.log(__dirname)
-console.log(require.filename)
-// TODO: Start here.  I need to import a custom child_process.js.  But this script (changes.js) says it's being
-//  read from stdin, so doesn't have a current working directory to use to reference a local copy of child_process.js.
-//  How can I get the local current working directory?
-//  It seems the following is true:
-//      child_process = require('./node_modules/child_process.js') doesn't know to what directory . refers
-//      fs.readFileSync(changes_listeners_filename, 'utf8') knows to what directory .. refers
-//      why??
-
 var child_process = require('./node_modules/child_process.js'),
 	util = require('util'),
 	vm = require('vm'),
