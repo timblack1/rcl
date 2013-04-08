@@ -1,12 +1,14 @@
 define([
         '../../config',
-        '../../lib/mustache'
+        '../../lib/mustache',
+        'text!views/ImportDirectory/cong_fields.html'
         ], 
-        function(config, Mustache){
+        function(config, Mustache, template){
     
     var Cong_Fields = Backbone.View.extend({
         initialize:function(){
-             // List field names
+            this.template = template;
+            // List field names
             var field_names = [
                       'name',
                       'meeting_address1',
@@ -43,8 +45,7 @@ define([
 //          config.render_to_id(this, id)
 //          $(id).show(3000)            
             // Render Mustache template
-            var tmpl = $('#fields_template').html();
-            var fields_html = Mustache.render(tmpl, {fields:fields})
+            var fields_html = Mustache.render(this.template, {fields:fields})
             $('#fields_table_container').append(fields_html);
         },
         events: {
@@ -56,8 +57,7 @@ define([
             // Show this field's "No, this isn't right" button, and hide all others
             $('#fields_table_mustache button').hide();
             $('#' + selected_field + '_button').show();
-            // Create global directory.fields object if it doesn't already exist
-            // TODO: directory itself doesn't exist yet, so this throws an error
+            // Create global dir.fields object if it doesn't already exist
             if (typeof dir.get('fields') === 'undefined') {
                 dir.set('fields', {});
             }

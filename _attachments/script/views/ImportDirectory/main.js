@@ -3,9 +3,10 @@ define(
     '../../config',
     '../../model',
     '../../lib/mustache',
-    './ConfirmCongIDView'
+    './ConfirmCongIDView',
+    'text!views/ImportDirectory/main.html'
     ],
-    function(config, model, Mustache, ConfirmCongIDView){
+    function(config, model, Mustache, ConfirmCongIDView, template){
 
         var ImportDirectoryView = Backbone.View.extend({
             initialize : function(){
@@ -18,6 +19,7 @@ define(
                 // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
                 var changes = db.changes();
+                this.template = template;
                 var thiz = this
                 // TODO: convert to this.watching_import_directory_view_changes
                 if (typeof watching_import_directory_view_changes == 'undefined'){
@@ -112,7 +114,10 @@ define(
             },
             render: function(){
                 // TODO: Consider using assign() as described here:  http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
-                config.render_to_id(this, "#import_directory_template")
+                //config.render_to_id(this, "#import_directory_template")
+                // Render Mustache template
+                $('#content').html(Mustache.render(this.template));
+
             },
             events: {
                 'keyup #url':"get_church_dir_from_url"

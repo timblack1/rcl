@@ -146,21 +146,6 @@ function get_url_set(options){
 // Handle all changes
 process.on('message', function(doc){
 
-    // Start here
-    // TODO: Remove this fix for http://stackoverflow.com/questions/15378871/node-js-child-process-send-utf-8-char-issue
-    //  after Node upgrades beyond 0.10.0
-    //  Or, just implemment https://github.com/bnoordhuis/node/commit/891e8365d98138b2c1bf0bf3b2e8c45e4162dc62 
-    //  locally.
-    // Otherwise, we get this error:
-    // TODO: When the changed doc includes unicode strings, it throws errors like the following:
-    //  undefined:1
-    //      Lacy St.<br/ >Santa Ana Anaheim CA 92806-4917','<h5>IGLESIA DEL SECOR VIVIEC
-    //                                                                          ^
-    //  SyntaxError: Unexpected token 
-    //      at Object.parse (native)
-    //      at Pipe.channel.onread [as onread] (child_process.js:335:28)
-    //console.log(JSON.parse(new Buffer(doc).toString()));
-    //doc = JSON.parse(new Buffer(doc).toString())
     // Watch for requests to get the contents of a URL for a church directory
     // TODO: Check to see if the URL is valid
     if (doc.collection == 'directory' && doc.get_url_html=='requested' && doc.url){

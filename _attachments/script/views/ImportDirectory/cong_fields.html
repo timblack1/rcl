@@ -1,0 +1,14 @@
+<table id='fields_table_mustache'>
+    {{#fields}}    
+        <tr>
+            <td>
+                {{ pretty_name }}
+            </td>
+            <td>
+                <input type='text' name='{{ db_name }}' id='{{ db_name }}' />
+                <br />
+                <button id='{{ db_name }}_button' style='display:none'>No, this isn't right</button>
+            </td>
+        </tr>
+    {{/fields}}
+</table>
