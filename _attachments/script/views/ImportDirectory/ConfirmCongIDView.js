@@ -49,13 +49,47 @@ define([
             // TODO: Fix this to display not one state's worth of congregations, but rather 
             //  the details of one congregation
             // TODO: Write first cong's URL to database, requesting Node to download its HTML
+			// TODO: This code goes in ConfirmCongIDView.js
+			// TODO: Write changes listener here
+			
+			// Set up browser changes listener to watch for and handle Node changes
+			//  listener's response
+			var changes = db.changes();
+			changes.onChange(function(change){
+			    var change_id = change.results[0].id
+			    var rev = change.results[0].changes[0].rev
+			    // Determine if the changed document is the dir we are editing
+			    if (typeof dir != 'undefined' && change_id == dir.get('_id')){
+			        // Fetch document's new contents from db
+			        dir.fetch({success:function(model,response){
+			        	console.log (response)
+			            // TODO: Handle response here
+			        	// TODO: Write HTML to page here
+					    $('#cong_details_fields_selector').html(dir.get("cong_url_html"))				    
+			        }})
+		    }})
+						
+			 var url=this.href
+			dir.fetch({success:function(dir, response, options){
+				dir.save({
+			                _id:dir.get('_id'),
+			                _rev:dir.get('_rev'),
+			                //TODO: Fill in URL to get here
+			                cong_url:url,
+			                get_cong_url_html:true
+			            },
+			            {
+			                success:function(){
+			                },
+			                error:function(model, xhr, options){
+			                    console.error('We got an error here')
+			                }
+			            })
+			}})	
+
             // TODO: Write Node listener to catch & handle that request
             //  Get HTML from URL
             //  Write HTML back to db
-            // TODO: Write event listener here to catch Node's response
-            //  Get HTML out of db
-            //  Write HTML to remote page container div
-            $('#cong_details_fields_selector').html(HTML)
         },
         no:function(){
             // TODO: Otherwise, ask the user to highlight the congregation's id
