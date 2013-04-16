@@ -34,8 +34,7 @@ define([
         },
         events: {
             "click #yes": "yes",
-            "click #no": "no",
-            "click #fields_table_mustache button": "recreate_regex"
+            "click #no": "no"
             
         },
         yes:function(){
@@ -100,18 +99,7 @@ define([
             this.record_id_format(url)
         },
         //DOUG: START HERE
-        recreate_regex:function(event){
-            //test to see if this is a button which ends with _button
-            if ($(event.target).attr("id").match(/_button$/)){
-                //calculate the associated text boxes id from that button's id
-                //http://stackoverflow.com/questions/12045675/clearing-the-entry-box-text-when-clicking-a-button
-                // Clear the text box
-                // Recreate the regex by including one more (HTML? space-separated string?)
-                //  element of context on each side
-                
-             }
-                
-        },
+       
         record_id_format:function(url){
             // TODO: start here
             // TODO: Record the pattern of the URL the user clicked
