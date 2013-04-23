@@ -61,11 +61,17 @@ define([
 			    if (typeof dir != 'undefined' && change_id == dir.get('_id')){
 			        // Fetch document's new contents from db
 			        dir.fetch({success:function(model,response){
+			        	//TODO: Doug START HERE
+			        	//The model part on line 70 seems not to be working.
 			        	console.log (response)
+			        	console.log (dir.get("cong_url_html"))
 			            // TODO: Handle response here
 			        	// TODO: Write HTML to page here
-					    $('#cong_details_fields_selector').html(dir.get("cong_url_html"))				    
-			        }})
+					    $('#cong_details_fields_selector').html(model.get("cong_url_html"))				    
+			        },
+			        	error:function(){console.error ("Could not fetch the directory")}
+			        }
+			        )
 		    }})
 						
 			 var url=this.href
