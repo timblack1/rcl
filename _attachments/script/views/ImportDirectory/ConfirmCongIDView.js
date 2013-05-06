@@ -81,7 +81,7 @@ define([
 			                _rev:dir.get('_rev'),
 			                //TODO: Fill in URL to get here
 			                cong_url:url,
-			                get_cong_url_html:true
+			                get_cong_url_html:"requested"
 			            },
 			            {
 			                success:function(){
