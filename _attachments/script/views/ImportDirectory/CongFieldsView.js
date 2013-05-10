@@ -1,13 +1,12 @@
 define([
         '../../config',
         '../../lib/mustache',
-        'text!views/ImportDirectory/cong_fields.html'
+        'text!views/ImportDirectory/CongFields.html'
         ], 
         function(config, Mustache, template){
     
-    var Cong_Fields = Backbone.View.extend({
+    return Backbone.View.extend({
         initialize:function(){
-            this.template = template;
             // List field names
             var field_names = [
                       'name',
@@ -38,15 +37,11 @@ define([
                   db_name:field_names[i]
                 })
             }
+            this.fields = fields
         },
         render: function(){
-//          var id = "#confirm_cong_id_template"
-//          $(id).hide()
-//          config.render_to_id(this, id)
-//          $(id).show(3000)            
-            // Render Mustache template
-            var fields_html = Mustache.render(this.template, {fields:fields})
-            $('#fields_table_container').append(fields_html);
+            $('#fields_table_container').html(Mustache.render(template, {fields:fields}));
+            this.delegateEvents()
         },
         events: {
             "focus #fields_table_mustache input[type=text]": "display_button"
@@ -73,6 +68,5 @@ define([
          
         }
     });
-    return Cong_Fields
 
 });

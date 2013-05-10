@@ -35,7 +35,7 @@ describe("Reformed Churches Locator", function() {
         function directory_type_is_visible(){
             // The test should wait until the AJAX call completes
             // Check to see if the AJAX call returned here
-            return $('#directory_type').is(':visible')
+            return ($('#steps').html().indexOf('Step 2') !== -1)
         }
         function click_state_radio_button(){
             $("#one_state_per_page").prop("checked",true)
@@ -45,7 +45,7 @@ describe("Reformed Churches Locator", function() {
             $('#state_drop_down_selector select[name=state]').click()
         }
         function state_page_is_visible(){
-            return $('#state_page').is(':visible') || ($('#state_page').css('display') != 'none')
+            return ($('#steps').html().indexOf('Step 3') !== -1)
         }
         function click_cong_anchor(){
             // TODO: Write test to click on the element with this XPATH:
@@ -55,12 +55,7 @@ describe("Reformed Churches Locator", function() {
             $('a[class=lista]')[0].click()
         }
         function cong_details_url_selector_visible(){
-            // TODO: Start here.  The second condition should be true in this function
-            console.log($('#cong_details_url_selector').is(':visible'), 
-                $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1,
-                $('#cong_details_url_selector').is(':visible') && $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1)
-            return $('#cong_details_url_selector').is(':visible') &&
-                $('#cong_details_url_selector').html().indexOf('Directory of Congregations') != -1
+            return $('#steps').html().indexOf('Directory of Congregations') != -1
         }
         function cong_details_id_selector_visible(){
             return $('#cong_details_url_selector').is(':visible') &&
@@ -73,6 +68,7 @@ describe("Reformed Churches Locator", function() {
         function step_5_visible(){
             return $('#cong_details_fields').html().indexOf('Step 5') != -1
         }
+        // These specs are nested because the later ones depend on the earlier ones
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // TODO: Because this test writes to the database, decide whether
@@ -80,71 +76,48 @@ describe("Reformed Churches Locator", function() {
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", timeout)
                 runs(function(){
-                    expect($('#directory_type').is(':visible')).toBe(true)
+                    expect($('#steps').html()).toContain('Step 2')
                 })
             })
-        })
-
-        describe('state section', function(){
-            it('should display when radio button is clicked', function(){
-                runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
-                runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', timeout)
-                runs(function(){
-                    expect($('#state_page').is(':visible')).toBe(true)
+            describe('state section', function(){
+                it('should display when radio button is clicked', function(){
+                    runs(click_state_radio_button)
+                    waitsFor(state_page_is_visible, 'state page to display', timeout)
+                    runs(function(){
+                        expect($('#steps').html()).toContain('Step 3')
+                    })
                 })
-            })
-        })
-        describe('cong details', function(){
-            it('should display when select box is clicked', function(){
-                runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML")
-                runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', timeout)
-                runs(state_drop_down_selector)
-                waitsFor(function(){
-                    return $('#cong_details_url_selector').is(':visible')
-                },'cong_details_url_selector to be visible', timeout)
-                runs(function(){
-                    expect($('#cong_details_url_selector').is(':visible')).toBe(true)
-                })
-            })
-        })
-        describe('get congregation id', function(){
-            it('should display when link is clicked', function(){
-                runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", timeout)
-                runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', timeout)
-                runs(state_drop_down_selector)
-                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
-                runs(click_cong_anchor)
-                waitsFor(cong_details_id_selector_visible,'cong_details_url_selector to display step 4.5', timeout)
-                runs(function(){
-                    expect($('#cong_details_url_selector').html()).toMatch('Step 4.5')
-                })
-            })
-        })
-        describe('cong_details_selector_page', function(){
-            it('should display when button is clicked', function(){
-                runs(trigger_url_field)
-                waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", timeout)
-                runs(click_state_radio_button)
-                waitsFor(state_page_is_visible, 'state page to display', timeout)
-                runs(state_drop_down_selector)
-                console.log('After State Drop Down Selector')
-                waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
-                console.log('After Cong Details url Selector')
-                runs(click_cong_anchor)
-                console.log('After Click Cong Anchor')
-                waitsFor(cong_details_id_selector_visible,'cong_details_url_selector to display Step 4.5', timeout)
-                console.log('After Cong Details ID Selector Visible')
-                runs(click_cong_id_yes_button)
-                waitsFor(step_5_visible,'cong_details_fields to display step 5', timeout)
-                runs(function(){
-                    // TODO: Start Here: modify this section to work in this test
-                    expect($('#cong_details_fields').html()).toMatch('Step 5')
+                describe('cong details', function(){
+                    it('should display when select box is clicked', function(){
+                        runs(state_drop_down_selector)
+                        waitsFor(function(){
+                            return $('#cong_details_url_selector').is(':visible')
+                        },'cong_details_url_selector to be visible', timeout)
+                        runs(function(){
+                            expect($('#cong_details_url_selector').is(':visible')).toBe(true)
+                        })
+                    })
+                    describe('get congregation id', function(){
+                        it('should display when link is clicked', function(){
+                            waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
+                            runs(click_cong_anchor)
+                            waitsFor(cong_details_id_selector_visible,'cong_details_url_selector to display step 4.5', timeout)
+                            runs(function(){
+                                expect($('#steps').html()).toMatch('Step 4.5')
+                            })
+                        })
+                        describe('cong_details_selector_page', function(){
+                            it('should display when button is clicked', function(){
+                                console.log('After Cong Details ID Selector Visible')
+                                runs(click_cong_id_yes_button)
+                                waitsFor(step_5_visible,'cong_details_fields to display step 5', timeout)
+                                runs(function(){
+                                    // TODO: Start Here: modify this section to work in this test
+                                    expect($('#steps').html()).toMatch('Step 5')
+                                })
+                            })
+                        })
+                    })
                 })
             })
         })
