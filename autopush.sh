@@ -46,7 +46,8 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-gnome-open http://$LOGIN@localhost:$PORT/rcl/_design/rcl/index.html &
+# gnome-open http://$LOGIN@localhost:$PORT/rcl/_design/rcl/index.html &
+erica browse rcl
 
 # Start watching the filesystem for changes, and push new changes into the database
 iwatch -e close_write -r -c "~/bin/erica push http://$LOGIN@localhost:$PORT/rcl" .
