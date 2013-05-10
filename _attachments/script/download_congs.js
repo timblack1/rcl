@@ -70,86 +70,7 @@ $(function() {
 	    return xpath;
 	}
 	
-	function create_regular_expression(){
-		$('#cong_details_fields_selector *').mouseup(function(event){
-			// Create a regular expression to get the selected cong field's data out of the HTML
 
-			// Prevent the event from propagating further up the DOM tree
-			//event.cancelBubble = true; // TODO: is this required for IE?
-			event.stopPropagation();
-			// Prevent the click from causing the browser to follow a link or do anything else we don't want
-			event.preventDefault();
-			
-			// Get the element that was clicked
-			var element = $(event.target);
-			// Get the selected text
-			var selection = getSelected();
-			// Get the XPath of the selected element
-			// Note that you have to pass it a DOM element, not a JQuery element, hence the [0] index
-			var element_xpath_local = getXPath(element[0]);
-			// Replace RCL's local HTML page's xpath prefix with the remote congregation directory's 
-			// 		xpath prefix, which should be '/html'
-			var rcl_xpath_prefix = '/html/body/div[2]/div/div[5]/div';
-			var element_xpath = element_xpath_local.replace(rcl_xpath_prefix, '/html');
-			// Get the string that was selected
-			var s = new String(selection);
-			// Escape periods so they aren't interpreted as regular expressions
-			var s_escaped = s.replace(/\./g,'\\.');
-
-			// Regex escape and unescape functions
-			// TODO: Move these functions out into a shared library
-			RegExp.escape = function(text) {
-			    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-			}
-			RegExp.unescape = function(text){
-				// All this does is remove all backslashes from its input
-				return text.replace(/\\+/g, "");
-			}
-			// Create a regular expression using the above data.
-			var selection_parent_html = $.trim(element.html()).replace(/\./g,'\\.');
-			// example selection_parent_html:  "<h2>GRACE - Wasilla, AK</h2>"
-			// We want to get just "GRACE" out of the string
-			// Like this:  "<h2>(.+?) - Wasilla, AK</h2>"
-			// We already know s = 'GRACE'
-			// Note this is Python's named group regex syntax.
-			// If we re-write this in JavaScript's regex syntax, we cannot use named groups.
-			var field_regex = selection_parent_html.replace(s_escaped,"(?P<" + selected_field + ">.+)").replace(/\\\./g,'\\\\.');
-			// Put regex in textarea to allow the user to edit it
-			$('#details_regex').val(field_regex);
-			// Put an object in the directory.fields object under the selected_field (field name) as its property name
-			directory.fields[selected_field] = {
-					'element_xpath_local':element_xpath_local,
-					'element_xpath':element_xpath,
-					'regex':field_regex
-			};
-			// Run the regular expression in Python and return the resulting match
-			$.post(
-					'/cong/test_single_regex',
-					{
-						'regex':field_regex, // double-escape this value
-						'string':selection_parent_html
-					},
-					function(data){
-						// TODO: Instead of immediately reporting the match to the user, we 
-						//		should test whether data.match == s, and if it doesn't, then
-						// 		we may need to create a regular expression that searches for 
-						//		[tag_begin] 1 character + "GRACE" + 1 character [tag_end] to give the regex 
-						//		enough context to get the correct data out of the string.
-						//		This is what the "No, this isn't right" button is for.
-						if (data.match != s){
-							// TODO: Expand regular expression to include surrounding parent tags
-						}
-						// Insert the regex's match into the appropriate text box to allow 
-						//		the user to confirm that the regex matched the right data.
-						// 		Unescape this to remove slashes
-						$('#' + selected_field).val(RegExp.unescape(data.match));
-						// Store the current settings into directory.fields
-						// Write directory to the database
-						store_directory();
-					}
-			);
-		});
-	}
 	
 	function show_retry_button(el){
 		// Record which field's text box was clicked in a global variable
@@ -197,15 +118,5 @@ $(function() {
 	// ------------------- MAIN CODE --------------------------
 	
 	/* attempt to find a text selection */
-	function getSelected() {
-		if (window.getSelection) { return window.getSelection(); }
-		else if(document.getSelection) { return document.getSelection(); }
-		else {
-			var selection = document.selection && document.selection.createRange();
-			if(selection.text) { return selection.text; }
-			return false;
-		}
-		return false;
-	}
-    
+	
  });
