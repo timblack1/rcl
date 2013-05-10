@@ -154,7 +154,9 @@ process.on('message', function(doc){
         get_url(doc, 'url', 'url_html', 'get_url_html')
     }
     if (doc.collection == 'directory' && doc.get_cong_url_html=='requested' && doc.cong_url){
-        get_url(doc, 'cong_url', 'cong_url_html', 'get_cong_url_html')
+        // TODO: Interpolate cong_id into cong_url here
+        doc.cong_url_raw = doc.cong_url.replace('{cong_id}', '2')
+        get_url(doc, 'cong_url_raw', 'cong_url_html', 'get_cong_url_html')
     }
     // Watch for requests to get the contents of a state page URL
     if (doc.collection == 'directory' && doc.get_state_url_html=='requested' && doc.state_url){

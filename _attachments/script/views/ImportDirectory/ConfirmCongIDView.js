@@ -59,21 +59,23 @@ define([
                 var change_id = change.results[0].id
                 var rev = change.results[0].changes[0].rev
                 // Determine if the changed document is the dir we are editing
-                if (typeof dir != 'undefined' && change_id == dir.get('_id')){
+                if (typeof window.app.dir != 'undefined' && change_id == window.app.dir.get('_id')){
                     // Fetch document's new contents from db
-                    dir.fetch({success:function(model,response){
-			        	//TODO: Doug START HERE
-			        	//The model part on line 70 seems not to be working.
-                        console.log (response)
-			        	console.log (dir.get("cong_url_html"))
+                    window.app.dir.fetch({success:function(model,response){
+                        // TODO: Doug START HERE
+                        // For some reason the response doesn't contain cong_url_html
+                        //  Is changes_listeners.js able to interpolate a cong_id into cong_url?
+                        //  Is changes_listeners.js writing cong_url_html correctly?
+                        console.log (response,model)
+                        console.log (window.app.dir.get("cong_url_html"))
                         // TODO: Handle response here
                         // TODO: Write HTML to page here
-                        $('#cong_details_fields_selector').html(dir.get("cong_url_html"))                   
-			        },
-			        	error:function(){console.error ("Could not fetch the directory")}
-			        }
-			        )
-		    }})
+                        $('#cong_details_fields_selector').html(window.app.dir.get("cong_url_html"))                   
+                    },
+                        error:function(){console.error ("Could not fetch the directory")}
+                    }
+                    )
+            }})
                         
             // TODO: Write Node listener to catch & handle that request
             //  Get HTML from URL
@@ -128,7 +130,7 @@ define([
                             _id:window.app.dir.get('_id'),
                             _rev:window.app.dir.get('_rev'),
                             cong_url:output_url,
-                            get_cong_url_html:true
+                            get_cong_url_html:'requested'
                         },
                         {
                             success:function(){
