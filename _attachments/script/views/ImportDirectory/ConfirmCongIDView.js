@@ -12,7 +12,6 @@ define([
         },
         render: function(){
             // TODO: Tim start here
-            // TODO: Why doesn't this appear to actually render, but step 5 renders immediately instead?
             $('#steps').html(Mustache.render(template));
             this.delegateEvents()
             // Ask the user which part of the URL that was clicked is the
@@ -63,12 +62,18 @@ define([
                 if (typeof dir != 'undefined' && change_id == dir.get('_id')){
                     // Fetch document's new contents from db
                     dir.fetch({success:function(model,response){
+			        	//TODO: Doug START HERE
+			        	//The model part on line 70 seems not to be working.
                         console.log (response)
+			        	console.log (dir.get("cong_url_html"))
                         // TODO: Handle response here
                         // TODO: Write HTML to page here
                         $('#cong_details_fields_selector').html(dir.get("cong_url_html"))                   
-                    }})
-            }})
+			        },
+			        	error:function(){console.error ("Could not fetch the directory")}
+			        }
+			        )
+		    }})
                         
             // TODO: Write Node listener to catch & handle that request
             //  Get HTML from URL
