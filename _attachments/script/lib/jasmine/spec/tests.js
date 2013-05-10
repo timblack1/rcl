@@ -58,15 +58,14 @@ describe("Reformed Churches Locator", function() {
             return $('#steps').html().indexOf('Directory of Congregations') != -1
         }
         function cong_details_id_selector_visible(){
-            return $('#cong_details_url_selector').is(':visible') &&
-                $('#cong_details_url_selector').html().indexOf('Step 4.5') != -1
+            return $('#steps').html().indexOf('Step 4.5') != -1
         }
         function click_cong_id_yes_button(){
             console.log($('#cong_details_url_selector #yes'))
             $('#cong_details_url_selector #yes').click()
         }
         function step_5_visible(){
-            return $('#cong_details_fields').html().indexOf('Step 5') != -1
+            return $('#steps').html().indexOf('Step 5') != -1
         }
         // These specs are nested because the later ones depend on the earlier ones
         describe('url field', function(){
