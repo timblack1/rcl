@@ -1,25 +1,25 @@
 define([
         '../../config',
+        '../../model',
         '../../lib/mustache',
         'text!views/ImportDirectory/DirURL.html',
-        './DirType'
+        './DirTypeView'
         ], 
-        function(config, Mustache, template, DirType){
+        function(config, model, Mustache, template, DirTypeView){
     
-    var DirURL = Backbone.View.extend({
+    var DirURLView = Backbone.View.extend({
         initialize:function(){
-            this.template = template;
-            this.DirType = DirType
+            // Make it easy to reference this object in event handlers
+            _.bindAll(this)
         },
         render: function(){
-            $('#steps').html(Mustache.render(this.template));
+            $('#steps').html(Mustache.render(template))
+            this.delegateEvents()
         },
         events: {
-            // TODO: Handle event which leads to step 2
             'keyup #url':'get_church_dir_from_url'
         },
         get_church_dir_from_url:function(event){
-
             // Delay this to run after typing has stopped for 2 seconds, so we don't
             //  send too many requests
             // TODO: Don't fire on every key event, but only once after delay.
@@ -36,7 +36,7 @@ define([
                 // TODO: Consider refactoring this into a separate function
                 function save_dir(cgroup, dir){
                     iterations++;
-                    // Make this function wait until this rev is not being saved anymore
+                    // Make this function wait until this rev is not being saved anymore under any other event
                     if (typeof window.app.import_directory_view.rev_currently_being_saved !== 'undefined' &&
                         window.app.import_directory_view.rev_currently_being_saved === dir.get('_rev')){
                         setTimeout(function(){ save_dir(cgroup, dir) }, 1000)
@@ -51,44 +51,48 @@ define([
                         // Only save this revision if it's not currently being saved already
                         if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined' || 
                                 window.app.import_directory_view.rev_currently_being_saved !== dir.get('_rev')){
-                            console.log(iterations + ' 196 saving', dir.get('_rev'))
+                            // console.log(iterations + ' 196 saving', dir.get('_rev'))
                             // Prevent saving the same revision twice simultaneously
                             if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
                                 window.app.import_directory_view.rev_currently_being_saved = dir.get('_rev')
                             }
                             dir.save({
-                                        _id:dir.get('_id'),
-                                        _rev:dir.get('_rev'),
-                                        url:$('#url').val(),
-                                        get_url_html:get_url_html
+                                    _id:dir.get('_id'),
+                                    _rev:dir.get('_rev'),
+                                    url:$('#url').val(),
+                                    get_url_html:get_url_html
+                                },
+                                {
+                                    success:function(){
+                                        // Report that it's OK for other calls to save_dir to run
+                                        delete window.app.import_directory_view.rev_currently_being_saved
+                                        // Append dir to CGroup
+                                        cgroup.get('directories').add([{_id:dir.get('_id')}])
+                                        // Save cgroup to db
+                                        // TODO: Does the relation appear on the dir in the db also?
+                                        // This will trigger the Node changes listener's response
+                                        cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')},{success:function(){
+                                            // Render DirTypeView
+                                            $('#steps').hide()
+                                            this.dir_type_view  = new DirTypeView({el: '#steps'})
+                                            this.dir_type_view.render()
+                                            $('#steps').fadeIn(2000)
+                                        }})
                                     },
-                                    {
-                                        success:function(){
-                                            // Report that it's OK for other calls to save_dir to run
-                                            delete window.app.import_directory_view.rev_currently_being_saved
-                                            // Append dir to CGroup
-                                            cgroup.get('directories').add([{_id:dir.get('_id')}])
-                                            // Save cgroup to db
-                                            // TODO: Does the relation appear on the dir in the db also?
-                                            cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')})
-                                            // This will trigger the Node changes listener's response
-                                        },
-                                        error:function(model, xhr, options){
-                                            console.error('We got the 196 error '+ iterations)
-                                            save_dir(cgroup, dir)
-                                        }
-                                    })
-                            }
+                                    error:function(model, xhr, options){
+                                        console.error('We got the 196 error '+ iterations)
+                                        save_dir(cgroup, dir)
+                                    }
+                                }
+                            )
                         }
-                    })
+                    }})
                 }
                 save_dir(cgroup, dir)
             }
-            
             function get_cgroup(dir){
                 // Make the dir available globally so it can be reused if the user causes
                 //  this function to be invoked again
-                window.dir = dir
                 // Reset status flag so the status messages will display
                 dir.set('get_state_url_html', '')
                 var cgroup_name = $('#cgroup_name').val()
@@ -103,35 +107,38 @@ define([
                     //  we handle different numbers of callback arguments?
                     // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/make-getorcreateone-handle-multiple-callback-args
                     model.get_one(model.CGroupsByAbbrOrName,
-                          [cgroup_name,abbr],
-                          {success:function(cgroup){
-                              if (typeof(cgroup) === 'undefined'){
-                                  // The cgroup didn't exist in the db, so create it
-                                  // Create CGroup
-                                  model.create_one(model.CGroups,
-                                                   {
-                                                       name:cgroup_name,
-                                                       abbreviation:abbr
-                                                   },
-                                                   {success:function(cgroup){
-                                                       save_cgroup_and_dir(cgroup, dir)
-                                                   }}
-                                  )
-                              }else{
-                                  // The cgroup did exist in the db, so use it
-                                  save_cgroup_and_dir(cgroup, dir)
-                              }
-                          }})
+                        [cgroup_name,abbr],
+                        {success:function(cgroup){
+                            if (typeof(cgroup) === 'undefined'){
+                                // The cgroup didn't exist in the db, so create it
+                                // Create CGroup
+                                model.create_one(model.CGroups,
+                                    {
+                                        name:cgroup_name,
+                                        abbreviation:abbr
+                                    },
+                                    {success:function(cgroup){
+                                        save_cgroup_and_dir(cgroup, dir)
+                                    }}
+                                )
+                            }else{
+                                // The cgroup did exist in the db, so use it
+                                save_cgroup_and_dir(cgroup, dir)
+                            }
+                        }}
+                    )
                 }
             }
             
             // --------- Main code section begins here ----------
             
             // If we have already created a directory on this page, get it
-            if (typeof(dir) === 'undefined'){
+            if (typeof(window.app.dir) === 'undefined'){
                 // The dir hasn't been created in the browser yet
                 // If the cgroup's associated directory exists in the db, get it
-                model.get_one(model.DirectoriesByURL, [$('#url').val()], {success:function(dir){
+                var page_url = $('#url').val()
+                model.get_one(model.DirectoriesByURL, [page_url], {success:function(dir){
+                //model.get_one(model.DirectoriesByURL, [$('#url').val()], {success:function(dir){
                     // If it does not exist in the db, then create it
                     if (typeof(dir) === 'undefined'){
                         // TODO: Don't create the dir if the URL is not valid.
@@ -142,7 +149,7 @@ define([
                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                         model.create_one(model.Directories,
                                          {
-                                             url:$('#url').val(),
+                                             url:page_url,
                                              get_url_html:'requested'
                                          },
                                          {success:function(dir){
@@ -152,17 +159,23 @@ define([
                                              // TODO: Maybe only display those fields after
                                              //     the URL is filled in
                                              //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+                                             window.app.dir = dir
                                              get_cgroup(dir)
+                                         },error:function(){
+                                            console.error('Could not create_one')
                                          }}
                         )
                     }else{
                         // It exists in the db, so use the existing dir
+                        window.app.dir = dir
                         get_cgroup(dir)
                     }
+                },error:function(){
+                    console.error('Could not get_one')
                 }})
             }else{
                 // It already exists in the browser, so we're editing an already-created dir
-                get_cgroup(dir)
+                get_cgroup(window.app.dir)
             }
             
             // TODO: Is this code needed anymore?
@@ -202,12 +215,9 @@ define([
 //                        }
 //                    }
 //                })
-            // TODO: Render DirType.  Is this the right code location for this call?
-            // TODO: Tim start here 2013-04-08
-            this.dir_type  = this.DirType.render()
         }
 
     });
-    return DirURL;
+    return DirURLView;
 
 });

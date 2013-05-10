@@ -3,9 +3,6 @@
 # This file is for you, the developer, to run while developing the code.  It automatically pushes
 #   your new changes into couchdb whenever you save a file.
 
-# Activate the virtualenv
-. ../bin/activate
-
 PORT=5984
 # Get the admin username and password for couchdb
 LOGIN=$(cat login.txt)
@@ -19,7 +16,7 @@ then
 fi
 
 # Push app into database in case this has not been done yet
-couchapp push http://$LOGIN@localhost:$PORT/rcl
+erica push http://$LOGIN@localhost:$PORT/rcl
 
 #echo "Starting the Node.js changes listener as a forked child process..."
 #( ./node_changes_listener.sh & )
@@ -49,12 +46,7 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-couchapp browse . http://$LOGIN@localhost:$PORT/rcl &
+gnome-open http://$LOGIN@localhost:$PORT/rcl/_design/rcl/index.html &
 
 # Start watching the filesystem for changes, and push new changes into the database
-# TODO: This loops--it pushes every second, regardless of whether a file changed.  I'd rather
-#   have it only push when a file changes.
-#couchapp autopush --update-delay 1 http://$LOGIN@localhost:$PORT/rcl
-watchmedo shell-command --wait --recursive --command="couchapp push http://$LOGIN@localhost:$PORT/rcl" .
-# TODO: Convert to use Erica
-# iwatch . -c erica push
+iwatch -e close_write -r -c "~/bin/erica push http://$LOGIN@localhost:$PORT/rcl" .

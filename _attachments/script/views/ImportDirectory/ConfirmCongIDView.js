@@ -1,13 +1,20 @@
 define([
         'config',
         '../../lib/mustache', 
-        "./Cong_Fields"
+        'text!views/ImportDirectory/ConfirmCongID.html',
+        "./CongDetailsView"
         ], 
-        function(config, Mustache, Cong_Fields){
+        function(config, Mustache, template, CongDetailsView){
     
     var ConfirmCongIDView = Backbone.View.extend({
         initialize:function(){
-            this.render()
+            _.bindAll(this)
+        },
+        render: function(){
+            // TODO: Tim start here
+            // TODO: Why doesn't this appear to actually render, but step 5 renders immediately instead?
+            $('#steps').html(Mustache.render(template));
+            this.delegateEvents()
             // Ask the user which part of the URL that was clicked is the
             //  congregation ID.
             this.href = $(event.target).attr('href')
@@ -26,12 +33,6 @@ define([
             var href_underlined = href.replace(this.regex, '<u>$1</u>');
             this.$('#href_underlined').html(href_underlined)
         },
-        render: function(){
-            var id = "#confirm_cong_id_template"
-            $(id).hide()
-            config.render_to_id(this, id)
-            $(id).show(3000)
-        },
         events: {
             "click #yes": "yes",
             "click #no": "no",
@@ -45,48 +46,30 @@ define([
             //  church.html?church_id={cong_id}
             var url = this.href.replace(this.regex, '{cong_id}')
             this.record_id_format(url)
+
             // TODO: Display the pages' content here.
             // TODO: Fix this to display not one state's worth of congregations, but rather 
             //  the details of one congregation
             // TODO: Write first cong's URL to database, requesting Node to download its HTML
-			// TODO: This code goes in ConfirmCongIDView.js
-			// TODO: Write changes listener here
-			
-			// Set up browser changes listener to watch for and handle Node changes
-			//  listener's response
-			var changes = db.changes();
-			changes.onChange(function(change){
-			    var change_id = change.results[0].id
-			    var rev = change.results[0].changes[0].rev
-			    // Determine if the changed document is the dir we are editing
-			    if (typeof dir != 'undefined' && change_id == dir.get('_id')){
-			        // Fetch document's new contents from db
-			        dir.fetch({success:function(model,response){
-			        	console.log (response)
-			            // TODO: Handle response here
-			        	// TODO: Write HTML to page here
-					    $('#cong_details_fields_selector').html(dir.get("cong_url_html"))				    
-			        }})
-		    }})
-						
-			 var url=this.href
-			dir.fetch({success:function(dir, response, options){
-				dir.save({
-			                _id:dir.get('_id'),
-			                _rev:dir.get('_rev'),
-			                //TODO: Fill in URL to get here
-			                cong_url:url,
-			                get_cong_url_html:true
-			            },
-			            {
-			                success:function(){
-			                },
-			                error:function(model, xhr, options){
-			                    console.error('We got an error here')
-			                }
-			            })
-			}})	
-
+            // TODO: Write changes listener here
+            
+            // Set up browser changes listener to watch for and handle Node changes
+            //  listener's response
+            var changes = db.changes();
+            changes.onChange(function(change){
+                var change_id = change.results[0].id
+                var rev = change.results[0].changes[0].rev
+                // Determine if the changed document is the dir we are editing
+                if (typeof dir != 'undefined' && change_id == dir.get('_id')){
+                    // Fetch document's new contents from db
+                    dir.fetch({success:function(model,response){
+                        console.log (response)
+                        // TODO: Handle response here
+                        // TODO: Write HTML to page here
+                        $('#cong_details_fields_selector').html(dir.get("cong_url_html"))                   
+                    }})
+            }})
+                        
             // TODO: Write Node listener to catch & handle that request
             //  Get HTML from URL
             //  Write HTML back to db
@@ -113,24 +96,50 @@ define([
                 
         },
         record_id_format:function(url){
-            // TODO: start here
-            // TODO: Record the pattern of the URL the user clicked
-            // TODO: If the URL is only partial, prepend the root of the URL
-            var href = this.href
-            if (href.indexOf('/') == 0){
-                // TODO: Prepend the root of the URL
+            // If the URL is only partial, prepend the root of the URL
+            var a = document.createElement('a')
+            a.href = this.href
+            var base = a.origin + a.pathname
+            var root_url = base.slice(0,base.lastIndexOf('/'))
+            // Cases:
+            // Absolute, partial URL:  /locator.html
+            if (url.indexOf('/') === 0){
+                output_url = a.origin + url
             }
-            if(!href.match(/^http/)){
-                // TODO: Prepend the root of the URL relative to the directory's URL
+            // Absolute, full URL:  http://opc.org/locator.html
+            else if (url.indexOf('http') === 0){
+                output_url = url
             }
-            this.$el.hide(1000)
-            // TODO: Make this into its own Backbone view
-            // Show step 5
-            $('#cong_details_fields').show(1000)
-            //This will show the table of congregation fields.
-            this.cong_fields = new Cong_Fields({el: $("#fields_table_container")})
-            this.cong_fields.render();
-        }     
+            // Relative, partial URL:  locator.html
+            else{
+                output_url = root_url + '/' + url
+            }
+            
+            // Record the pattern of the URL the user clicked
+            var thiz = this
+            window.app.dir.fetch({success:function(dir, response, options){
+                // Request download of all congregation pages
+                dir.save({
+                            _id:window.app.dir.get('_id'),
+                            _rev:window.app.dir.get('_rev'),
+                            cong_url:output_url,
+                            get_cong_url_html:true
+                        },
+                        {
+                            success:function(){
+                                // Show step 5
+                                thiz.$el.fadeIn(1000)
+                                //This will show the table of congregation fields.
+                                // TODO: Render step 5
+                                thiz.cong_fields_view = new CongDetailsView({el: $("#steps")})
+                                thiz.cong_fields_view.render();
+                            },
+                            error:function(model, xhr, options){
+                                console.error('We got an error here')
+                            }
+                        })
+            }})
+        }
     });
     return ConfirmCongIDView
 
