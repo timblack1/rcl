@@ -69,6 +69,8 @@ define(
         }
         function rewrite_urls(page_url, page_html_set, index){
             // Prepend the root URL to every partial URL in this HTML
+            // TODO: Remove the necessity of declaring the index here; rather, just operate on one HTML string
+            //  per function call.
             function replacer(match, p1, p2, offset, string){
                 // Get root URL
                 var a = document.createElement('a')

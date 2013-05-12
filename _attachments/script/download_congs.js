@@ -42,22 +42,6 @@ $(function() {
 		store_directory();
 	});
 	
-	function store_directory(){
-		// Write the directory to the database
-		directory.name = $('#cgroup_name').val();
-		directory.abbreviation = $('#abbreviation').val();
-		$.post(
-				'/cong/store_directory_regex',
-				// Convert the directory object into json before sending it to the server.
-				{'dir_json': JSON.stringify({
-												'directory':directory
-											})
-				},
-				function(data){
-					// TODO: Handle an error response - if this returns an error, then notify the user
-				}
-		);
-	}
 
 	function getXPath( element ){
 	    var xpath = '';
