@@ -89,11 +89,9 @@ describe("Reformed Churches Locator", function() {
                 describe('cong details', function(){
                     it('should display when select box is clicked', function(){
                         runs(state_drop_down_selector)
-                        waitsFor(function(){
-                            return $('#cong_details_url_selector').is(':visible')
-                        },'cong_details_url_selector to be visible', timeout)
+                        waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
                         runs(function(){
-                            expect($('#cong_details_url_selector').is(':visible')).toBe(true)
+                            expect(cong_details_url_selector_visible()).toBe(true)
                         })
                     })
                     describe('get congregation id', function(){

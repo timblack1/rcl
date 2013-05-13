@@ -352,7 +352,7 @@ clear:both;
     /* width: 400px; */
     float:right;
 }
-#fields_table_mustache td {
+#fields_table td {
     vertical-align: top;
     /* float:left; */
 }
