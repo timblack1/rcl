@@ -41,12 +41,14 @@ define([
         },
         render: function(){
             // Render individual views for each field
+            this.views = []
+            var thiz = this
             _.each(this.fields,function(value, key, list){
                 var db_name = value.db_name
-                this.views[db_name] = new CongFieldView({
+                var view = thiz.views[db_name] = new CongFieldView({
                     el: value.db_name + '_el',
                     field:value,
-                    parent:this
+                    parent:thiz
                 })
                 view.render()
             })
