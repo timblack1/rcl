@@ -11,7 +11,6 @@ define([
         },
         render: function(){
             // TODO: Render individual views for each field, and append them to fields_table_container
-            //  But how can we make these line up in a table?  Maybe make them tr elements.
             $('#fields_table').append(Mustache.render(template, this.options.field));
             this.delegateEvents()
             // Attach event handler here since the events hash below doesn't seem to do it
@@ -44,6 +43,9 @@ define([
                 $('#details_regex').val(window.app.dir.get('fields')[this.field].regex);
             }
             var thiz = this
+            // Store which field was selected last, so the create_regular_expression mouseup handler 
+            //  can determine which field to write to
+            window.app.dir.set('currently_selected_field', this.options.field.db_name)
             
             function create_regular_expression(event){
                 // Create a regular expression to get the selected cong field's data out of the HTML
@@ -133,10 +135,10 @@ define([
                 //      the user to confirm that the regex matched the right data.
                 //      Unescape this to remove slashes
                 // TODO: This writes the same value to all used field views
-                $('#' + thiz.options.field.db_name + '_div').html(RegExp.unescape(result))
+                $('#' + window.app.dir.get('currently_selected_field') + '_div').html(RegExp.unescape(result))
                 // TODO: This shows the button on all used field views
                 // Show this field's "No, this isn't right" button
-                $('#' + thiz.options.field.db_name + '_button').show();
+                $('#' + window.app.dir.get('currently_selected_field') + '_button').show();
             
                 // Store the current settings into the dir
                 var fields = window.app.dir.get('fields') ? window.app.dir.get('fields') : {}
@@ -151,6 +153,8 @@ define([
                 }})
             }
             // Listen for and handle a selection event
+            // TODO: This writes to every field view, not only this view
+            //  How can I get it to write to only this view?
             $('#cong_details_fields_selector').mouseup(create_regular_expression);
             // TODO: Create a listener to handle a click on this button
             //  First see if we can create a listener in the view's events section; if not, create the listener here
