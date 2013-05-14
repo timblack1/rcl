@@ -348,17 +348,27 @@ clear:both;
     width:612px;
     margin-right: 1em;
 }
-#fields_table_container {
-    /* width: 400px; */
+#fields_container {
+    width: 290px;
     float:right;
 }
-#fields_table td:hover {
+.field_row {
+    clear: both;
+}
+.field_row:hover {
     background:#fffcce;
 }
-.fields_table_selected {
-    display: table;
+.field_row>div {
+    display:inline-block;
+    vertical-align:top;
+}
+.field_row div:first-child {
+    float:left;
+    width:120px;
+}
+.field_selected {
     border: 1px dotted blue;
-    border-radius: 2px;
+    border-radius: 5px;
 }
 .regex_section {
     margin-top: 1em;
