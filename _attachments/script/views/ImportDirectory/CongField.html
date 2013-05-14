@@ -1,10 +1,6 @@
-<tr id='{{ db_name }}_row'>
-    <td id='{{ db_name }}_name'>
-        {{ pretty_name }}
-    </td>
-    <td>
-        <div id='{{ db_name }}_div' />
-        <br />
-        <button id='{{ db_name }}_button' style='display:none'>No, this isn't right</button>
-    </td>
-</tr>
+<div id='{{ db_name }}_row' class='field_row'>
+    <div>
+        {{ pretty_name }}:
+    </div>
+    <div id='{{ db_name }}_div' />
+</div>

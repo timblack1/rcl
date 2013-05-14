@@ -66,6 +66,7 @@ define([
                         html = html.replace('class="silimage">', 'class="silimage" />')
                                    .replace('width="137">', 'width="137" />')
                         $('#cong_details_fields_selector').html(html)
+                        changes.stop()
                     },
                         error:function(){console.error ("Could not fetch the directory")}
                     })
