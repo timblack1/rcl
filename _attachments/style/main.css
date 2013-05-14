@@ -352,9 +352,13 @@ clear:both;
     /* width: 400px; */
     float:right;
 }
-#fields_table td {
-    vertical-align: top;
-    /* float:left; */
+#fields_table td:hover {
+    background:#fffcce;
+}
+.fields_table_selected {
+    display: table;
+    border: 1px dotted blue;
+    border-radius: 2px;
 }
 .regex_section {
     margin-top: 1em;

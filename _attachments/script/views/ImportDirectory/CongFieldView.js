@@ -30,6 +30,9 @@ define([
             
             // Hide all other fields' buttons
             $('#fields_table button').hide()
+            // Notify the user that this is the selected field
+            $('#fields_table *').removeClass('fields_table_selected')
+            $('#' + this.options.field.db_name + '_row').addClass('fields_table_selected')
 
             // Create global dir.fields object if it doesn't already exist
             if (typeof window.app.dir.get('fields') === 'undefined') {
@@ -135,14 +138,15 @@ define([
                 //      the user to confirm that the regex matched the right data.
                 //      Unescape this to remove slashes
                 // TODO: This writes the same value to all used field views
-                $('#' + window.app.dir.get('currently_selected_field') + '_div').html(RegExp.unescape(result))
+                var db_name = window.app.dir.get('currently_selected_field')
+                $('#' + db_name + '_div').html(RegExp.unescape(result))
                 // TODO: This shows the button on all used field views
                 // Show this field's "No, this isn't right" button
-                $('#' + window.app.dir.get('currently_selected_field') + '_button').show();
+                $('#' + db_name + '_button').show();
             
                 // Store the current settings into the dir
                 var fields = window.app.dir.get('fields') ? window.app.dir.get('fields') : {}
-                fields[thiz.field] = {
+                fields[db_name] = {
                             'element_xpath_local':element_xpath_local,
                             'element_xpath':element_xpath,
                             'regex':field_regex
