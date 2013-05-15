@@ -1,6 +1,6 @@
 define([
         '../../config',
-        '../../lib/mustache',
+        '../../vendor/mustache',
         'text!views/ImportDirectory/StatesOnePage.html'
         ], 
         function(config, Mustache, template){

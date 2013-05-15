@@ -1,7 +1,7 @@
 define([
         '../../config',
         '../../model',
-        '../../lib/mustache',
+        '../../vendor/mustache',
         'text!views/ImportDirectory/DirURL.html',
         './DirTypeView'
         ], 

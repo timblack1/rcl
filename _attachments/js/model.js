@@ -56,10 +56,10 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'lib/underscore',
-        'lib/backbone',
-        'lib/backbone-relational',
-        'lib/backbone-couchdb'
+        'vendor/underscore',
+        'vendor/backbone',
+        'vendor/backbone-relational',
+        'vendor/backbone-couchdb'
         ], function(config){
     // Fill this with your database information.
 

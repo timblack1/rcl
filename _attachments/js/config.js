@@ -1,6 +1,6 @@
 define(
    [
-    'lib/underscore'
+    'vendor/underscore'
     ],
     function(){
        // TODO: Dynamically get the database name

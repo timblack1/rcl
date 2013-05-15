@@ -23,13 +23,57 @@
         <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
 	</head>
 	<body class='rcl'>
-		<div class="header">
-			<h1>Reformed Churches Locator
-			<span class="subtitle">The Ultimate Directory of Reformed Churches Worldwide</span></h1>
-		</div>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="#">Reformed Churches Locator</a>
+                    <div class="nav-collapse collapse">
+                        <ul class="nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Action</a></li>
+                                    <li><a href="#">Another action</a></li>
+                                    <li><a href="#">Something else here</a></li>
+                                    <li class="divider"></li>
+                                    <li class="nav-header">Nav header</li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <form class="navbar-form pull-right">
+                            <input class="span2" type="text" placeholder="Email">
+                            <input class="span2" type="password" placeholder="Password">
+                            <button type="submit" class="btn">Sign in</button>
+                        </form>
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+
+		<br /><br /><br /><br />
 		<ul id="mainmenu"></ul>
 
-		<div id="content"></div>
+        <div class="container">
+
+			<h1>The Ultimate Directory of Reformed Churches Worldwide</span></h1>
+
+			<div id="content"></div>
+
+        </div> <!-- /container -->
 
         <script type="text/template" id="find_a_church_template">
             <div id="congregations">
@@ -95,10 +139,10 @@
 		
 		<script type="text/template" id="test_template">
 				<!-- Jasmine unit testing files -->
-			    <script2 type="text/javascript" src="script/lib/jasmine/lib/jasmine-1.3.0/jasmine.js"></script2>
-			    <script2 type="text/javascript" src="script/lib/jasmine/lib/jasmine-1.3.0/jasmine-html.js"></script2>
+			    <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.js"></script2>
+			    <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine-html.js"></script2>
 			    <!-- include test spec files here... -->
-    			<script2 type="text/javascript" src="script/lib/jasmine/spec/tests.js"></script2>
+    			<script2 type="text/javascript" src="js/vendor/jasmine/spec/tests.js"></script2>
 		</script>
 
 		<script type="text/template" id="confirm_cong_id_template">
@@ -115,15 +159,7 @@
 
 			<div>
     			<form action="TODO: write this!">
-        			<span class="watermark_container"
-        			style="display: inline-block; position: relative;">
-        			 <span
-            			class="watermark"
-            			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        			 location
-        			 </span>
-        			 <input class="jq_watermark" title="Enter location" type="text" name="location" id="search_the_map">
-        			</span>
+        			 <input placeholder="Enter location" title="Enter location" type="text" name="location" id="search_the_map">
         			Search within
         			<select title="Search within" name="radius" id="radius">
             			<option value="5">5</option>
@@ -140,22 +176,14 @@
         			<input type="button" value="Search" id="search">
     			</form>
     			<form action="TODO">
-        			<span class="watermark_container"
-        			style="display: inline-block; position: relative;"><span
-        			class="watermark"
-        			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        			keyword</span><input class="jq_watermark" title="Enter keyword" type="text"
-        			name="keyword" id="keyword"></span>
+					<input placeholder="Enter keyword" title="Enter keyword" type="text"
+	        			name="keyword" id="keyword">
     			</form>
 			</div>
 			<div>
     			<form action="TODO">
-        			<span class="watermark_container"
-        			style="display: inline-block; position: relative;"><span
-        			class="watermark"
-        			style="position: absolute; font-family: Verdana, Arial, sans-serif; font-size: 18px; color: rgb(153, 153, 153); left: 6px; top: 2px; height: 28px; line-height: 28px; text-align: left; pointer-events: none;">Enter
-        			state</span><input class="jq_watermark" title="Enter state" type="text"
-        			name="state" id="state"></span>
+    				<input placeholder="Enter state" title="Enter state" type="text"
+	        			name="state" id="state">
     			</form>
 			</div>
 			<div id="group_filter">
@@ -172,6 +200,13 @@
 
 	</body>
 
+        <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
+        <!-- <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script> -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="/_utils/script/jquery.js"><\/script>')</script>
+
+        <script src="js/vendor/bootstrap.min.js"></script>
+
 	<!--  Couchapp JavaScript files -->
 
     <script>
@@ -185,9 +220,9 @@
         couchapp_load([
           "/_utils/script/sha1.js",
           "/_utils/script/json2.js",
-          "/_utils/script/jquery.js",
-          "script/lib/wgxpath.install.js",
-          "script/lib/jquery.xpath.js",
+          // "/_utils/script/jquery.js",
+          "js/vendor/wgxpath.install.js",
+          "js/vendor/jquery.xpath.js",
           "/_utils/script/jquery.couch.js"
         ]);
 
@@ -195,24 +230,30 @@
 
 	<!-- Reformed Churches Locator JavaScript files -->
 
-	<script src="script/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="script/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
+	<script src="js/vendor/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="js/vendor/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
 
     <!-- TODO: Put these script & CSS loads into their associated Backbone views -->
-	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/ui.css" media="all">
-	<script src="script/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
-	<script src="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
-	<link rel="stylesheet" type="text/css" href="script/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
-	<script src="script/jquery.watermark/jquery.watermark.min_.js"></script>
+	<link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/ui.css" media="all">
+	<script src="js/vendor/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
+	<script src="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+	<link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
 
 	<!-- TODO: Put this script into app.js -->
-	<!-- <script src="script/search_the_map.js"></script> -->
-	<script type="text/javascript" src="script/lib/underscore.js"></script>
-	<script type="text/javascript" src="script/lib/backbone.js"></script>
-	<script type="text/javascript" src="script/lib/backbone-relational.js"></script>
-	<script type="text/javascript" src="script/lib/backbone-couchdb.js"></script>
+	<!-- <script src="js/search_the_map.js"></script> -->
+	<script type="text/javascript" src="js/vendor/underscore.js"></script>
+	<script type="text/javascript" src="js/vendor/backbone.js"></script>
+	<script type="text/javascript" src="js/vendor/backbone-relational.js"></script>
+	<script type="text/javascript" src="js/vendor/backbone-couchdb.js"></script>
 
-	<script data-main="script/main" src="script/require.js"></script>
-	<script src="script/app.js"></script>
+	<script data-main="js/main" src="js/require.js"></script>
+	<script src="js/app.js"></script>
+
+        <script>
+            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script>
 	
 </html>
