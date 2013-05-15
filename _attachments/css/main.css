@@ -5,71 +5,6 @@
    TODO: Remove TurboGears styles after integrating HTML5 Boilerplate/Bootstrap
    ========================================================================== */
 
-/* Main Menu */
-
-ul#mainmenu {
-    margin: 0;
-    padding: 0 10px;
-    background: url('../images/menubg.png') top left no-repeat;
-    height: 38px;
-}
-
-ul#mainmenu li {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    position: relative;
-    display: inline;
-    float: left;
-}
-
-ul#mainmenu li a {
-    color: #fff;
-    float: left;
-    height: 31px;
-    display: block;
-    line-height: 30px;
-    vertical-align: middle;
-    padding: 0 10px;
-    font-size: 12px;
-    text-decoration: none;
-    background: url('../images/menu-item-border.png') left top no-repeat;
-}
-
-ul#mainmenu li a:hover, ul#mainmenu li a.active {
-    background: url('../images/menu-item-actibg.png') left top no-repeat;
-}
-
-ul#mainmenu li.first a {
-    background: none;
-}
-
-ul#mainmenu li.first a:hover, ul#mainmenu li.first a.active {
-    background: url('../images/menu-item-actibg-first.png') left top no-repeat;
-}
-
-ul#mainmenu li.loginlogout
-{
-    float: right;
-    right: 10px;
-}
-
-ul#mainmenu li.loginlogout a:hover
-{
-    background: url('../images/menu-item-border.png') left top no-repeat;
-}
-
-#content {
-    background: #fff url('../images/contentbg.png') left bottom no-repeat;
-    margin : 0 10px 10px 10px;
-    padding: 1em;
-    overflow: hidden;
-}
-
-#content .currentpage {
-    margin-top: 0;
-}
-
 /* Login form*/
 
 #loginform
@@ -234,4 +169,9 @@ form.loginfields input#submit
 }
 .regex_section {
     margin-top: 1em;
+}
+
+/* Jasmine HTMLReporter */
+.navbar-inner .container .jasmine_reporter {
+    float:right;
 }

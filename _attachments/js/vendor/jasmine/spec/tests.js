@@ -142,7 +142,7 @@ describe("Reformed Churches Locator", function() {
         jasmineEnv.execute();
         // Move Jasmine's symbolSummary to top of page to make it easy to see if
         //    some tests are not passing
-        $('body').prepend('<div id="HTMLReporter" class="jasmine_reporter"><div class="banner"></div></div>')
+        $('.navbar-inner .container').prepend('<div id="HTMLReporter" class="jasmine_reporter"><div class="banner"></div></div>')
         $('.banner').first().prepend($('.symbolSummary'))
     }
 })();
