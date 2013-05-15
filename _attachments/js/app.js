@@ -8,7 +8,7 @@ require(
     'config',
     'model', 
     'views/view_loader',
-    'lib/jquery.couchLogin'
+    'vendor/jquery.couchLogin'
     ], 
     function(config, model, views){
 
@@ -21,7 +21,7 @@ require(
             initialize : function(){
                 // Run tests only if configured to do so
                 if (config.run_jasmine_tests == true) {
-                    $('head').append('<link rel="stylesheet" href="script/lib/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
+                    $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
                     this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
                 }
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
