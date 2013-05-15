@@ -25,6 +25,7 @@ require(
                     this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
                 }
                 this.menu_view = new views.MenuView({ el: $("#mainmenu") });
+                this.menu_view.render()
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
                 // Make it easy to reference this object in event handlers
