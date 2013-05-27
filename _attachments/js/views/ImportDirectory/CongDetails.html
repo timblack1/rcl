@@ -10,39 +10,16 @@
             it appears in the page below.
         </li>
         <li>
-            Behind the scenes, this page will use your selected text to create a regular expression that will attempt to 
-            extract that field's data from the web page.  Then it will display the data it extracted in that field's text box.
-        </li>
-        <li>
-            Once that data displays in the text box, please confirm whether the data is correct.
-        </li>
-        <li>
-            If you would like to modify the regular expression yourself, you may do so in the "Regular Expression" box at the 
-            bottom of the page.  We encourage you to do so.  You can read documentation about the regular expression syntax at
+            Please edit this regular expression.  [Explain how here, using explanation found in RegexEditor.html.]  You can read documentation about the regular expression syntax at
             <a href="http://www.w3schools.com/jsref/jsref_obj_regexp.asp" target="_blank">W3Schools</a> and <a href="https://developer.mozilla.org/en-US/docs/JavaScript/Guide/Regular_Expressions" target="_blank">Mozilla Developer Network</a>.
         </li> 
     </ul>
 </p>
 <div>
     <div id='fields_container'>
+        <a href='#' class='popover'></a>
     </div>
-    <div id='cong_details_fields_selector' class='content_frame content_frame_narrow'></div>
-    <div class="regex_section">
-        <h2>Edit regex here</h2>
-        <p>
-            Please replace text that should NOT be part of the regex 
-            (because it is data that should go into another field)
-            with this expression:  <code>.*?</code>
-        </p>
-        <p>
-            For example, if you are choosing the mailing state, change this:<br />
-            &nbsp; &nbsp;<code>P\\\.O\\\. Box 873741&lt;br&gt;Wasilla, (?P&lt;mailing_state&gt;.+) 99687-3741</code><br />
-            into this:<br />
-            &nbsp; &nbsp;<code>.*?&lt;br&gt;.*?, (?P&lt;mailing_state&gt;.+) .*?</code>
-        </p>
-        <textarea cols="67" rows="2" id="details_regex" ></textarea>
-        
-        <h2>Result:</h2>
-        <div id="result_div"></div>
+    <div id='cong_details_fields_selector' class='content_frame content_frame_narrow'>
+        <a href='#' class='popover'></a>
     </div>
 </div>

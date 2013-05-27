@@ -55,12 +55,13 @@ define([
             this.delegateEvents()
             // TODO: Add a popover to the fields_container to notify user they should click
             //  on a field
-            $('#fields_container').popover({
+            $('#fields_container .popover').popover({
                 placement:'top',
-                html:'Testing',
-                selector:'#fields_container'
+                content:"For each field listed below, please click in the field's text box, " +
+                        "then highlight that field's content where" +
+                        "it appears in the page below."
             })
-            $('#fields_container').popover('show')
+            $('fields_container .popover').popover('show')
         }
     });
 
