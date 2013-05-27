@@ -146,7 +146,7 @@ form.loginfields input#submit
     margin-right: 1em;
 }
 #fields_container {
-    width: 290px;
+    width: 300px;
     float:right;
 }
 .field_row {
@@ -161,7 +161,7 @@ form.loginfields input#submit
 }
 .field_row div:first-child {
     float:left;
-    width:120px;
+    width:140px;
 }
 .field_selected {
     border: 1px dotted blue;
@@ -174,4 +174,13 @@ form.loginfields input#submit
 /* Jasmine HTMLReporter */
 .navbar-inner .container .jasmine_reporter {
     float:right;
+}
+
+/* Radio button fix */
+#steps input+label {
+    display:inline;
+    vertical-align:text-top;
+}
+#steps label {
+    margin-left:1em;
 }

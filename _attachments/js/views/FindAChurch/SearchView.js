@@ -6,7 +6,6 @@ define([
     
     var SearchView = Backbone.View.extend({
         initialize: function(){
-            this.render();
         },
         render: function(){
             config.render_to_id(this, "#search_template")
@@ -15,9 +14,9 @@ define([
             // TODO: We are trying to get the AJAX request to work on the "on key up" event; 
             //  but no luck so far.
             //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/searchview-search-onkeyup
-            "click #search": "doSearch"
+            "click #search": "do_search"
         },
-        doSearch: function( event ){
+        do_search: function( event ){
             var address = document.getElementById("search_the_map").value;
             var geocoder = new google.maps.Geocoder();
             geocoder.geocode( { 'address': address}, function(results, status) {

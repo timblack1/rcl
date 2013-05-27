@@ -33,8 +33,8 @@ define([
             var fields = []
             for (var i=0; i < field_names.length; i++){
                 fields.push({
-                  pretty_name:config.capitalize(field_names[i].replace('_', ' ')),
-                  db_name:field_names[i]
+                    pretty_name:config.capitalize(field_names[i].replace('_', ' ')),
+                    db_name:field_names[i]
                 })
             }
             this.fields = fields
@@ -53,6 +53,14 @@ define([
                 view.render()
             })
             this.delegateEvents()
+            // TODO: Add a popover to the fields_container to notify user they should click
+            //  on a field
+            $('#fields_container').popover({
+                placement:'top',
+                html:'Testing',
+                selector:'#fields_container'
+            })
+            $('#fields_container').popover('show')
         }
     });
 

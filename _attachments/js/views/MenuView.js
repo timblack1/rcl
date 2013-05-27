@@ -12,30 +12,20 @@ define(
         render: function(){
             $('.navbar').html(Mustache.render(template));
             this.delegateEvents()
-            this.$('a').on('click',this.make_menu_item_active)
         },
         events: {
             "click a": "make_menu_item_active",
-            "click input[type=button]": "do_search",
-            "click #delete_all_docs" : "delete_all_docs",
-            "click #delete_all_opc_cgroups" : "delete_all_opc_cgroups",
-            "click #delete_all_directories" : "delete_all_directories",
-            "click #delete_all_caney_opc" : "delete_all_caney_opc",
-            "click #delete_all_opc_data" : "delete_all_opc_data"
+            "click #delete_all_docs": "delete_all_docs",
+            "click #delete_all_opc_cgroups": "delete_all_opc_cgroups",
+            "click #delete_all_directories": "delete_all_directories",
+            "click #delete_all_caney_opc": "delete_all_caney_opc",
+            "click #delete_all_opc_data": "delete_all_opc_data"
         },
         make_menu_item_active:function(event){
-            // TODO: Get the menu item that is selected
-            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/get-selected-menu-item
-            var path = unescape(document.location.pathname).split('/')
-            var filename = path[path.length-1]
-            console.log('filename:', filename)
+            // Remove the 'active' class from all other menu items
+            $('.navbar li.active').removeClass('active')
             // Add the "active" class to the menu item the user clicked
-            $('#mainmenu a[href="' + filename + '"]').addClass('active')
-        },
-        // TODO: Does this function belong here or in another view?
-        do_search: function( event ){
-            // Button clicked, you can access the element that was clicked with event.currentTarget
-            alert( "Search for " + $("#search_input").val() );
+            $(event.target).parent('li').addClass('active')
         },
         delete_all_docs:function(){
             // Delete all docs except design doc

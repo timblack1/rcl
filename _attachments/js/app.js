@@ -24,7 +24,7 @@ require(
                     $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
                     this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
                 }
-                this.menu_view = new views.MenuView({ el: $("#mainmenu") });
+                this.menu_view = new views.MenuView({ el: $(".navbar") });
                 this.menu_view.render()
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
