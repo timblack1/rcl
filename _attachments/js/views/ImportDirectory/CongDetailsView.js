@@ -90,11 +90,6 @@ define([
             var result = regex.exec(selection_parent_html)[1]
 
             // TODO: Tim start here
-            // TODO: For some reason the remote page's HTML reloads after the mouseup event which 
-            //  runs this function.  This removes the user's text selection, which is not nice for the user.
-            //  Maybe related:  sometimes the HTML appears to load twice when the remote page's HTML
-            //      first loads when step 5 renders.
-            
             // TODO: Instead of immediately reporting the match to the user, we 
             //      should test whether result == s, and if it doesn't, then
             //      we may need to create a regular expression that searches for 
