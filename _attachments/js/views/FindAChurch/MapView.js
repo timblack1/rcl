@@ -6,23 +6,6 @@ define([
     
     var MapView = Backbone.View.extend({
         initialize: function(){
-            this.render();
-            
-            // TODO: Migrate the code below into Backbone events
-            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/migrate-map-events-into-backbone-events
-
-            // Attach events to search_the_map form elements
-            $('#search').click(function() {
-                codeAddress();
-                return false;
-            });
-            $('#search_the_map').keypress(function(event) {
-                if (event.which==13){ // The user pressed the enter key
-                    event.preventDefault();  // Prevent the default action of submitting the form
-                    codeAddress();
-                    return false; // This might help some browsers avoid submitting the form
-                }
-            });
         },
         render: function(){
             config.render_to_id(this, "#map_template")
@@ -40,6 +23,21 @@ define([
                              mapTypeId: google.maps.MapTypeId.ROADMAP
             }
             map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+        },
+        events:{
+            'click #search':'codeAddress',
+            'keypress #search_the_map': 'search'
+        },
+        search:function(event){
+            if (event.which==13){ // The user pressed the enter key
+                event.preventDefault();  // Prevent the default action of submitting the form
+                codeAddress();
+                return false; // This might help some browsers avoid submitting the form
+            }
+        },
+        codeAddress:function(event){
+            codeAddress();
+            return false;
         }
     });
     return MapView
