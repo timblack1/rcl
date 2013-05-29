@@ -78,11 +78,6 @@ define([
             // We already know s = 'GRACE'
             // So interpolate (.+?) in place of s_escaped as an initial attempt at creating the regular expression
             var field_regex = selection_parent_html.replace(s_escaped,"(.+)").replace(/\\\./g,'\\\\.');
-            // Put regex in textarea to allow the user to edit it
-            // TODO: Maybe move this into a Backbone model change listener event on the regex textarea's model
-            //  so the textarea updates itself whenever the regex changes in the model.
-            //  Does this mean we need one textarea view per regex field?
-            $('#details_regex').val(field_regex);
             
             // TODO: Test to see if this combination of XPATH and regex gets the correct string out of the HTML
             // TODO: Use XPATH to get selection_parent_html
@@ -118,6 +113,25 @@ define([
                 //  This drives the memory usage up when Chrome's console is open
                 window.app.dir.save({fields:fields})
             }})
+
+            // Put field_regex in textarea to allow the user to edit it
+            $('#cong_details_fields_selector').popover('destroy')
+            $('#cong_details_fields_selector').popover({
+                placement:'top',
+                html:true,
+                content:"Please edit this regular expression.  (<a href=''>Here's how</a>)<br /><textarea>" + field_regex +
+                        "</textarea>",
+                trigger:"manual"
+            })
+            // TODO: Explain how to edit the regex in a modal popup window, as follows:
+            // [Explain how here, using explanation found in RegexEditor.html.]  " +
+            //                        "You can read documentation about the regular expression syntax at " +
+            //                        "<a href='http://www.w3schools.com/jsref/jsref_obj_regexp.asp' target='_blank'>W3Schools</a> "+
+            //                        "and <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Guide/Regular_Expressions' "+
+            //                        "target='_blank'>Mozilla Developer Network</a>."
+            $('#cong_details_fields_selector').popover('show')
+            // Start here
+            // TODO: Add onchange event to the textarea to write changes to the Backbone model and save to the db
         }
     });
 

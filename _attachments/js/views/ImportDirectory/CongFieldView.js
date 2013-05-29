@@ -26,11 +26,24 @@ define([
             // TODO: Recreate the regex by including one more (HTML? space-separated string?)
             //  element of context on each side
         },
-        row_clicked: function(event) {
+        row_clicked: function(event){
             
             // Notify the user that this is the selected field
             $('.field_row').removeClass('field_selected')
+            // TODO: It should be possible to refer to this field's set of DOM elements more simply than this,
+            //  using this.$el (or this.$() syntax and a class rather than and ID)
             $('#' + this.options.field.db_name + '_row').addClass('field_selected')
+            // this.$el.addClass('field_selected')
+
+            // Notify the user they should select the data in the remote page which belongs in this field
+            $('#cong_details_fields_selector').popover('destroy')
+            $('#cong_details_fields_selector').popover({
+                placement:'top',
+                content:"Highlight the \"" + this.options.field.pretty_name + "\" field's content where it appears in the page.",
+                trigger:"manual"
+            })
+            $('#cong_details_fields_selector').popover('show')
+            $('#fields_container').popover('hide')
 
             // Create global dir.fields object if it doesn't already exist
             if (typeof window.app.dir.get('fields') === 'undefined') {
