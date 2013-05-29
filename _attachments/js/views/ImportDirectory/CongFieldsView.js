@@ -61,7 +61,34 @@ define([
                         "then highlight that field's content where" +
                         "it appears in the page below."
             })
-            $('fields_container .popover').popover('show')
+            $('#fields_container').popover('show')
+            $('#fields_container').popover({
+                placement:'top',
+                content:"Please click on one field name below.",
+                selector:'#fields_container' 	
+            })
+            $('#fields_container').popover({
+                placement:'top',
+                content:"Highlight that field's content where it appears in the page.",
+                selector:'#fields_container' 	
+            })
+            $('#fields_container').popover({
+                placement:'top',
+                content:"Behind the scenes, this page will use your selected text to create a regular expression that will attempt to extract that field's data from the web page.  Then it will display the data it extracted in that field's text box.",
+                selector:'#fields_container' 	
+            })
+            $('#fields_container').popover({
+                placement:'top',
+                content:"Once that data displays in the text box, please confirm whether the data is correct.",
+                selector:'#fields_container' 	
+            })
+            $('#fields_container').popover({
+                placement:'top',
+                content:"If you would like to modify the regular expression yourself, you may do so in the 'Regular Expression' box at the bottom of the page." +
+                	  "We encourage you to do so.  You can read documentation about the regular expression syntax at" +
+                	  "<a href='http://www.w3schools.com/jsref/jsref_obj_regexp.asp' target='_blank'>W3Schools</a> and <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Guide/Regular_Expressions' target='_blank'>Mozilla Developer Network</a>.",
+                selector:'#fields_container' 	
+                	})
         }
     });
 
