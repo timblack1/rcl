@@ -120,7 +120,7 @@ define([
                 placement:'top',
                 html:true,
                 content:"Please edit this regular expression.  (<a href=''>Here's how</a>)<br /><textarea>" + field_regex +
-                        "</textarea>",
+                        "</textarea><br /><button class='btn'>Done editing</button>",
                 trigger:"manual"
             })
             // TODO: Explain how to edit the regex in a modal popup window, as follows:
