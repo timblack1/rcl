@@ -39,7 +39,7 @@ define([
             $('#cong_details_fields_selector').popover('destroy')
             $('#cong_details_fields_selector').popover({
                 placement:'top',
-                content:"Highlight the \"" + this.options.field.pretty_name + "\" field's content where it appears in the page.",
+                content:"Highlight the congregation's \"" + this.options.field.pretty_name + "\" where it appears in the page below.",
                 trigger:"manual"
             })
             $('#cong_details_fields_selector').popover('show')
