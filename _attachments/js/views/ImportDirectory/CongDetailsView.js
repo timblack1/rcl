@@ -2,9 +2,10 @@ define([
         '../../config',
         '../../vendor/mustache',
         'text!views/ImportDirectory/CongDetails.html',
-        './CongFieldsView'
+        './CongFieldsView',
+        'text!views/ImportDirectory/CongDetails_Heres_why_how_modal.html'
         ], 
-        function(config, Mustache, template, CongFieldsView){
+        function(config, Mustache, template, CongFieldsView, CongDetails_Heres_why_how_modal_template){
     
     return Backbone.View.extend({
         initialize:function(){
@@ -114,22 +115,33 @@ define([
                 window.app.dir.save({fields:fields})
             }})
 
-            // Put field_regex in textarea to allow the user to edit it
+            // Put field_regex in textarea to allow the user to edit it, and explain 
+            //  how to edit the regex in a modal popup window.
             $('#cong_details_fields_selector').popover('destroy')
             $('#cong_details_fields_selector').popover({
-                placement:'top',
+                placement:'right',
                 html:true,
-                content:"Please edit this regular expression.  (<a href=''>Here's how</a>)<br /><textarea>" + field_regex +
-                        "</textarea><br /><button class='btn'>Done editing</button>",
+                content:"Please edit this regular expression.  (<a href='' class='heres_why_how'>Here's why & how</a>)<br /><textarea>" + field_regex +
+                        "</textarea><br /><button class='btn'>Done editing</button>" + 
+                        Mustache.render(CongDetails_Heres_why_how_modal_template),
                 trigger:"manual"
             })
-            // TODO: Explain how to edit the regex in a modal popup window, as follows:
-            // [Explain how here, using explanation found in RegexEditor.html.]  " +
-            //                        "You can read documentation about the regular expression syntax at " +
-            //                        "<a href='http://www.w3schools.com/jsref/jsref_obj_regexp.asp' target='_blank'>W3Schools</a> "+
-            //                        "and <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Guide/Regular_Expressions' "+
-            //                        "target='_blank'>Mozilla Developer Network</a>."
             $('#cong_details_fields_selector').popover('show')
+            $('.popover .heres_why_how').modal({
+                backdrop:'static'
+            })
+            // TODO: Consider repositioning the modal 
+            // Tim start here
+            // $('.modal').css({position:'fixed',left:$('#cong_details_fields_selector').offset().left + 30 + 'px'})
+            $('.popover textarea').keyup(function(event){
+                // TODO: Run the regex on the selection, and on every other congregation's content in the db,
+                $.each(collection, function(index, value){
+                    
+                });
+                // TODO: then display a table of the outputs for the user to confirm that the regex is working
+                //  correctly for all congregations
+
+            })
             // Start here
             // TODO: Add onchange event to the textarea to write changes to the Backbone model and save to the db
         }
