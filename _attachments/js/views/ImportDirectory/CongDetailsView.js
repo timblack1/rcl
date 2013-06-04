@@ -117,7 +117,7 @@ define([
             // Put field_regex in textarea to allow the user to edit it
             $('#cong_details_fields_selector').popover('destroy')
             $('#cong_details_fields_selector').popover({
-                placement:'top',
+                placement:'right',
                 html:true,
                 content:"Please edit this regular expression.  (<a href=''>Here's how</a>)<br /><textarea>" + field_regex +
                         "</textarea><br /><button class='btn'>Done editing</button>",
@@ -132,6 +132,11 @@ define([
             $('#cong_details_fields_selector').popover('show')
             // Start here
             // TODO: Add onchange event to the textarea to write changes to the Backbone model and save to the db
+            
+            $(".popover button").click(function() {
+            	$('#cong_details_fields_selector').popover('hide')
+            	$('#fields_container').popover('show')
+            	});
         }
     });
 
