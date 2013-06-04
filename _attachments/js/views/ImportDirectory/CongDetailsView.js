@@ -144,6 +144,11 @@ define([
             })
             // Start here
             // TODO: Add onchange event to the textarea to write changes to the Backbone model and save to the db
+            
+            $(".popover button").click(function() {
+            	$('#cong_details_fields_selector').popover('hide')
+            	$('#fields_container').popover('show')
+            	});
         }
     });
 
