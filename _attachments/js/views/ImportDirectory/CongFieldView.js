@@ -38,7 +38,7 @@ define([
             // Notify the user they should select the data in the remote page which belongs in this field
             $('#cong_details_fields_selector').popover('destroy')
             $('#cong_details_fields_selector').popover({
-                placement:'top',
+                placement:'right',
                 content:"Highlight the congregation's \"" + this.options.field.pretty_name + "\" where it appears in the page below.",
                 trigger:"manual"
             })
