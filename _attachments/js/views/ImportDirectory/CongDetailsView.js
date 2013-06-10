@@ -121,14 +121,20 @@ define([
             $('#cong_details_fields_selector').popover({
                 placement:'right',
                 html:true,
-                content:"Please edit this regular expression.  (<a href='' class='heres_why_how'>Here's why & how</a>)<br /><textarea>" + field_regex +
+                content:"Please edit this regular expression.  (<a href='#' class='heres_why_how'>Here's why & how</a>)<br /><textarea>" + field_regex +
                         "</textarea><br /><button class='btn'>Done editing</button>" + 
-                        Mustache.render(CongDetails_Heres_why_how_modal_template),
+                        Mustache.render(CongDetails_Heres_why_how_modal_template) +
+                        "<div class='regex_results'></div>",
                 trigger:"manual"
+            })
+            // Prevent the link from causing a page refresh
+            $('.heres_why_how').click(function(event){
+                event.preventDefault()
             })
             $('#cong_details_fields_selector').popover('show')
             $('.popover .heres_why_how').modal({
-                backdrop:'static'
+                backdrop:'static',
+                show:false
             })
             // TODO: Consider repositioning the modal 
             // Tim start here
@@ -148,7 +154,7 @@ define([
             $(".popover button").click(function() {
             	$('#cong_details_fields_selector').popover('hide')
             	$('#fields_container').popover('show')
-            	});
+        	});
         }
     });
 
