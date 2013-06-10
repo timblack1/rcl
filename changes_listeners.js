@@ -84,6 +84,7 @@ function recurse_then_save(i, options){
         options.save_attempts = 0
         if (options.output_array_saved !== true){
             save(options)
+            // console.log ("after saving all the states")
         }
     }
     // Call the parent function recursively to enable throttling the rate of web-scraping requests
@@ -113,10 +114,9 @@ function recurse_urls(i, options){
                     // Set flag to indicate that we just reset the status_flag
                     options.flag_set = true
                     // report to the db the fact we are getting the HTML
-                    console.log ("before saving all the states")
+                    // console.log ("before saving all the states")
                     db.save(options.doc._id, options.doc._rev, options.doc, function(err, response){
                         recurse_then_save(i, options)
-                       console.log ("after saving all the states")
                     })
                 }
                 // Record the number downloaded
