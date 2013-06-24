@@ -25,12 +25,16 @@ define([
                     .click({thiz2:thiz},function(event){ event.data.thiz2.show_state_page(event)})
             }
             // We (sometimes?) have to wait for url_html to be available
-            if (typeof window.app.dir.get('url_html') === 'undefined'){
-                window.app.dir.fetch({success:function(model,response,options){
+            function fetch(){
+                if (typeof window.app.dir.get('url_html') === 'undefined'){
+                    setTimeout(function(){
+                        window.app.dir.fetch({success:function(model,response,options){
+                            fetch()
+                        }})
+                    },300)
+                }else{
                     sub_render()
-                }})
-            }else{
-                sub_render()
+                }
             }
         },
         show_state_page:function(event){
