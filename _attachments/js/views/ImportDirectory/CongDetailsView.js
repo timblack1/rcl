@@ -151,6 +151,15 @@ define([
             // Start here
             // TODO: Add onchange event to the textarea to write changes to the Backbone model and save to the db
             
+            // create a jquery on click event handler
+            // attach the click event to the Done Editing button
+            // display a backbone view containing a list of cong field data (ex: all the congregation names)
+            $(".popover button").click(function() {
+            	this.cong_fields_data_view = new CongFieldsDataView({el: $('.cong_fields_data')})
+                this.cong_fields_data_view.render();
+            });
+            
+            
             $(".popover button").click(function() {
             	$('#cong_details_fields_selector').popover('hide')
             	$('#fields_container').popover('show')
