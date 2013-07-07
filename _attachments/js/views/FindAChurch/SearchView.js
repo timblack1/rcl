@@ -7,7 +7,9 @@ define([
 
     return Backbone.View.extend({
         initialize: function(){
+            _.bindAll(this)
             window.app.geocoder = new google.maps.Geocoder();
+            this.markers = []
         },
         render: function(){
             // TODO: Convert this to use Mustache
@@ -25,7 +27,8 @@ define([
             var thiz = this
             // Handle event if the search button was clicked or the return key was pressed in the location text box
             if ($(event.target).attr('class') == 'search' || event.which == 13){
-                // TODO: Clear any existing markers from map
+                // Clear any existing markers from map
+                thiz.remove_markers()
                 window.app.geocoder.geocode( { 'address': $('.location').val()}, function(results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         // Use Circle() as a helper to avoid doing math. 
@@ -68,12 +71,6 @@ define([
                                 if (typeof congs !== 'undefined' && congs.length > 0){
                                     // TODO: Refactor this so it's not redeclared every time this code is called
                                     // Plot the congregations returned on the map
-                                    function close_infowindows() {
-                                        _.each(thiz.infowindows, function(iw, index, iws){
-                                            // TODO: Get the current marker
-                                            iw.close();
-                                        })
-                                    }
                                     // TODO: Use a template rather than constructing HTML here,
                                     //    and wrap the display in a self-updating Backbone view tied to the congs_coll collection,
                                     //    which should render this .remove() call unnecessary
@@ -101,6 +98,7 @@ define([
                                                         map: window.app.map,
                                                         title: cong_data.get('name')
                                                     });
+                                                    thiz.markers.push(marker)
                                                     // TODO: Make it so the city entered has a different color than results 
                                                     //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
 
@@ -154,12 +152,12 @@ define([
                                                     thiz.infowindows[index] = infowindow;
                                                     // Add infowindow to map
                                                     google.maps.event.addListener(marker, 'click', function() {
-                                                        close_infowindows();
+                                                        thiz.close_infowindows();
                                                         this.infowindow.open(window.app.map,marker);
                                                     });
                                                     // Close all infowindows when user clicks on map
                                                     google.maps.event.addListener(window.app.map, 'click', function() {
-                                                        close_infowindows();
+                                                        thiz.close_infowindows();
                                                     });
 
                                                     //TODO: Add congregation info to the table below the map.
@@ -192,6 +190,19 @@ define([
                     }
                 });
             }
+        },
+        close_infowindows:function() {
+            _.each(this.infowindows, function(iw, index, iws){
+                iw.close();
+            })
+        },
+        remove_markers:function(){
+            // Remove each marker from the map
+            _.each(this.markers,function(marker){
+                marker.setMap(null)
+            })
+            // Empty the array itself
+            this.markers = [];
         }
     });
 });
