@@ -8,7 +8,7 @@ var get_db = function(port) {
 	password = auth.split(':')[1];
 
 	// Here is the main line that this whole function is for
-	db = new(cradle.Connection)('http://localhost:' + port, {
+	db = new(cradle.Connection)('http://'+ config.domain + ':' + port, {
 		auth: { username: username, password: password }
 	}).database('rcl');
 	return db;

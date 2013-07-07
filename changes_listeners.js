@@ -10,6 +10,7 @@
 
 var buffer = '',
 	http = require('http'),
+    https = require('https'),
 	cwd = process.cwd(),
 	config = require(cwd + '/config'),
 	db = config.db,
@@ -23,8 +24,13 @@ if (config.debug)
 //stdin.setEncoding('utf8');
 
 // Declare utility functions
-function get_url(doc, from_url, to_html, status_flag){
-    http.get(doc[from_url], function(res){
+function get_url(doc, from_url, to_html, status_flag, options){
+    var http_lib = http
+    if (doc[from_url].indexOf('https') === 0){
+        // Switch to using https if necessary
+        var http_lib = https
+    }
+    http_lib.get(doc[from_url], function(res){
         var pageData = ''
         res.on('data', function(chunk){
             pageData += chunk
@@ -34,9 +40,13 @@ function get_url(doc, from_url, to_html, status_flag){
             // Write the contents of the html variable back to the database
             doc[to_html] = pageData
             doc[status_flag] = 'gotten'
+            console.log(new Date().getTime() + '\t n: ' + status_flag + ': ' + doc[status_flag] + ' ' + doc[from_url])
             // TODO: Use Backbone here instead of cradle
             db.save(doc._id, doc._rev, doc, function(err, res){
                 // TODO: Do anything more that needs to be done here
+                if (options && options.success){
+                    options.success()
+                }
             });
         })
     });
@@ -147,7 +157,6 @@ function get_url_set(options){
 
 // Handle all changes
 process.on('message', function(doc){
-
     // Watch for requests to get the contents of a URL for a church directory
     // TODO: Check to see if the URL is valid
     if (doc.collection == 'directory' && doc.get_url_html=='requested' && doc.url){
@@ -156,17 +165,27 @@ process.on('message', function(doc){
         get_url(doc, 'url', 'url_html', 'get_url_html')
     }
     if (doc.collection == 'directory' && doc.get_cong_url_html=='requested' && doc.cong_url){
-        get_url(doc, 'cong_url_raw', 'cong_url_html', 'get_cong_url_html')
+        get_url(doc, 'cong_url_raw', 'cong_url_html', 'get_cong_url_html', {success:function(){
+            // Iterate state pages' HTML
+            for (var i=0; i<doc.state_url_html.length; i++){
+                // TODO: Get each cong's URL
+                var state_html = doc.state_url_html[i]
+                
+                // TODO: Get each cong page's HTML & write to database
+            }
+        }})
     }
     // Watch for requests to get the contents of a state page URL
     if (doc.collection == 'directory' && doc.get_state_url_html=='requested' && doc.state_url){
         // Interpolate state names into URLs
         var state_page_urls = []
+        console.log('before interpolating state names into URLs')
         for (var i=0; i<doc.state_page_values.length; i++){
             if (doc.state_page_values[i] !== ''){
                 state_page_urls.push(doc.state_url.replace('{state_name}', doc.state_page_values[i]))
             }
         }
+        console.log('about to get_url_set')
         doc.state_page_urls = state_page_urls
         get_url_set({
             doc:               doc,
@@ -179,5 +198,13 @@ process.on('message', function(doc){
             // TODO: Cleanup unnecessary doc attributes here?  Probably that should be done in
             //  ImportDirectoryView.js instead.
         }})
+    }
+    // Watch for requests to get the contents of a batchgeo map URL
+    if (doc.collection == 'directory' && doc.get_batchgeo_map_html=='requested' && doc.batchgeo_map_url){
+        get_url(doc, 'batchgeo_map_url', 'batchgeo_map_html', 'get_batchgeo_map_html')
+    }
+    // Watch for requests to get the contents of a JSON feed
+    if (doc.collection == 'directory' && doc.get_json=='requested' && doc.json_url){
+        get_url(doc, 'json_url', 'json', 'get_json')
     }
 });

@@ -6,7 +6,7 @@ define([
         ], 
         function(config, Mustache, StatesOnePageView, StatesOneStatePerPageView){
     
-    var StatePageView = Backbone.View.extend({
+    return Backbone.View.extend({
         initialize:function(){
             _.bindAll(this)
         },
@@ -14,10 +14,6 @@ define([
             this.delegateEvents()
 
             var type = window.app.dir.get('display_type');
-            // TODO: The PCA has a KML file at http://batchgeo.com/map/kml/c78fa06a3fbdf2642daae48ca62bbb82
-            //  Some (all?) data is also in JSON at http://static.batchgeo.com/map/json/c78fa06a3fbdf2642daae48ca62bbb82/1357687276
-            //  After trimming off the non-JSON, the cong details are in the obj.mapRS array
-            //  You can pretty-print it at http://www.cerny-online.com/cerny.js/demos/json-pretty-printing
             if (type=='one page'){
                 // TODO: If "One Page" is selected, then show page containing list of all congs.
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/show-one-page-directory
@@ -35,8 +31,5 @@ define([
         },
         events: {
         }
-
     });
-    return StatePageView;
-
 });
