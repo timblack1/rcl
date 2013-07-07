@@ -185,7 +185,11 @@ define([
 //          fax:'',
 //          email:'',
 //          website:'',
+//          sermons_url:'',
 //          service_info:'',
+//          other_info:'',
+//          presbytery_name:'',
+//          pastor_name:'',
 //          date_founded:'', // date
 //          number_of_members:'', // integer
 //          range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 

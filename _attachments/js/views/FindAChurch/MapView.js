@@ -1,45 +1,64 @@
 define([
-        'config',
-        'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
-        ], 
-        function(config){
-    
-    var MapView = Backbone.View.extend({
-        initialize: function(){
-        },
-        render: function(){
-            config.render_to_id(this, "#map_template")
+    'config',
+    '../../vendor/mustache',
+    'text!views/FindAChurch/Map.html',
+    'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
+    ], 
+    function(config, Mustache, template){
 
-            // Initialize Google map
-            var geocoder;
-            var map;
-            geocoder = new google.maps.Geocoder();
-            // TODO: Center the map on the viewer's country
-            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/center-map-on-viewers-country
-            var latlng = new google.maps.LatLng(-34.397, 150.644);
-            var myOptions = {
-                             zoom: 8,
-                             center: latlng,
-                             mapTypeId: google.maps.MapTypeId.ROADMAP
-            }
-            map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-        },
-        events:{
-            'click #search':'codeAddress',
-            'keypress #search_the_map': 'search'
-        },
-        search:function(event){
-            if (event.which==13){ // The user pressed the enter key
-                event.preventDefault();  // Prevent the default action of submitting the form
-                codeAddress();
-                return false; // This might help some browsers avoid submitting the form
-            }
-        },
-        codeAddress:function(event){
-            codeAddress();
-            return false;
-        }
-    });
-    return MapView
+        return Backbone.View.extend({
+            initialize: function(){
+                _.bindAll(this)
+            },
+            render: function(){
+                $('#map').html(Mustache.render(template))
+                this.delegateEvents()
 
-});
+                // Initialize Google map
+                // First without user's location, centered on Philadelphia
+                this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
+                this.getLocation()
+                // TODO: use navigator.geolocation.watchPosition(showPosition) to track user's moving location
+            },
+            create_map:function(position){
+                var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+                var myOptions = {
+                    zoom: 8,
+                    center: latlng,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                }
+                window.app.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+            },
+            getLocation:function(){
+                if (navigator.geolocation){
+                    // Center the map on the viewer's country by default
+                    navigator.geolocation.getCurrentPosition(this.showPosition,this.handleErrors);
+                }else{
+                    console.log("Geolocation is not supported by this browser.");
+                    // TODO: Find a different way to locate the user, perhaps by IP address
+                    // Center on Philadelphia, PA
+                    this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
+                }
+            },
+            showPosition:function(position){
+                this.create_map(position)
+            },
+            handleErrors:function(error){
+                switch(error.code){
+                    case error.PERMISSION_DENIED:
+                        console.log("User denied the request for Geolocation.")
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        console.log("Location information is unavailable.")
+                        break;
+                    case error.TIMEOUT:
+                        console.log("The request to get user location timed out.")
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        console.log("An unknown error occurred.")
+                        break;
+                }
+            }
+        });
+    }
+);

@@ -12,31 +12,11 @@ require(
     ], 
     function(config, model, views){
 
-       // Make model, config global so they're available in tests
-       window.model = model
-       window.config = config
-       
        // Create main application
         var App = Backbone.Router.extend({
             initialize : function(){
-                // Run tests only if configured to do so
-                if (config.run_jasmine_tests == true) {
-                    $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
-                    this.run_tests_view = new views.RunTestsView({ el: $("#tests") });
-                }
-                this.menu_view = new views.MenuView({ el: $(".navbar") });
-                this.menu_view.render()
-                this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
-                this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
                 // Make it easy to reference this object in event handlers
-                _.bindAll(this.import_directory_view)
-                $("#account").couchLogin({});
-                // This renders the default view for the app
-                // TODO:  If the page loaded from a different view's URL, load that view instead
-                //    Maybe we can handle that in the router below.
-                //  load-correct-view-from-url-on-first-load
-                this.default_view = this[config.default_view]
-                this.default_view.render()
+                _.bindAll(this)
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
@@ -46,11 +26,35 @@ require(
             //    and dynamically create this.routes in the correct data format, 
             //    which is {'url':'function_name',...}.
             //    (misunderstood_url)
-            
             routes: {
                 "index.html":                    "index.html",
                 "find_a_church":                 "find_a_church",
                 "import_directory":              "import_directory"
+            },
+            render:function(){
+                this.menu_view = new views.MenuView({ el: $(".navbar") });
+                this.menu_view.render()
+                this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
+                this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
+                // TODO: Login doesn't work yet
+                $("#account").couchLogin({});
+                // This renders the default view for the app
+                // TODO:  If the page loaded from a different view's URL, load that view instead
+                //    Maybe we can handle that in the router below.
+                //  load-correct-view-from-url-on-first-load
+                this.default_view = this[config.default_view]
+                this.default_view.render()
+                // Run tests only if configured to do so
+                var thiz = this
+                if (config.run_jasmine_tests === true) {
+                    // TODO: Is the setTimeout call necessary?  Its purpose is to fix the problem where the tests
+                    //  don't run on page load, maybe because they are loaded too early.  But loading them late
+                    //  doesn't fix the problem either.  They just sometimes run, and sometimes don't.
+                    setTimeout(function(){
+                        $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
+                        thiz.run_tests_view = new views.RunTestsView({ el: $("#tests") });
+                    }, 3000)
+                }
             },
             find_a_church:function(){
                 // TODO: This destroys the old view, and renders a new view, in the #content div.
@@ -67,8 +71,14 @@ require(
                 this.import_directory_view.render()
             }
         });
-        // Instantiate App
+        // Instantiate & initialize App
         window.app = new App
+        // Render after initializing, so window.app can be accessed by the views this app renders
+        window.app.render()
+        // Make model, config available in tests
+        window.app.model = model
+        window.app.config = config
+       
         // Create SEF URLs and handle clicks
         Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
         // Globally capture clicks. If they are internal and not in the pass 
