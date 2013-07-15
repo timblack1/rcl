@@ -10,12 +10,16 @@ define(
            db = $.couch.db(db_name),
            run_jasmine_tests = true,
            // Select view to load at root URL
-           //default_view = 'find_a_church_view',
-           default_view = 'import_directory_view',
+           default_view = 'find_a_church_view',
+           // default_view = 'import_directory_view',
            // After running tests,
            //   Display this in the address bar: (to facilitate manually refreshing the page by
            //   hitting F5)
-           test_home_address = 'index.html';
+           test_home_address = 'index.html',
+           // port = '5984',
+           port = '80',
+           // domain = 'localhost',
+           domain = 'arwd.iriscouch.com';
 
         // TODO: Move these functions into a library
        function render_to_id(obj, id){
@@ -113,6 +117,8 @@ define(
        return {
            db_name:db_name,
            db:db,
+           port:port,
+           domain:domain,
            render_to_id:render_to_id,
            run_jasmine_tests:run_jasmine_tests,
            test_home_address:test_home_address,

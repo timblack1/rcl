@@ -19,7 +19,9 @@ define(
             "click #delete_all_opc_cgroups": "delete_all_opc_cgroups",
             "click #delete_all_directories": "delete_all_directories",
             "click #delete_all_caney_opc": "delete_all_caney_opc",
-            "click #delete_all_opc_data": "delete_all_opc_data"
+            "click #delete_all_opc_data": "delete_all_abbreviation_data",
+            "click #delete_all_pca_data": "delete_all_abbreviation_data",
+            "click #delete_all_rpcna_data": "delete_all_abbreviation_data"
         },
         make_menu_item_active:function(event){
             // Remove the 'active' class from all other menu items
@@ -94,11 +96,12 @@ define(
                 }
             })
         },
-        delete_all_opc_data:function(){
-            // Delete all OPC directories
-            // Get all OPC directories
-            config.db.view('rcl/opc',{
-                keys:['OPC'],
+        delete_all_abbreviation_data:function(event){
+            var abbreviation = $(event.target).attr('id').match(/delete_all_(.+?)_data/)[1].toUpperCase()
+            // Delete all data with this abbreviation
+            // Get all OPC data
+            config.db.view('rcl/denomination_abbr',{
+                keys:[abbreviation],
                 success:function(data){
                     var docs = []
                     for (var i=0;i<data.rows.length;i++){

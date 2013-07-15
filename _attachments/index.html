@@ -21,8 +21,8 @@
         <link rel="stylesheet" href="css/main.css">
 
         <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
-	</head>
-	<body class='rcl'>
+    </head>
+    <body class='rcl'>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
@@ -31,127 +31,98 @@
 
         <div class="container">
 
-			<br /><br />
+            <br /><br />
             <p>(The Ultimate Directory of Reformed Churches Worldwide)</p>
 
-			<div id="content"></div>
+            <div id="content"></div>
 
         </div> <!-- /container -->
 
-        <script type="text/template" id="find_a_church_template">
-            <div id="congregations">
-                <div id="account" style="float: right"></div>
-                <h1>Find a church</h1>
-                <div class="ui-widget ui-widget-content ui-corner-all">
-                    <div>
-                        <div id="search_container"></div>
-                        <div id="map"></div>
-                        <div id="congregations_container"></div>
-                    </div>
-
-                    <div id="pager" class="pager"></div>
-                </div>
-            </div>
-            <div id="footer">
-                <div class="clearingdiv"></div>
-            </div>
-        </script>
-        
         <script type="text/template" id="map_template">
             <div id="map_canvas" style="width: 914px; height: 500px;"></div>
         </script>
-		
-		<script type="text/template" id="congregations_template">
-			<table id="congregation_list" class="tablesorter">
-    			<thead>
-        			<tr>
-            			<th>Congregation name</th>
-            			<th>City, State</th>
-            			<th>Contact info</th>
-        			</tr>
-    			</thead>
-    			<tbody>
-        			<tr class="odd">
-            			<td class="cong_info"><a href="http://127.0.0.1:8080/cong/1">Caney
-            			OPC</a></td>
-            			<td class="cong_info">Caney, KS, US</td>
-            			<td class="cong_info"><a href="http:" class="external"
-            			title="Visit Caney OPC online" target="_blank"></a></td>
-        			</tr>
-        			<tr class="even">
-            			<td class="cong_info">
-            			 <a href="http://127.0.0.1:8080/cong/2">CrossPoint Baptist Church</a></td>
-            			<td class="cong_info">Caney, KS, US</td>
-            			<td class="cong_info">
-            			 <a href="http:" class="external" title="Visit CrossPoint Baptist Church online" target="_blank"></a>
-            			</td>
-        			</tr>
-    			</tbody>
-			</table>
-		</script>
-		
-		<script type="text/template" id="test_template">
-				<!-- Jasmine unit testing files -->
-			    <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.js"></script2>
-			    <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine-html.js"></script2>
-			    <!-- include test spec files here... -->
-    			<script2 type="text/javascript" src="js/vendor/jasmine/spec/tests.js"></script2>
-		</script>
+        
+        <script type="text/template" id="congregations_template">
+            <table id="congregation_list" class="tablesorter">
+                <thead>
+                    <tr>
+                        <th>Congregation name</th>
+                        <th>City, State</th>
+                        <th>Contact info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="odd">
+                        <td class="cong_info"><a href="http://127.0.0.1:8080/cong/1">Caney
+                        OPC</a></td>
+                        <td class="cong_info">Caney, KS, US</td>
+                        <td class="cong_info"><a href="http:" class="external"
+                        title="Visit Caney OPC online" target="_blank"></a></td>
+                    </tr>
+                    <tr class="even">
+                        <td class="cong_info">
+                         <a href="http://127.0.0.1:8080/cong/2">CrossPoint Baptist Church</a></td>
+                        <td class="cong_info">Caney, KS, US</td>
+                        <td class="cong_info">
+                         <a href="http:" class="external" title="Visit CrossPoint Baptist Church online" target="_blank"></a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </script>
+        
+        <script type="text/template" id="test_template">
+            <!-- Jasmine unit testing files -->
+            <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.js"></script2>
+            <script2 type="text/javascript" src="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine-html.js"></script2>
+            <!-- include test spec files here... -->
+            <script2 type="text/javascript" src="js/vendor/jasmine/spec/tests.js"></script2>
+        </script>
 
-		<script type="text/template" id="confirm_cong_id_template">
-        	<h2>Step 4.5: Confirm which URL parameter is the congregation ID</h2>
-        	<p>Here is the URL of the link you clicked:</p>
-        	<div id="href"></div>
-        	<p>Is the <em>congregation's ID</em> the portion of that URL which is <u>underlined</u> below?</p>
-        	<div id="href_underlined"></div>
-        	<input type="button" id="yes" value="Yes" />
-        	<input type="button" id="no" value="No" />
+        <script type="text/template" id="confirm_cong_id_template">
+            <h2>Step 4.5: Confirm which URL parameter is the congregation ID</h2>
+            <p>Here is the URL of the link you clicked:</p>
+            <div id="href"></div>
+            <p>Is the <em>congregation's ID</em> the portion of that URL which is <u>underlined</u> below?</p>
+            <div id="href_underlined"></div>
+            <input type="button" id="yes" value="Yes" />
+            <input type="button" id="no" value="No" />
         </script>       
 
-		<script type="text/template" id="search_template">
+        <script type="text/template" id="search_template">
 
-			<div>
-    			<form action="TODO: write this!">
-        			 <input placeholder="Enter location" title="Enter location" type="text" name="location" id="search_the_map">
-        			Search within
-        			<select title="Search within" name="radius" id="radius">
-            			<option value="5">5</option>
-            			<option value="10">10</option>
-            			<option value="25">25</option>
-            			<option value="50">50</option>
-            			<option value="100">100</option>
-            			<option value="250">250</option>
-        			</select>
-        			<select title="unit of measurement" name="units" id="units">
-            			<option value="miles">miles</option>
-            			<option value="km">km</option>
-        			</select>
-        			<input type="button" value="Search" id="search">
-    			</form>
-    			<form action="TODO">
-					<input placeholder="Enter keyword" title="Enter keyword" type="text"
-	        			name="keyword" id="keyword">
-    			</form>
-			</div>
-			<div>
-    			<form action="TODO">
-    				<input placeholder="Enter state" title="Enter state" type="text"
-	        			name="state" id="state">
-    			</form>
-			</div>
-			<div id="group_filter">
-    			Filter: <span> <a href="TODO">OPC</a>
-    			</span><span> <a href="TODO">PCA</a>
-    			</span>
-			</div>
+            <div>
+                <input placeholder="Enter location" title="Enter location" type="text" name="location" class="location">
+                Search within
+                <select title="Search within" name="radius" id="radius">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50" selected="selected">50</option>
+                    <option value="100">100</option>
+                    <option value="250">250</option>
+                </select>
+                <select title="unit of measurement" name="units" id="units">
+                    <option value="miles">miles</option>
+                    <option value="km">km</option>
+                </select>
+                <input type="button" value="Search" class="search">
+                <input placeholder="Enter keyword" title="Enter keyword" type="text"
+                    name="keyword" id="keyword">
+            </div>
+            <div id="group_filter">
+                Filter: <span> <a href="TODO">OPC</a>
+                </span><span> <a href="TODO">PCA</a>
+                </span>
+            </div>
 
-		</script>
+        </script>
 
         <div id="tests"></div>
      
      
 
-	</body>
+    </body>
 
         <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
         <!-- <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script> -->
@@ -160,7 +131,7 @@
 
         <script src="js/vendor/bootstrap.min.js"></script>
 
-	<!--  Couchapp JavaScript files -->
+    <!--  Couchapp JavaScript files -->
 
     <script>
 
@@ -181,26 +152,26 @@
 
     </script>
 
-	<!-- Reformed Churches Locator JavaScript files -->
+    <!-- Reformed Churches Locator JavaScript files -->
 
-	<script src="js/vendor/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="js/vendor/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
+    <script src="js/vendor/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="js/vendor/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
 
     <!-- TODO: Put these script & CSS loads into their associated Backbone views -->
-	<link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/ui.css" media="all">
-	<script src="js/vendor/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
-	<script src="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
-	<link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
+    <link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/ui.css" media="all">
+    <script src="js/vendor/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
+    <script src="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
+    <link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
 
-	<!-- TODO: Put this script into app.js -->
-	<!-- <script src="js/search_the_map.js"></script> -->
-	<script type="text/javascript" src="js/vendor/underscore.js"></script>
-	<script type="text/javascript" src="js/vendor/backbone.js"></script>
-	<script type="text/javascript" src="js/vendor/backbone-relational.js"></script>
-	<script type="text/javascript" src="js/vendor/backbone-couchdb.js"></script>
+    <!-- TODO: Put this script into app.js -->
+    <!-- <script src="js/search_the_map.js"></script> -->
+    <script type="text/javascript" src="js/vendor/underscore.js"></script>
+    <script type="text/javascript" src="js/vendor/backbone.js"></script>
+    <script type="text/javascript" src="js/vendor/backbone-relational.js"></script>
+    <script type="text/javascript" src="js/vendor/backbone-couchdb.js"></script>
 
-	<script data-main="js/main" src="js/require.js"></script>
-	<script src="js/app.js"></script>
+    <script data-main="js/main" src="js/require.js"></script>
+    <script src="js/app.js"></script>
 
         <script>
             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
@@ -208,5 +179,5 @@
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g,s)}(document,'script'));
         </script>
-	
+    
 </html>

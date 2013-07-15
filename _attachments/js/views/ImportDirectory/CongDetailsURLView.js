@@ -59,10 +59,42 @@ define([
                                         console.log("The remote site's code output the following error: " + err)
                                     }
                                     displayed_state_page = true
-                                    // Handle the user's click on the congregation
-                                    //  details link
-                                    $('#cong_details_url_selector a').click(function(e){
-                                        e.preventDefault()
+                                    // Handle the user's click on the congregation details link
+                                    $('#cong_details_url_selector a').click(function(event){
+                                        event.preventDefault()
+
+                                        // TODO: Get the xpath of the anchor that was clicked
+                                        var element = $(event.target)
+                                        // TODO: This code is repeated elsewhere.  Refactor!
+                                        // Get the XPath of the selected element
+                                        // Note that you have to pass it a DOM element, not a JQuery element, hence the [0] index
+                                        var element_xpath_local = config.getXPath(element[0]);
+                                        // Replace the xpath of the div containing the remote page with the remote congregation directory's 
+                                        //      xpath prefix, which should be '/html'.  The result is that we store the xpath as it would work
+                                        //      in the remote page, and if we change RCL's page structure, our stored xpath does not become
+                                        //      obsolete.
+                                        var rcl_xpath_prefix = config.getXPath($('#cong_details_url_selector')[0])
+                                        var xpath = element_xpath_local.replace(rcl_xpath_prefix, '/html/body');
+                                        // TODO: Should I save the cong_details_url_xpath for later use?
+                                        // Get the href out of the original HTML (before its URLs were made absolute)
+                                        var dom = document.implementation.createHTMLDocument('temp document')
+                                        try{
+                                            // this avoids breaking on this error:  GControl is not defined
+                                            dom.documentElement.innerHTML = window.app.dir.get('state_url_html')[0]
+                                        }catch (e){}
+                                        window.dom = dom
+                                        window.xpath = xpath
+                                        window.rcl_xpath_prefix = rcl_xpath_prefix
+                                        // console.log($.xpath(xpath, dom), $.xpath(xpath, dom.documentElement))
+                                        // var href = $.xpath(xpath, dom.documentElement).attr('href')
+                                        var href = $(dom.evaluate(xpath, dom.documentElement, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue).attr('href')
+                                        console.log('original href: ' + href)
+                                        console.log('start here')
+                                        
+                                        // Create a regex to find this kind of href
+                                        // var href_regex = href.replace()
+                                        // var url = window.app.dir.get('state_url_html')
+
                                         thiz.confirm_cong_id_view = new ConfirmCongIDView({el: $("#steps")})
                                         thiz.confirm_cong_id_view.render()
                                     });
@@ -72,8 +104,6 @@ define([
                     }})
                 }
             })
-        },
-        events: {
         }
 
     });
