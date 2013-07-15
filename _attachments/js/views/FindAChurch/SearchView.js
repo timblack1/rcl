@@ -20,18 +20,21 @@ define([
             $('.location').keyup(this.location_keyup)
             $('#radius').on('change', this.do_search)
             // $('#radius').on('change', ($('.search').click())
-            // Attach event handler to display new congs when the map's bounds change'
-            // TODO: Start here.  Why doesn't this fire only on the map's first load, and not on drag events?
-            var thiz = this
-            google.maps.event.addListener(window.app.map, 'idle', function(){
-                console.log('plotting!')
-                thiz.plot_congs_on_map()
-            })
+            // Attach event handler to display new congs when the map's bounds change
+            this.add_listener()
         },
         location_keyup:function(event){
             if (event.which == 13){
                 this.do_search(event)
             }
+        },
+        add_listener:function(){
+            // Attach event handler to display new congs when the map's bounds change
+            // TODO: Start here.  Why does this fire only on the map's first load, and not on drag events?
+            var thiz = this
+            google.maps.event.addListener(window.app.map, 'idle', function(event){
+                thiz.plot_congs_on_map()
+            })
         },
         do_search: function( event ){
             // TODO: If user submitted an address,
@@ -87,7 +90,6 @@ define([
         },
         plot_congs_on_map:function(){
             var thiz = this
-            console.log('plotted!')
             // mapbounds contains an array containing two lat/lng pairs in this order:
             // (south bottom 36, west left -96)
             // (north top 37, east right -95)
@@ -208,7 +210,7 @@ define([
                                         var msg="<tr>" +
                                         "<td><a href='/cong/" + cong_data.get('id') + "'>" + cong_data.get('name') + 
                                         ' (' + cong_data.get('denomination_abbr') + ")</a></td>"+
-                                        "<td>" + cong_data.get('meeting_city') + ", " + cong_data.get('meeting_state') + ", " + cong_data.get('meeting_country') + "</td>" +
+                                        "<td>" + cong_data.get('meeting_city') + ", " + cong_data.get('meeting_state') + "</td>" +
                                         "<td>" +(cong_data.get('phone') ? cong_data.get('phone') + "<br />": "" ) + 
                                         (cong_data.get('email') ? "<a href='mailto:" + cong_data.get('email') + "'>" + cong_data.get('email') + "</a><br />": "" ) + 
                                         (cong_data.get('website') ? "<a href='http://" + cong_data.get('website') + "'>" + cong_data.get('website') + "</a>": "") + 
@@ -218,6 +220,7 @@ define([
                                         // Append the new table rows to the table
                                         $("#congregation_list tbody").append(msg);
                                     })
+                                    // thiz.add_listener()
                                 },
                                 error:function(collection, response, options){
                                     console.error(response)

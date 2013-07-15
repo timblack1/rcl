@@ -10,8 +10,8 @@ define(
            db = $.couch.db(db_name),
            run_jasmine_tests = true,
            // Select view to load at root URL
-           // default_view = 'find_a_church_view',
-           default_view = 'import_directory_view',
+           default_view = 'find_a_church_view',
+           // default_view = 'import_directory_view',
            // After running tests,
            //   Display this in the address bar: (to facilitate manually refreshing the page by
            //   hitting F5)
