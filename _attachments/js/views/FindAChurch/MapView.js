@@ -18,7 +18,7 @@ define([
                 // First without user's location, centered on Philadelphia
                 this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
                 this.getLocation()
-                // TODO: use navigator.geolocation.watchPosition(showPosition) to track user's moving location
+                // TODO: use navigator.geolocation.watchPosition(this.create_map) to track user's moving location
             },
             create_map:function(position){
                 var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
@@ -28,20 +28,24 @@ define([
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 }
                 window.app.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+                // TODO: Plot congs in this user's vicinity by default
+                //  This requires using code currently found in SearchView.js
+                //  So maybe move that code into a library?
+                //  As a simple workaround, I'll just use the form for now:
+                $('.location').val(position.coords.latitude + ',' + position.coords.longitude)
+                $('.search').click()
+                $('.location').val('')
             },
             getLocation:function(){
                 if (navigator.geolocation){
                     // Center the map on the viewer's country by default
-                    navigator.geolocation.getCurrentPosition(this.showPosition,this.handleErrors);
+                    navigator.geolocation.getCurrentPosition(this.create_map,this.handleErrors);
                 }else{
                     console.log("Geolocation is not supported by this browser.");
                     // TODO: Find a different way to locate the user, perhaps by IP address
                     // Center on Philadelphia, PA
                     this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
                 }
-            },
-            showPosition:function(position){
-                this.create_map(position)
             },
             handleErrors:function(error){
                 switch(error.code){

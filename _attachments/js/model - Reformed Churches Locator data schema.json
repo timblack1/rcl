@@ -1,70 +1,70 @@
 {"docs":
     [
         {
-            collection:'cong',
-            name : 'Caney Orthodox Presbyterian Church',
-            meeting_address1 : '206 N Vine St.',
-            meeting_address2:'',
-            meeting_city:'Caney',
-            meeting_state:'KS',
-            meeting_zip:'67333',
-            meeting_country:'',
-            lat:'',
-            lng:'',
-            mailing_address1:'206 N Vine St.',
-            mailing_address2:'',
-            mailing_city:'Caney',
-            mailing_state:'KS',
-            mailing_zip:'67333',
-            mailing_country:'',
-            phone:'(620) 306-4624',
-            fax:'',
-            email:'pastor@caneyopc.org',
-            website:'caneyopc.org',
-            service_info:'Services: 10:45 a.m. and 6:00 p.m.; Sunday School: 9:30 a.m.',
-            other_info:'',
-            pastor_name:'',
-            date_founded:'', // date
-            number_of_members:'', // integer
-            range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+            "collection":"cong",
+            "name" : "Caney Orthodox Presbyterian Church",
+            "meeting_address1" : "206 N Vine St.",
+            "meeting_address2":"",
+            "meeting_city":"Caney",
+            "meeting_state":"KS",
+            "meeting_zip":"67333",
+            "meeting_country":"",
+            "lat":"",
+            "lng":"",
+            "mailing_address1":"206 N Vine St.",
+            "mailing_address2":"",
+            "mailing_city":"Caney",
+            "mailing_state":"KS",
+            "mailing_zip":"67333",
+            "mailing_country":"",
+            "phone":"(620) 306-4624",
+            "fax":"",
+            "email":"pastor@caneyopc.org",
+            "website":"caneyopc.org",
+            "service_info":"Services: 10:45 a.m. and 6:00 p.m.; Sunday School: 9:30 a.m.",
+            "other_info":"",
+            "pastor_name":"",
+            "date_founded":"", // date
+            "number_of_members":"", // integer
+            "range_of_number_of_members":"", // textual range, like "20-30" members, where estimates are 
                                            //   permitted/preferred or the only available data
-            organized:true, // boolean, defines whether this is a mission work or an organized congregation
-            presbytery_name:'Central US',
-            source:'', // Foreign key:  Which source this cong's data came from
-            source_cong_id:'89', // The ID of this cong in the source's database
+            "organized":true, // boolean, defines whether this is a mission work or an organized congregation
+            "presbytery_name":"Central US",
+            "source":"", // Foreign key:  Which source this cong"s data came from
+            "source_cong_id":"89", // The ID of this cong in the source"s database
         },
         {
-            collection:'cong',
-            name : 'Westminster',
-            meeting_address1 : '1001 S.E. Adams Blvd.',
-            meeting_address2:'',
-            meeting_city:'Bartlesville',
-            meeting_state:'OK',
-            meeting_zip:'74003-5208',
-            meeting_country:'',
-            lat:'',
-            lng:'',
-            mailing_address1:'1001 S.E. Adams Blvd.',
-            mailing_address2:'',
-            mailing_city:'Bartlesville',
-            mailing_state:'OK',
-            mailing_zip:'74003-5208',
-            mailing_country:'',
-            phone:'918-336-7410',
-            fax:'',
-            email:'auksela.1@opc.org',
-            website:'westminsteropc.com',
-            service_info:'Services: 9:30 a.m. and 6:30 p.m. (2nd and 4th Sunday, 1:30 p.m.); Sunday School: 11:00 a.m.',
-            other_info:'Associate Pastor: Edward A. Eppinger, eppinger.1@opc.org',
-            pastor_name:'',
-            date_founded:'', // date
-            number_of_members:'', // integer
-            range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+            "collection":"cong",
+            "name" : "Westminster",
+            "meeting_address1" : "1001 S.E. Adams Blvd.",
+            "meeting_address2":"",
+            "meeting_city":"Bartlesville",
+            "meeting_state":"OK",
+            "meeting_zip":"74003-5208",
+            "meeting_country":"",
+            "lat":"",
+            "lng":"",
+            "mailing_address1":"1001 S.E. Adams Blvd.",
+            "mailing_address2":"",
+            "mailing_city":"Bartlesville",
+            "mailing_state":"OK",
+            "mailing_zip":"74003-5208",
+            "mailing_country":"",
+            "phone":"918-336-7410",
+            "fax":"",
+            "email":"auksela.1@opc.org",
+            "website":"westminsteropc.com",
+            "service_info":"Services: 9:30 a.m. and 6:30 p.m. (2nd and 4th Sunday, 1:30 p.m.); Sunday School: 11:00 a.m.",
+            "other_info":"Associate Pastor: Edward A. Eppinger, eppinger.1@opc.org",
+            "pastor_name":"",
+            "date_founded":"", // date
+            "number_of_members":"", // integer
+            "range_of_number_of_members":"", // textual range, like "20-30" members, where estimates are 
                                            //   permitted/preferred or the only available data
-            organized:'', // boolean, defines whether this is a mission work or an organized congregation
-            presbytery_name:'Central US',
-            source:'', // Foreign key:  Which source this cong's data came from
-            source_cong_id:'192', // The ID of this cong in the source's database
+            "organized":"", // boolean, defines whether this is a mission work or an organized congregation
+            "presbytery_name":"Central US",
+            "source":"", // Foreign key:  Which source this cong"s data came from
+            "source_cong_id":"192", // The ID of this cong in the source"s database
         }
     ]
 }
