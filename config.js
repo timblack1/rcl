@@ -19,7 +19,10 @@ if (env=='client'){
 }else if (env=='server'){
 	var get_db = require('./lib').get_db,
 		fs = require('fs');
-	exports.port = '5984';
+    // exports.port = '5984';
+    exports.port = '80';
+    // exports.domain = 'localhost';
+    exports.domain = 'arwd.iriscouch.com';
 	exports.auth = fs.readFileSync('./login.txt', 'ascii').trim();
 	exports.db = get_db(exports.port);
 }

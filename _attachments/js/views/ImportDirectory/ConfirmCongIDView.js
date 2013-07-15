@@ -9,14 +9,14 @@ define([
     var ConfirmCongIDView = Backbone.View.extend({
         initialize:function(){
             _.bindAll(this)
+            this.href = $(event.target).attr('href')
         },
         render: function(){
-            // TODO: Tim start here
             $('#steps').html(Mustache.render(template));
             this.delegateEvents()
             // Ask the user which part of the URL that was clicked is the
             //  congregation ID.
-            this.href = $(event.target).attr('href')
+            
             var href = this.href
             // TODO: Handle the case where the href contains a javascript function call.  The
             //  PCA's directory works this way.
@@ -34,9 +34,7 @@ define([
         },
         events: {
             "click #yes": "yes",
-            "click #no": "no",
-            "click #fields_table_mustache button": "recreate_regex"
-            
+            "click #no": "no"
         },
         yes:function(){
             // Converts:
@@ -80,19 +78,6 @@ define([
             var url = this.href
             this.record_id_format(url)
         },
-        //DOUG: START HERE
-        recreate_regex:function(event){
-            //test to see if this is a button which ends with _button
-            if ($(event.target).attr("id").match(/_button$/)){
-                //calculate the associated text boxes id from that button's id
-                //http://stackoverflow.com/questions/12045675/clearing-the-entry-box-text-when-clicking-a-button
-                // Clear the text box
-                // Recreate the regex by including one more (HTML? space-separated string? How about whichever is
-                //  available within the least number of additional characters!) element of context on each side
-                
-             }
-                
-        },
         record_id_format:function(url){
             // TODO: Refactor this block into a reusable function
             // -----------------
@@ -116,7 +101,21 @@ define([
             }
             // -----------------
             
-            // Record the pattern of the URL the user clicked
+            // Get the URLs of all congregations in the directory
+
+            var url_regex = href.replace('/','\/').replace('{cong_id}',this.regex)
+            console.log(url_regex)
+            var regex = new RegExp(url_regex,'g')
+            var state_urls = []
+            $.each(window.app.dir.get('state_url_html'), function(index, state_html){
+                // Get the urls which follow the same pattern as the original URL selected
+                var results = regex.exec(state_html)
+                console.log(results)
+                state_urls.push(results)
+            })
+            // console.log(state_urls)
+
+            // Record the pattern of the URL the user clicked, and the URLs of all congregations in the directory
             var thiz = this
             window.app.dir.fetch({success:function(dir, response, options){
                 // Request download of all congregation pages

@@ -8,7 +8,6 @@ var child_process = require('./node_modules/child_process.js'),
 	fs = require('fs'),
 	config = require('./config'),
 	db = config.db,
-	feed = db.changes(),
 	changes_listeners_filename = '../changes_listeners_temp.js',
 	log = require('./lib').log;
 	//$ = require('jquery');
@@ -41,36 +40,52 @@ function start_child_process(){
 	}else if (mode=='fork'){
 		p = child_process.fork(changes_listeners_filename);
 	}
+    p.on('error',function(err){
+        // TODO: Replace this with the domain example at http://nodejs.org/api/domain.html
+        console.log(err)
+        console.log(err.stack)
+        console.log('Killing child process')
+        p.kill()
+        // TODO: Could this cause a memory leak?
+        delete p;
+        p = start_child_process()
+        console.log('Killing child process')
+    })
 	return p;
 }
+// TODO: When the child process is started the first time, the CPU goes to 100%.  When I save a file
+//  and the changes listener below restarts the child process, then the CPU goes back to normal usage.
 p = start_child_process();
 console.log('starting child process')
 
 var it = 0;
 
-feed.on('change', function (change) {
-	it++;
-	db.get(change.id, change.changes[0].rev, function(err, doc){
-		if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
-			// This is a change to the design document
-			// If the rcl design document changed, then reload the changes listeners.
-			// Get the new design doc
-			if (doc.changes) {
-				// take down the process with the old design doc
-				p.kill();
-				fs.unlinkSync(changes_listeners_filename);
-				// start up the process with the new design doc
-				write_new_changes_listener_file(doc.changes_listeners);
-				p = start_child_process();
-			}
-		} else {
-			// This is a change to a data document
-			// Feed the new doc into the changes listeners
-			if (doc) { // Don't handle docs that have been deleted
-				if (p.connected){
-                    p.send(doc);
-				}
-			}
-		}
-	});
-});
+// Only get changes after "update_seq"
+db.get('', function(err,doc){
+    db.changes({since:doc.update_seq}).on('change', function (change) {
+        it++;
+        db.get(change.id, change.changes[0].rev, function(err, doc){
+            if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
+                // This is a change to the design document
+                // If the rcl design document changed, then reload the changes listeners.
+                // Get the new design doc
+                if (doc.changes) {
+                    // take down the process with the old design doc
+                    p.kill();
+                    fs.unlinkSync(changes_listeners_filename);
+                    // start up the process with the new design doc
+                    write_new_changes_listener_file(doc.changes_listeners);
+                    p = start_child_process();
+                }
+            } else {
+                // This is a change to a data document
+                // Feed the new doc into the changes listeners
+                if (doc) { // Don't handle docs that have been deleted
+                    if (p.connected){
+                        p.send(doc);
+                    }
+                }
+            }
+        });
+    });
+})

@@ -1,16 +1,20 @@
 define([
         'config',
+        '../../vendor/mustache',
+        'text!views/FindAChurch/main_template.html',
         './MapView',
         './SearchView',
         './CongregationsView'
         ], 
-        function(config,MapView,SearchView,CongregationsView){
+        function(config,Mustache,template,MapView,SearchView,CongregationsView){
 
     return Backbone.View.extend({
         initialize : function(){
         },
         render: function(){
-            config.render_to_id(this, "#find_a_church_template")
+            $('#content').html(Mustache.render(template))
+            this.delegateEvents()
+            
             // Render child views
             this.map_view = new MapView({ el: $("#map") });
             this.map_view.render()

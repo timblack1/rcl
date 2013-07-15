@@ -11,7 +11,7 @@ describe("Reformed Churches Locator", function() {
         //  than all docs.
         // $('#delete_all_docs').click()
         // Returns the page to display the home page as it should
-        app.navigate(config.test_home_address, {trigger:true})
+        app.navigate(window.app.config.test_home_address, {trigger:true})
     });
 
     describe("'Find a church' page", function() {

@@ -141,7 +141,8 @@ define([
             // $('.modal').css({position:'fixed',left:$('#cong_details_fields_selector').offset().left + 30 + 'px'})
             $('.popover textarea').keyup(function(event){
                 // TODO: Run the regex on the selection, and on every other congregation's content in the db,
-                $.each(collection, function(index, value){
+                var congs = window.app.dir.get('congs_html')
+                $.each(congs, function(index, cong){
                     
                 });
                 // TODO: then display a table of the outputs for the user to confirm that the regex is working
@@ -161,9 +162,9 @@ define([
             
             
             $(".popover button").click(function() {
-            	$('#cong_details_fields_selector').popover('hide')
-            	$('#fields_container').popover('show')
-        	});
+                $('#cong_details_fields_selector').popover('hide')
+                $('#fields_container').popover('show')
+            });
         }
     });
 
