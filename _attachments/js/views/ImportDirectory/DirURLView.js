@@ -12,6 +12,9 @@ define([
             // Make it easy to reference this object in event handlers
             _.bindAll(this)
             this.init_changes_listener()
+            if (typeof window.app.geocoder == 'undefined'){
+                window.app.geocoder = new google.maps.Geocoder();
+            }
         },
         render: function(){
             $('#steps').html(Mustache.render(template))
@@ -42,11 +45,11 @@ define([
                             // TODO: Fix this order so it works right?
                             //  Why is this creating an infinite loop?
                             
-                            // Display directory's first page of content
+                            // Handle directory's first page of content
                             if (window.app.dir.get('url_html') &&
                                 window.app.dir.get('get_url_html') == 'gotten'){
                                 var html = window.app.dir.get('url_html')
-                                // Determine whether this URL's data is HTML, RSS, or KML
+                                // Determine whether this URL's data is HTML, RSS, KML, or JSON
                                 if (html.indexOf("</html>") > -1){
                                     window.app.dir.set('pagetype', 'html')
                                     // Determine what type of directory this is
@@ -72,7 +75,13 @@ define([
                                 else if (html.indexOf("{") === 0 || 
                                     // batchgeo format
                                     html.indexOf("per = {") === 0){
+                                    // TODO: Make this a separate batchgeo_json pagetype
                                     window.app.dir.set('pagetype', 'json')
+                                    if (html.indexOf('{') === 0){
+                                        // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
+                                        console.log(new Date().getTime() + '\tb: parsing json')
+                                        thiz.parse_json()
+                                    }
                                 }
                                 else { // We got an error code
                                 }
@@ -81,15 +90,21 @@ define([
                                 //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
                                 //window.app.dir.save({_id:dir.get('_id')})
                             }
+                            // Handle batchgeo map page
                             if (typeof window.app.dir.get('batchgeo_map_html') !== 'undefined' && 
                                 window.app.dir.get('get_batchgeo_map_html') == 'gotten'){
                                 console.log(new Date().getTime() + '\tb: getting batchgeo_json')
                                 thiz.get_batchgeo_json()
                             }
+                            // Handle JSON
                             if (typeof window.app.dir.get('json') !== 'undefined' && 
                                 window.app.dir.get('get_json') == 'gotten'){
-                                console.log(new Date().getTime() + '\tb: parsing batchgeo_json')
-                                thiz.batchgeo_parse_json()
+                                var json = window.app.dir.get('json')
+                                // Batchgeo JSON
+                                if (json.indexOf('per = {') === 0){
+                                    console.log(new Date().getTime() + '\tb: parsing batchgeo_json')
+                                    thiz.batchgeo_parse_json()
+                                }
                             }
                             
                             // ----------------------------------------------------------
@@ -160,6 +175,7 @@ define([
                                             // TODO: Does the relation appear on the dir in the db also?
                                             // This will trigger the Node changes listener's response
                                             cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')},{success:function(){
+                                                // TODO: This isn't necessary on dirtypes other than HTML
                                                 // Render DirTypeView
                                                 $('#steps').hide()
                                                 thiz.dir_type_view  = new DirTypeView({el: '#steps'})
@@ -306,6 +322,167 @@ define([
                 //                })
             }, 3000)
         },
+        parse_json:function(){
+            var thiz = this
+            var json = window.app.dir.get('url_html')
+            // console.log(json)
+            // TODO: This handles the RPCNA data's current format, which does not yet
+            //  perfectly match the RCL format.  So put this in a conditional if(){} block 
+            //  to test if this is a JSON feed that has this format: {[]} (no "docs")
+            window.app.json = json
+            // TODO: Remove this when RPCNA's newly-corrected format comes out
+            // TODO: There are 3 Beaver Falls congs in the JSON, but only 1 shows up on the map
+            var new_json = json
+                            // Add initial object property
+                            .replace(/^{/gm, '{"docs":')
+                            // Double-quote values
+                            .replace(/:\s*?'(.*?)'\s*?,/gm, function(match, p1){
+                                var output = ''
+                                if (p1.indexOf('"') !== 0){
+                                    output = p1.replace(/"/g, '\\"')
+                                }else{
+                                    output = p1
+                                }
+                                return ': "' + output + '",'
+                            })
+                            // Double-quote property names
+                            .replace(/\s*?(\w+?)\s*?:\s*?["']/gm, ' "$1": "')
+                            // Convert any remaining single quotes preceding a comma to double quotes
+                            .replace(/',/gm, '",')
+                            // Add newline after final object in list, and convert final single quote to double
+                            .replace(/(.*?)('\s*?})/gm,'$1"\n}')
+                            // Escape newlines in values
+                            // .replace(/(".*?)\n(?=.*?")/g, '$1\\\\n')
+                            // Since the above doesn't seem to work, try a different regex to do the same
+                            .replace(/"([\s\S]*?)"/g, function(match, p1, offset, string){
+                                var output = ''
+                                if (p1.indexOf("\n") !== -1 || p1.indexOf("\r") !== -1){
+                                    if (p1.indexOf("\n") !== -1){
+                                        output = p1.replace(/\n/g, '\\\\n')
+                                    }
+                                    if (p1.indexOf("\r") !== -1){
+                                        output = p1.replace(/\r/g, '\\\\r')
+                                    }                                    
+                                }else{
+                                    output = p1
+                                }
+                                return '"' + output + '"'
+                            })
+                            // Remove comma after last item in list
+                            .replace(/}(,)(?![\s\S]*?{)/g, function(match, p1){
+                                return '}'
+                            })
+            // TODO: Put this into the correct template, once we get the state page selector template to stop displaying
+            //  for this view
+            $('#steps').append('<div class="status"></div>')
+            function bulksave(congs){
+                // See if all geocoding requests have finished
+                var geocoding = _.countBy(congs, function(cong){
+                    if (cong.geocoding == 'started'){
+                        return 'count'
+                    }
+                })
+                // Report to the user how many congs are left
+                $('.status').html(geocoding.count + ' congregations left to geocode!')
+                window.app.congs = congs
+                if (geocoding.count === 0 || geocoding.count == thiz.errors){
+                    // Write the JSON to the database
+                    // It is easiest to bulk-save using jquery.couch.js rather than Backbone
+                    config.db.bulkSave({"docs":congs},{success:function(){
+                        console.log(new Date().getTime() + '\tb: All congs are saved!')
+                    }})
+                }
+            }
+            function geocode(address, congs, index){
+                var now = new Date().getTime()
+                if (typeof thiz.usecs == 'undefined'){
+                    thiz.usecs = 100
+                }
+                if (typeof thiz.geocode_end_time !== 'undefined' &&
+                    (now - thiz.geocode_end_time) > thiz.usecs){
+                    // This line should prevent two delayed geocode requests from running simultaneously
+                    thiz.geocode_end_time = now
+                    window.app.geocoder.geocode( { 'address': address }, function(results, status) {
+                        // console.log(results, status)
+                        // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
+                        //  or status == 'ZERO_RESULTS'
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            var loc = results[0].geometry.location
+                            congs[index].loc = [loc.lat(), loc.lng()]
+                            // Delay bulkSave until after asynchronous geocoding is done for all congs
+                            congs[index].geocoding = 'done'
+                            thiz.geocode_end_time = new Date().getTime()
+                            bulksave(congs)
+                        }else{
+                            // === if we were sending the requests to fast, try this one again and increase the delay
+                            if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
+                                thiz.usecs += 100;
+                                setTimeout(function(){
+                                    geocode(address, congs, index)
+                                },thiz.usecs)
+                            }else{
+                                var reason  =   "Code "+status;
+                                var msg     = 'address="' + address + '" error=' +reason+ '(usecs='+thiz.usecs+'ms)';
+                                if (typeof thiz.errors == 'undefined'){
+                                    thiz.errors = 1
+                                }else{
+                                    thiz.errors++
+                                }
+                                console.error('Errors: ' + thiz.errors, msg)
+                            }
+                        }
+                    })
+                }else{
+                    // Wait to avoid Google throttling the geocode requests (for there
+                    //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
+                    if (typeof thiz.geocode_end_time == 'undefined'){
+                        // Set the first geocode_end_time
+                        thiz.geocode_end_time = now
+                    }
+                    setTimeout(function(){
+                        geocode(address, congs, index)
+                    },thiz.usecs)
+                }
+            }
+            var congs = JSON.parse(new_json).docs
+            _.each(congs, function(cong, index, list){
+                // TODO: Record cgroup id for this directory, by appending it to the list
+                congs[index].cgroups = [window.app.dir.get('cgroup')]
+                // TODO: Record the denomination abbreviation for other denominations here too
+                //  Get it from the cgroup.abbr
+                congs[index].denomination_abbr = 'RPCNA'
+                congs[index].collection = 'cong'
+                if (cong.lat === '' || cong.lng === ''){
+                    // Geocode the cong and put geocode in object for geocouch
+                    // Note this is limited to 2500 requests per day
+                    congs[index].geocoding = 'started'
+                    // TODO: Refactor this into a general function
+                    // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
+                    var address_line = ''
+                    if (cong.meeting_address1.search(/\d/) !== -1){
+                        address_line = cong.meeting_address1
+                    } else if (cong.meeting_address2.search(/\d/) !== -1){
+                        address_line = cong.meeting_address2
+                    }else{
+                        address_line = cong.meeting_address1
+                    }
+                    var address =   address_line + ', ' + 
+                                    (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ' + 
+                                    (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
+                                    (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''))
+                    // TODO:  Consider how to refactor this to geocode only one cong at a time.
+                    //  Currently the code tries all at once, then when it realizes it's getting errors,
+                    //  it throttles back, but the effect of that throttling is probably to throttle back too
+                    //  much, so the whole geocoding batch runs much slower than it has to.  So the way to refactor
+                    //  this is to keep track of which cong is being handled, then only once one cong is geocoded,
+                    //  move on to the next cong.
+                    geocode(address, congs, index)
+                } else {
+                    // Use existing geocode data
+                    congs[index].loc = [cong.lat, cong.lng]
+                }
+            })
+        },
         // TODO: Consider moving these into a library
         uses_batch_geo:function(html){
             return ( html.indexOf('https://batchgeo.com/map/') !== -1 )
@@ -360,8 +537,6 @@ define([
              // "l":"9500 Medlock Bridge Road<br \/>Johns Creek, GA 30097", // mailing_address_formatted, easier to parse
              // "clr":"red"
              // }]}
-             // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
-             // TODO: Louis Hutmire asked to be sent an RPCNA data feed after RCL geocodes their data
 
             // Get the relevant JSON in a variable
             // This regex took forever
@@ -483,6 +658,8 @@ define([
                 // Convert geocode to geocouch format
                 cong.loc = [cong.lat, cong.lng]
                 // TODO: Set each model's cgroup_id.  What key name does backbone-relational use for the cgroup_id?
+                // TODO: Record other denominations' abbreviations here too
+                cong.denomination_abbr = 'PCA'
                 cong.cgroups = []
                 cong.collection = 'cong'
                 congs[index] = cong
@@ -490,6 +667,7 @@ define([
             // Write the JSON to the database
             // It is easiest to bulk-save using jquery.couch.js rather than Backbone
             config.db.bulkSave({"docs":congs},{success:function(){
+                // TODO: Notify the user
                 console.log(new Date().getTime() + '\tb: All congs are saved!')
             }})
         }
