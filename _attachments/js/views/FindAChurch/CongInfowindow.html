@@ -1,26 +1,20 @@
-                                        <h4 style="margin: 0">{{name}} 
-                                        ({{denomination_abbr}})</h4>
-                                        <p>
-                                        	{{meeting_address1}} <br /> 
-                                        	{{#meeting_address2}} {{meeting_address2}} <br /> {{/meeting_address2}} 
-                                        	{{meeting_city}}
-                                        	{{meeting_state}} 
-                                        	{{meeting_zip}} <br />
-                                        	{{#phone}} {{phone}} <br /> {{/phone}}
-                                        	{{#website}} <a href="{{website}}">{{website}}</a><br />{{/website}}
-                                        </p>
-                                        
-                                        <a href="#" class = "GetDirections">Get Directions</a>
-                                        
-                                        <form action="http://maps.google.com/maps" method="get" target="_blank" style = "display : none" class="GetDirectionsForm">
-                                        	Enter your starting address:
-                                        	<input type="text" name="saddr" />
-                                        	<input type="hidden" name="daddr" value="
-                                        	{{meeting_address1}}
-                                        	{{meeting_city}}
-                                        	{{meeting_state}}  
-                                        	{{meeting_zip}} 
-                                        	({{name}})
-                                        	" />
-                                        	<input type="submit" value="get directions" />
-                                        </form> ;
+<h4 style="margin: 0">
+        {{name}} ({{denomination_abbr}})
+</h4>
+<p>
+    {{#meeting_address1}}{{{meeting_address1}}}<br />{{/meeting_address1}}
+    {{#meeting_address2}}{{{meeting_address2}}}<br />{{/meeting_address2}}
+    {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}}<br />
+    {{#phone}}{{phone}}<br />{{/phone}}
+    {{#website}}<a href="{{website}}">{{website}}</a><br />{{/website}}
+</p>
+
+<a href="#" class="get_directions">Directions</a>
+
+<form action="http://maps.google.com/maps" method="get" target="_blank" style="display:none" class="get_directions_form" >
+    <hr />
+    Enter your starting address:<br />
+    <input type="text" name="saddr" /><br />
+    <input type="hidden" name="daddr" value="{{{address}}}" />
+    <input type="submit" value="get directions" />
+</form>

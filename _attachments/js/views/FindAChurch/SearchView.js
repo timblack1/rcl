@@ -1,10 +1,11 @@
 define([
         'config',
         '../../model',
+        '../../vendor/mustache',
         'text!views/FindAChurch/CongInfowindow.html',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
-        function(config, model, CongInfowindowTemplate){
+        function(config, model, Mustache, CongInfowindowTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -39,7 +40,7 @@ define([
             })
         },
         do_search: function( event ){
-            // TODO: If user submitted an address,
+            // If user submitted an address,
             // Geocode user-submitted address
             event.preventDefault()
             var thiz = this
@@ -84,7 +85,9 @@ define([
         },
         remove_markers:function(){
             // Remove each marker from the map
+            var thiz = this
             _.each(this.markers,function(marker){
+                if (marker !== thiz.open_marker)
                 marker.setMap(null)
             })
             // Empty the array itself
@@ -133,6 +136,13 @@ define([
                             {
                                 include_docs:true,
                                 success:function(congs_coll, response, options){
+                                    // TODO: This removes the current marker after the user clicks the marker and
+                                    //  the infowindow pans the map to make room for itself; it shouldn't do that.
+                                    //  Regrettably, the current fix makes the infowindow flash when the map moves.
+                                    thiz.remove_markers()
+                                    if (typeof thiz.open_infowindow !== 'undefined'){
+                                        thiz.open_infowindow.open(window.app.map,thiz.open_marker);
+                                    }
                                     _.each(congs,function(cong,index,congs){
                                         var cong_data = congs_coll.get(cong.id)
                                         var coords = cong.geometry.coordinates
@@ -158,16 +168,14 @@ define([
                                         // Add1:    YMCA
                                         // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
 
-  //Make a template named "cong_info_window.html"
-                                        
-                                        //instead of building the string, use mustache to render the template
-                                        //make it its own backbone view
-                                        var contentString = Mustache.render(CongInfowindowTemplate)
+                                        // Render the infowindow HTML
+                                        // TODO: make it its own backbone view
+                                        cong_data.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong_data.attributes).replace('\n', '')
+                                        var contentString = Mustache.render(CongInfowindowTemplate, cong_data.attributes)
 
                                         // Create infowindow                              
                                         var infowindow = new google.maps.InfoWindow({
-                                            content: contentString,
-                                            maxWidth: 300
+                                            content: contentString
                                         });
                                         //$(document['#infowindow'+i]).parent.style = 'overflow-y:hidden';
                                         // Add the infowindow as an attribute of this marker to make it accessible within marker events.
@@ -178,16 +186,61 @@ define([
                                         google.maps.event.addListener(marker, 'click', function() {
                                             thiz.close_infowindows();
                                             this.infowindow.open(window.app.map,marker);
+                                            // Record the open marker so we can reopen it after the map pans
+                                            thiz.open_marker = marker
+                                            thiz.open_infowindow = this.infowindow
+                                            // If the "Directions" link is clicked,
+                                            // If we already know the user's location
+                                            if (navigator.geolocation){
+                                                // Use it without showing the form
+                                                var evt = event
+                                                navigator.geolocation.getCurrentPosition(function(position){
+                                                    window.target = $(evt.target)
+                                                    // Set the href of the link so if the user clicks it it will go to the right URL
+                                                    $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
+                                                        position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
+                                                        cong_data.attributes.address)
+                                                    $('a.get_directions').attr('target', '_blank')
+                                                },function(error){
+                                                    switch(error.code){
+                                                        case error.PERMISSION_DENIED:
+                                                            // console.log("User denied the request for Geolocation.")
+                                                            // Hide the link and show the "Get directions" form
+                                                            var iw = this.infowindow
+                                                            window.infowindow = iw
+                                                            $('a.get_directions').click(function(event) {
+                                                                $(event.target).hide()
+                                                                $(event.target).parent().children("form.get_directions_form").show()
+                                                                // TODO: Start here.  Get the infowindow to resize to fit the new content
+                                                                var content = $(event.target).parent()[0].innerHTML
+                                                                thiz.infowindows[index].setContent(content)
+                                                            });
+                                                            break;
+                                                        case error.POSITION_UNAVAILABLE:
+                                                            // console.log("Location information is unavailable.")
+                                                            break;
+                                                        case error.TIMEOUT:
+                                                            // console.log("The request to get user location timed out.")
+                                                            break;
+                                                        case error.UNKNOWN_ERROR:
+                                                            // console.log("An unknown error occurred.")
+                                                            break;
+                                                    }
+                                                });
+                                            }else{
+                                                // console.log("Geolocation is not supported by this browser.");
+                                            }
                                         });
                                         // Close all infowindows when user clicks on map
                                         google.maps.event.addListener(window.app.map, 'click', function() {
                                             thiz.close_infowindows();
                                         });
 
-                                        //TODO: Add congregation info to the table below the map.
+                                        // Add congregation info to the table below the map.
                                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                         // Construct the table rows that we're going to append to the table
 
+                                        // TODO: Convert this to a template, then a backbone view
                                         var cong_table_row = ''
                                         var msg="<tr>" +
                                         "<td><a href='/cong/" + cong_data.get('id') + "'>" + cong_data.get('name') + 
@@ -203,17 +256,6 @@ define([
                                         $("#congregation_list tbody").append(msg);
                                     })
                                     // thiz.add_listener()
-                                    // add a jquery event listener here
-                                    $('a.GetDirections').click(function() { 
-                                    	$(event.target).parent().child("form.GetDirectionsForm").show()
-                                	    $(event.target).hide()
-                                    });
-                                    // listen for the click event on "a" tags which have the class "GetDirections"
-                                    // hide the link that was clicked $(event.target) and show the form $(event.target).parent().child("form.classname") .jquery method ????
-                                    //find the jquery code to show the form
-                                    //TODO give the form a class name and use it to show the form
-                                    // 
-                                 
                                 },
                                 error:function(collection, response, options){
                                     console.error(response)
