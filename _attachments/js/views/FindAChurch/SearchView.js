@@ -208,6 +208,7 @@ define([
                                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                         // Construct the table rows that we're going to append to the table
 
+                                        var cong_table_row = ''
                                         var msg="<tr>" +
                                         "<td><a href='/cong/" + cong_data.get('id') + "'>" + cong_data.get('name') + 
                                         ' (' + cong_data.get('denomination_abbr') + ")</a></td>"+
