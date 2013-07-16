@@ -30,7 +30,8 @@ define([
         },
         add_listener:function(){
             // Attach event handler to display new congs when the map's bounds change
-            // TODO: Start here.  Why does this fire only on the map's first load, and not on drag events?
+            // TODO: Start here.  Why does this fire only on the map's first load, 
+            //  and not on subsequent drag (etc.) events?
             var thiz = this
             google.maps.event.addListener(window.app.map, 'idle', function(event){
                 thiz.plot_congs_on_map()
