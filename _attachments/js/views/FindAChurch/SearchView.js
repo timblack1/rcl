@@ -1,9 +1,10 @@
 define([
         'config',
         '../../model',
+        'text!views/FindAChurch/CongInfowindow.html',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
-        function(config, model){
+        function(config, model, CongInfowindowTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -156,32 +157,11 @@ define([
                                         // Add1:    YMCA
                                         // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
 
-
-                                        var contentString = '' +
-                                        '<h4 style="margin: 0">' + cong_data.get('name') + 
-                                        ' (' + cong_data.get('denomination_abbr') + ')</h4>' +
-                                        '<p>' + 
-                                        cong_data.get('meeting_address1') + "<br />" + 
-                                        ( cong_data.get('meeting_address2') ? cong_data.get('meeting_address2') + "<br />" : '' ) + 
-                                        cong_data.get('meeting_city') + ", " + 
-                                        cong_data.get('meeting_state') + " " + 
-                                        cong_data.get('meeting_zip') + "<br />" +
-                                        ( cong_data.get('phone') ? cong_data.get('phone') + "<br />" : '' ) +
-                                        ( cong_data.get('website') ? '<a href="http://' + cong_data.get('website') +'">' + cong_data.get('website') + "</a><br />" : '' ) +
-                                        '</p>' +
-                                        '<form action="http://maps.google.com/maps" method="get" target="_blank">' +
-                                        'Enter your starting address:' +
-                                        '<input type="text" name="saddr" />' +
-                                        '<input type="hidden" name="daddr" value="' +
-                                        cong_data.get('meeting_address1') + ', ' + 
-                                        cong_data.get('meeting_city') + ", " + 
-                                        cong_data.get('meeting_state') + " " + 
-                                        cong_data.get('meeting_zip') + " " +
-                                        "(" + cong_data.get('name') + ")" +
-                                        '" />' +
-                                        '<input type="submit" value="get directions" />' +
-                                        '</form>' ;
-
+  //Make a template named "cong_info_window.html"
+                                        
+                                        //instead of building the string, use mustache to render the template
+                                        //make it its own backbone view
+                                        var contentString = Mustache.render(CongInfowindowTemplate)
 
                                         // Create infowindow                              
                                         var infowindow = new google.maps.InfoWindow({
@@ -221,6 +201,17 @@ define([
                                         $("#congregation_list tbody").append(msg);
                                     })
                                     // thiz.add_listener()
+                                    // add a jquery event listener here
+                                    $('a.GetDirections').click(function() { 
+                                    	$(event.target).parent().child("form.GetDirectionsForm").show()
+                                	    $(event.target).hide()
+                                    });
+                                    // listen for the click event on "a" tags which have the class "GetDirections"
+                                    // hide the link that was clicked $(event.target) and show the form $(event.target).parent().child("form.classname") .jquery method ????
+                                    //find the jquery code to show the form
+                                    //TODO give the form a class name and use it to show the form
+                                    // 
+                                 
                                 },
                                 error:function(collection, response, options){
                                     console.error(response)
