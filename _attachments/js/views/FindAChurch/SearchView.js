@@ -2,10 +2,11 @@ define([
         'config',
         '../../model',
         '../../vendor/mustache',
+        'text!views/FindAChurch/CongTableRow.html',
         'text!views/FindAChurch/CongInfowindow.html',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
-        function(config, model, Mustache, CongInfowindowTemplate){
+        function(config, model, Mustache, CongTableRowTemplate, CongInfowindowTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -128,7 +129,7 @@ define([
                         //    which should render this .remove() call unnecessary
                         //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-list-in-backbone-template
                         // Remove existing table rows that contain congregation data (don't remove the header row)
-                        $("#congregation_list tbody tr").remove();
+                        // $("#congregation_list tbody tr").remove();
 
                         thiz.infowindows = [];
                         var congs_coll = new model.Congs()
@@ -137,6 +138,16 @@ define([
                         congs_coll.db.keys = ids
                         // Switch view to get arbitrary ids
                         congs_coll.db.view = 'by_id'
+                        	congs_coll.on("all", function(event_name){
+                        		// Get all the congregations in this collection
+                        		// For each congregation: Create a table row
+                        		var row_list = congs_coll.map(function(element, index, list){
+                        			return Mustache.render(CongTableRowTemplate, element.attributes)
+                        		})
+                        		var rows=row_list.join()
+                        		// Append all the table rows to the table
+                        		$("#congregation_list tbody").html(rows);
+                        	})
                         congs_coll.fetch(
                             {
                                 include_docs:true,
@@ -244,22 +255,6 @@ define([
                                         // Add congregation info to the table below the map.
                                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                         // Construct the table rows that we're going to append to the table
-
-                                        // TODO: Convert this to a template, then a backbone view
-                                        //  that listens to a Backbone collection's changes
-                                        var cong_table_row = ''
-                                        var msg="<tr>" +
-                                        "<td><a href='/cong/" + cong_data.get('id') + "'>" + cong_data.get('name') + 
-                                        ' (' + cong_data.get('denomination_abbr') + ")</a></td>"+
-                                        "<td>" + cong_data.get('meeting_city') + ", " + cong_data.get('meeting_state') + "</td>" +
-                                        "<td>" +(cong_data.get('phone') ? cong_data.get('phone') + "<br />": "" ) + 
-                                        (cong_data.get('email') ? "<a href='mailto:" + cong_data.get('email') + "'>" + cong_data.get('email') + "</a><br />": "" ) + 
-                                        (cong_data.get('website') ? "<a href='http://" + cong_data.get('website') + "'>" + cong_data.get('website') + "</a>": "") + 
-                                        "</td>" + 
-                                        "</tr>"; 
-
-                                        // Append the new table rows to the table
-                                        $("#congregation_list tbody").append(msg);
                                     })
                                     // thiz.add_listener()
                                 },
