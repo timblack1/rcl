@@ -256,6 +256,7 @@ define([
                                         $("#congregation_list tbody").append(msg);
                                     })
                                     // thiz.add_listener()
+                                    
                                 },
                                 error:function(collection, response, options){
                                     console.error(response)
