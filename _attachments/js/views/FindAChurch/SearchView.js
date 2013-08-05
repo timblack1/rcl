@@ -107,6 +107,11 @@ define([
             var north_lat = north_east.lat();
             var south_lat = south_west.lat();
 
+            // TODO: When the map is panned or otherwise moved,
+            //  Remove from the map the markers that are not in the new list
+            //  Add to the map the markers that are not in the old list
+            //  This will prevent losing focus on the infowindow that is currently 
+            //  open, and avoid an unneccessary marker refresh
             // Send AJAX call to geocouch containing bounds within which congregations are found
             // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
             //  order Google Maps uses
@@ -241,6 +246,7 @@ define([
                                         // Construct the table rows that we're going to append to the table
 
                                         // TODO: Convert this to a template, then a backbone view
+                                        //  that listens to a Backbone collection's changes
                                         var cong_table_row = ''
                                         var msg="<tr>" +
                                         "<td><a href='/cong/" + cong_data.get('id') + "'>" + cong_data.get('name') + 
