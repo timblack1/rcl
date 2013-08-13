@@ -10,7 +10,8 @@ define([
 
     return Backbone.View.extend({
         initialize: function(){
-            _.bindAll(this)
+            _.bindAll(this, 'location_keyup', 'add_listener', 'do_search', 'add_listener', 
+                'close_infowindows', 'remove_markers', 'plot_congs_on_map')
             window.app.geocoder = new google.maps.Geocoder();
             this.markers = []
         },
@@ -33,8 +34,6 @@ define([
         },
         add_listener:function(){
             // Attach event handler to display new congs when the map's bounds change
-            // TODO: Start here.  Why does this fire only on the map's first load, 
-            //  and not on subsequent drag (etc.) events?
             var thiz = this
             google.maps.event.addListener(window.app.map, 'idle', function(event){
                 thiz.plot_congs_on_map()
@@ -80,7 +79,7 @@ define([
             });
         },
         close_infowindows:function() {
-            _.each(this.infowindows, function(iw, index, iws){
+            _.each(this.infowindows, function(iw){
                 iw.close();
             })
         },
@@ -138,40 +137,51 @@ define([
                         congs_coll.db.keys = ids
                         // Switch view to get arbitrary ids
                         congs_coll.db.view = 'by_id'
-                        	congs_coll.on("all", function(event_name){
-                        		// Get all the congregations in this collection
-                        		// For each congregation: Create a table row
-                        		var row_list = congs_coll.map(function(element, index, list){
-                        			return Mustache.render(CongTableRowTemplate, element.attributes)
-                        		})
-                        		var rows=row_list.join()
-                        		// Append all the table rows to the table
-                        		$("#congregation_list tbody").html(rows);
-                        	})
+                        // Note: Binding the "all" event maxed out the CPU, so don't do it!
+                    	congs_coll.on("add,remove,reset,change,destroy", function(event_name){
+                    		// Get all the congregations in this collection
+                    		// For each congregation: Create a table row
+                    		var row_list = congs_coll.map(function(element, index, list){
+                    			return Mustache.render(CongTableRowTemplate, element.attributes)
+                    		})
+                    		var rows=row_list.join()
+                    		// Append all the table rows to the table
+                    		$("#congregation_list tbody").html(rows);
+                    	})
                         congs_coll.fetch(
                             {
                                 include_docs:true,
                                 success:function(congs_coll, response, options){
-                                    // TODO: This removes the current marker after the user clicks the marker and
-                                    //  the infowindow pans the map to make room for itself; it shouldn't do that.
-                                    //  Regrettably, the current fix makes the infowindow flash when the map moves.
-                                    thiz.remove_markers()
-                                    if (typeof thiz.open_infowindow !== 'undefined'){
-                                        thiz.open_infowindow.open(window.app.map,thiz.open_marker);
-                                    }
-                                    _.each(congs,function(cong,index,congs){
-                                        var cong_data = congs_coll.get(cong.id)
-                                        var coords = cong.geometry.coordinates
-                                        var point = new google.maps.LatLng(coords[0], coords[1]);
+                                    // Instead of removing all markers from the map, then plotting all new congs on new markers,
+                                    //  do two set operations to remove only markers not displayed, and add only the markers that
+                                    //  are new, to the map.  This will preserve the state (e.g., a directions origin address entered
+                                    //  by a user) in any infowindow that is open during this marker refresh operation.
+
+                                    // Remove markers that are not in the new set of congs returned
+                                    _.each(_.difference(_.pluck(thiz.markers, 'couch_id'), congs_coll.pluck('_id')), function(id){
+                                        var marker = _.findWhere(thiz.markers, {couch_id:id})
+                                        // Remove marker from the list of markers
+                                        thiz.markers = _.without(thiz.markers, marker)
+                                        // Remove this marker from the map, which should also remove it from memory
+                                        marker.setMap(null)
+                                    })
+                                    // Add new congs to map
+                                    _.each(_.difference(congs_coll.pluck('_id'), _.pluck(thiz.markers, 'couch_id')), function(id){
+                                        var cong = congs_coll.get(id)
+                                        // Get cong's latlng
+                                        var coords = cong.get('loc')
+                                        // This is the case we want to handle.
                                         var marker = new google.maps.Marker({
-                                            position: point,
+                                            position: new google.maps.LatLng(coords[0], coords[1]),
                                             map: window.app.map,
-                                            title: cong_data.get('name')
+                                            title: cong.get('name')
                                         });
+                                        marker.couch_id = cong.get('_id')
                                         thiz.markers.push(marker)
+                                        // console.log('+'+thiz.markers.length)
                                         // TODO: Make it so the city entered has a different color than results 
                                         //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
-
+                                        
                                         // TODO: Figure out what address formats we need to parse before sending address to Google.
                                         // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
                                         //  Maybe if geocoding add1 fails, try add2
@@ -179,32 +189,32 @@ define([
                                         // Name:    Caney OPC
                                         // Add1:    CVHS Gym
                                         // Add2:    300 A St <-- We need this, not addr1
-
+                                        
                                         // Name:    Caney OPC
                                         // Add1:    YMCA
                                         // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
-
+                                        
                                         // Render the infowindow HTML
                                         // TODO: make it its own backbone view
-                                        cong_data.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong_data.attributes).replace('\n', '')
-                                        var contentString = Mustache.render(CongInfowindowTemplate, cong_data.attributes)
-
+                                        cong.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong.toJSON()).replace('\n', '')
+                                        var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
+                                        
                                         // Create infowindow                              
                                         var infowindow = new google.maps.InfoWindow({
                                             content: contentString
                                         });
-                                        //$(document['#infowindow'+i]).parent.style = 'overflow-y:hidden';
                                         // Add the infowindow as an attribute of this marker to make it accessible within marker events.
                                         marker.infowindow = infowindow;
                                         // Add the infowindow to an array so we can close all infowindows from the events below.
-                                        thiz.infowindows[index] = infowindow;
+                                        thiz.infowindows.push(infowindow)
                                         // Add infowindow to map
                                         google.maps.event.addListener(marker, 'click', function() {
                                             thiz.close_infowindows();
                                             this.infowindow.open(window.app.map,marker);
-                                            // Record the open marker so we can reopen it after the map pans
-                                            thiz.open_marker = marker
-                                            thiz.open_infowindow = this.infowindow
+                                            var iw = this.infowindow
+                                            // // Record the open marker so we can reopen it after the map pans
+                                            // thiz.open_marker = marker
+                                            // thiz.open_infowindow = this.infowindow
                                             // If the "Directions" link is clicked,
                                             // If we already know the user's location
                                             if (navigator.geolocation){
@@ -214,22 +224,22 @@ define([
                                                     window.target = $(evt.target)
                                                     // Set the href of the link so if the user clicks it it will go to the right URL
                                                     $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
-                                                        position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
-                                                        cong_data.attributes.address)
+                                                                               position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
+                                                                               cong.attributes.address)
                                                     $('a.get_directions').attr('target', '_blank')
                                                 },function(error){
                                                     switch(error.code){
                                                         case error.PERMISSION_DENIED:
                                                             // console.log("User denied the request for Geolocation.")
                                                             // Hide the link and show the "Get directions" form
-                                                            var iw = this.infowindow
-                                                            window.infowindow = iw
-                                                            $('a.get_directions').click(function(event) {
+                                                            $('body').on('click', 'a.get_directions', function(event) {
                                                                 $(event.target).hide()
                                                                 $(event.target).parent().children("form.get_directions_form").show()
-                                                                // TODO: Start here.  Get the infowindow to resize to fit the new content
                                                                 var content = $(event.target).parent()[0].innerHTML
-                                                                thiz.infowindows[index].setContent(content)
+                                                                // TODO: Why, after this is called, does a click on a different marker
+                                                                //    not cause this infowindow to be closed?
+                                                                // Start here
+                                                                iw.setContent(content)
                                                             });
                                                             break;
                                                         case error.POSITION_UNAVAILABLE:
@@ -251,11 +261,111 @@ define([
                                         google.maps.event.addListener(window.app.map, 'click', function() {
                                             thiz.close_infowindows();
                                         });
-
+                                        
                                         // Add congregation info to the table below the map.
                                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                         // Construct the table rows that we're going to append to the table
                                     })
+                                    // thiz.remove_markers()
+                                    // if (typeof thiz.open_infowindow !== 'undefined'){
+                                    //     thiz.open_infowindow.open(window.app.map,thiz.open_marker);
+                                    // }
+                                    // _.each(congs,function(cong,index,congs){
+                                    //     var cong_data = congs_coll.get(cong.id)
+                                    //     var coords = cong.geometry.coordinates
+                                    //     var point = new google.maps.LatLng(coords[0], coords[1]);
+                                    //     var marker = new google.maps.Marker({
+                                    //         position: point,
+                                    //         map: window.app.map,
+                                    //         title: cong_data.get('name')
+                                    //     });
+                                    //     thiz.markers.push(marker)
+                                    //     // TODO: Make it so the city entered has a different color than results 
+                                    //     //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
+
+                                    //     // TODO: Figure out what address formats we need to parse before sending address to Google.
+                                    //     // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
+                                    //     //  Maybe if geocoding add1 fails, try add2
+                                    //     //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
+                                    //     // Name:    Caney OPC
+                                    //     // Add1:    CVHS Gym
+                                    //     // Add2:    300 A St <-- We need this, not addr1
+
+                                    //     // Name:    Caney OPC
+                                    //     // Add1:    YMCA
+                                    //     // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
+
+                                    //     // Render the infowindow HTML
+                                    //     // TODO: make it its own backbone view
+                                    //     cong_data.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong_data.attributes).replace('\n', '')
+                                    //     var contentString = Mustache.render(CongInfowindowTemplate, cong_data.attributes)
+
+                                    //     // Create infowindow                              
+                                    //     var infowindow = new google.maps.InfoWindow({
+                                    //         content: contentString
+                                    //     });
+                                    //     //$(document['#infowindow'+i]).parent.style = 'overflow-y:hidden';
+                                    //     // Add the infowindow as an attribute of this marker to make it accessible within marker events.
+                                    //     marker.infowindow = infowindow;
+                                    //     // Add the infowindow to an array so we can close all infowindows from the events below.
+                                    //     thiz.infowindows[index] = infowindow;
+                                    //     // Add infowindow to map
+                                    //     google.maps.event.addListener(marker, 'click', function() {
+                                    //         thiz.close_infowindows();
+                                    //         this.infowindow.open(window.app.map,marker);
+                                    //         // Record the open marker so we can reopen it after the map pans
+                                    //         thiz.open_marker = marker
+                                    //         thiz.open_infowindow = this.infowindow
+                                    //         // If the "Directions" link is clicked,
+                                    //         // If we already know the user's location
+                                    //         if (navigator.geolocation){
+                                    //             // Use it without showing the form
+                                    //             var evt = event
+                                    //             navigator.geolocation.getCurrentPosition(function(position){
+                                    //                 window.target = $(evt.target)
+                                    //                 // Set the href of the link so if the user clicks it it will go to the right URL
+                                    //                 $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
+                                    //                     position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
+                                    //                     cong_data.attributes.address)
+                                    //                 $('a.get_directions').attr('target', '_blank')
+                                    //             },function(error){
+                                    //                 switch(error.code){
+                                    //                     case error.PERMISSION_DENIED:
+                                    //                         // console.log("User denied the request for Geolocation.")
+                                    //                         // Hide the link and show the "Get directions" form
+                                    //                         var iw = this.infowindow
+                                    //                         window.infowindow = iw
+                                    //                         $('body').on('click', 'a.get_directions', function(event) {
+                                    //                             $(event.target).hide()
+                                    //                             $(event.target).parent().children("form.get_directions_form").show()
+                                    //                             var content = $(event.target).parent()[0].innerHTML
+                                    //                             thiz.infowindows[index].setContent(content)
+                                    //                         });
+                                    //                         break;
+                                    //                     case error.POSITION_UNAVAILABLE:
+                                    //                         // console.log("Location information is unavailable.")
+                                    //                         break;
+                                    //                     case error.TIMEOUT:
+                                    //                         // console.log("The request to get user location timed out.")
+                                    //                         break;
+                                    //                     case error.UNKNOWN_ERROR:
+                                    //                         // console.log("An unknown error occurred.")
+                                    //                         break;
+                                    //                 }
+                                    //             });
+                                    //         }else{
+                                    //             // console.log("Geolocation is not supported by this browser.");
+                                    //         }
+                                    //     });
+                                    //     // Close all infowindows when user clicks on map
+                                    //     google.maps.event.addListener(window.app.map, 'click', function() {
+                                    //         thiz.close_infowindows();
+                                    //     });
+
+                                    //     // Add congregation info to the table below the map.
+                                    //     // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
+                                    //     // Construct the table rows that we're going to append to the table
+                                    // })
                                     // thiz.add_listener()
                                 },
                                 error:function(collection, response, options){

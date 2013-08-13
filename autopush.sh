@@ -21,8 +21,8 @@ then
 fi
 
 # Push app into database in case this has not been done yet
-# erica push http://$LOGIN@$DOMAIN:$PORT/rcl
-couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl
+erica push http://$LOGIN@$DOMAIN:$PORT/rcl
+# couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl
 
 #echo "Starting the Node.js changes listener as a forked child process..."
 #( ./node_changes_listener.sh & )
@@ -56,5 +56,5 @@ gnome-open http://$LOGIN@$DOMAIN:$PORT/rcl/_design/rcl/index.html &
 # erica browse rcl
 
 # Start watching the filesystem for changes, and push new changes into the database
-# iwatch -e close_write -r -c "~/bin/erica push http://$LOGIN@$DOMAIN:$PORT/rcl" .
-iwatch -e close_write -r -c "couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl" .
+iwatch -e close_write -r -c "~/bin/erica push http://$LOGIN@$DOMAIN:$PORT/rcl" .
+# iwatch -e close_write -r -c "couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl" .

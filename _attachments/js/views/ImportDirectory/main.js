@@ -13,9 +13,6 @@ define(
                 db = config.db
                 wgxpath.install()
                 
-                // Make it easy to reference this object in event handlers
-                _.bindAll(this)
-                
                 // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
                 var changes = db.changes();

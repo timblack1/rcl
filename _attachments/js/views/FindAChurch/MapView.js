@@ -8,7 +8,7 @@ define([
 
         return Backbone.View.extend({
             initialize: function(){
-                _.bindAll(this)
+                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors')
             },
             render: function(){
                 $('#map').html(Mustache.render(template))
