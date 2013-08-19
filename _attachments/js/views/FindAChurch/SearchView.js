@@ -14,6 +14,8 @@ define([
                 'close_infowindows', 'remove_markers', 'plot_congs_on_map')
             window.app.geocoder = new google.maps.Geocoder();
             this.markers = []
+            // Create infowindow                              
+            var infowindow = new google.maps.InfoWindow();
         },
         render: function(){
             // TODO: Convert this to use Mustache
@@ -178,6 +180,15 @@ define([
                                             map: window.app.map,
                                             title: cong.get('name')
                                         });
+                                        google.maps.event.addListener(someMarker, 'click', function() {
+                                        	// Render the infowindow HTML
+                                            // TODO: make it its own backbone view
+                                            cong.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong.toJSON()).replace('\n', '')
+                                            var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
+                                           
+                                           
+                                    	   infowindow.open(map, someMarker);
+                                    	});
                                         marker.couch_id = cong.get('_id')
                                         thiz.markers.push(marker)
                                         // console.log('+'+thiz.markers.length)
@@ -196,15 +207,8 @@ define([
                                         // Add1:    YMCA
                                         // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
                                         
-                                        // Render the infowindow HTML
-                                        // TODO: make it its own backbone view
-                                        cong.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong.toJSON()).replace('\n', '')
-                                        var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
-                                        
-                                        // Create infowindow                              
-                                        var infowindow = new google.maps.InfoWindow({
-                                            content: contentString
-                                        });
+                                     
+                                       
                                         // Add the infowindow as an attribute of this marker to make it accessible within marker events.
                                         marker.infowindow = infowindow;
                                         // Add the infowindow to an array so we can close all infowindows from the events below.
@@ -259,11 +263,8 @@ define([
                                                 // console.log("Geolocation is not supported by this browser.");
                                             }
                                         });
-                                        // Close all infowindows when user clicks on map
-                                        google.maps.event.addListener(window.app.map, 'click', function() {
-                                            thiz.close_infowindows();
-                                        });
-                                        
+                                                                      
+                                      
                                         // Add congregation info to the table below the map.
                                         // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
                                         // Construct the table rows that we're going to append to the table
