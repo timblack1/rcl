@@ -5,12 +5,22 @@
 
 # . ../bin/activate
 
-# PORT=5984
-PORT=80
+# Development copy
 # Get the admin username and password for couchdb
 LOGIN=$(cat login.txt)
-# DOMAIN=localhost
-DOMAIN=arwd.iriscouch.com
+PORT=80
+HOST=arwd.iriscouch.com
+DBNAME=rcl
+
+# Production copy
+# Get the admin username and password for couchdb
+# LOGIN=$(cat login.txt)
+# PORT=5984
+# HOST=localhost
+# DBNAME=rcl
+
+URL=http://$LOGIN@$HOST:$PORT/$DBNAME
+
 
 # Create .couchapprc file if this has not been done yet
 if [ ! -e .couchapprc ];
@@ -21,8 +31,8 @@ then
 fi
 
 # Push app into database in case this has not been done yet
-erica push http://$LOGIN@$DOMAIN:$PORT/rcl
-# couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl
+erica push $URL
+# couchapp push $URL
 
 #echo "Starting the Node.js changes listener as a forked child process..."
 #( ./node_changes_listener.sh & )
@@ -52,9 +62,9 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-gnome-open http://$LOGIN@$DOMAIN:$PORT/rcl/_design/rcl/index.html &
+gnome-open $URL/_design/$DBNAME/index.html &
 # erica browse rcl
 
 # Start watching the filesystem for changes, and push new changes into the database
-iwatch -e close_write -r -c "~/bin/erica push http://$LOGIN@$DOMAIN:$PORT/rcl" .
-# iwatch -e close_write -r -c "couchapp push http://$LOGIN@$DOMAIN:$PORT/rcl" .
+iwatch -e close_write -r -c "~/bin/erica push $URL" .
+# iwatch -e close_write -r -c "couchapp push $URL" .
