@@ -143,6 +143,8 @@ define([
                     		// For each congregation: Create a table row
                     		var row_list = congs_coll.map(function(element, index, list){
                     			return Mustache.render(CongTableRowTemplate, element.attributes)
+                                // TODO: Create marker for this cong here
+                                //  Move code from below up to here
                     		})
                     		var rows=row_list.join()
                     		// Append all the table rows to the table
