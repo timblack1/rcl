@@ -5,11 +5,12 @@
 
 # . ../bin/activate
 
-# Development copy
-# Get the admin username and password for couchdb
+# # Development copy
+# # Get the admin username and password for couchdb
 LOGIN=$(cat login.txt)
 PORT=80
 HOST=arwd.iriscouch.com
+# HOST=arwd.cloudant.com
 DBNAME=rcl
 
 # Production copy
