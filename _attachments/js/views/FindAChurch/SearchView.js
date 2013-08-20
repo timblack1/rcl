@@ -15,7 +15,7 @@ define([
             window.app.geocoder = new google.maps.Geocoder();
             this.markers = []
             // Create infowindow                              
-            var infowindow = new google.maps.InfoWindow();
+            this.infowindow = new google.maps.InfoWindow();
         },
         render: function(){
             // TODO: Convert this to use Mustache
@@ -180,47 +180,15 @@ define([
                                             map: window.app.map,
                                             title: cong.get('name')
                                         });
-                                        google.maps.event.addListener(someMarker, 'click', function() {
+                                        google.maps.event.addListener(marker, 'click', function() {
                                         	// Render the infowindow HTML
                                             // TODO: make it its own backbone view
                                             cong.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong.toJSON()).replace('\n', '')
                                             var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
-                                           
-                                           
-                                    	   infowindow.open(map, someMarker);
-                                    	});
-                                        marker.couch_id = cong.get('_id')
-                                        thiz.markers.push(marker)
-                                        // console.log('+'+thiz.markers.length)
-                                        // TODO: Make it so the city entered has a different color than results 
-                                        //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
-                                        
-                                        // TODO: Figure out what address formats we need to parse before sending address to Google.
-                                        // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
-                                        //  Maybe if geocoding add1 fails, try add2
-                                        //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
-                                        // Name:    Caney OPC
-                                        // Add1:    CVHS Gym
-                                        // Add2:    300 A St <-- We need this, not addr1
-                                        
-                                        // Name:    Caney OPC
-                                        // Add1:    YMCA
-                                        // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
-                                        
-                                     
-                                       
-                                        // Add the infowindow as an attribute of this marker to make it accessible within marker events.
-                                        marker.infowindow = infowindow;
-                                        // Add the infowindow to an array so we can close all infowindows from the events below.
-                                        thiz.infowindows.push(infowindow)
-                                        // Add infowindow to map
-                                        google.maps.event.addListener(marker, 'click', function() {
-                                            thiz.close_infowindows();
-                                            this.infowindow.open(window.app.map,marker);
-                                            var iw = this.infowindow
-                                            // // Record the open marker so we can reopen it after the map pans
-                                            // thiz.open_marker = marker
-                                            // thiz.open_infowindow = this.infowindow
+                                            // TODO: Is this needed anymore?
+                                            //thiz.infowindow.setContent()
+                                            thiz.infowindow.open(map, marker);
+                                            var iw = thiz.infowindow
                                             // If the "Directions" link is clicked,
                                             // If we already know the user's location
                                             if (navigator.geolocation){
@@ -262,6 +230,28 @@ define([
                                             }else{
                                                 // console.log("Geolocation is not supported by this browser.");
                                             }
+                                    	});
+                                        marker.couch_id = cong.get('_id')
+                                        // TODO: Make it so the city entered has a different color than results 
+                                        //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
+                                        
+                                        // TODO: Figure out what address formats we need to parse before sending address to Google.
+                                        // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
+                                        //  Maybe if geocoding add1 fails, try add2
+                                        //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
+                                        // Name:    Caney OPC
+                                        // Add1:    CVHS Gym
+                                        // Add2:    300 A St <-- We need this, not addr1
+                                        
+                                        // Name:    Caney OPC
+                                        // Add1:    YMCA
+                                        // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
+                                        
+                                     
+                                       
+                                        // Add infowindow to map
+                                        google.maps.event.addListener(marker, 'click', function() {
+                                            
                                         });
                                                                       
                                       
