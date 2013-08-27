@@ -6,5 +6,5 @@ sync.txt
 port.txt
 _attachments/tincr.json.bak
 libpeerconnection.log
-vendor
-js/vendor
+_attachments/js/vendor
+_attachments/js/vendor/**/*
