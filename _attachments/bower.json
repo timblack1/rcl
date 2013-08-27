@@ -15,7 +15,6 @@
     "jquery.xpath": "https://github.com/ilinsky/jquery-xpath",
     "async": "https://github.com/requirejs/async",
     "requirejs-plugins": "https://github.com/millermedeiros/requirejs-plugins",
-    "wgxpath": "https://npmjs.org/package/wgxpath",
     "modernizr": "latest",
     "respond": "latest",
     "jasmine": "latest"
