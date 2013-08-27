@@ -4,9 +4,10 @@ define([
         '../../vendor/mustache',
         'text!views/FindAChurch/CongTableRow.html',
         'text!views/FindAChurch/CongInfowindow.html',
+        'text!views/FindAChurch/Address.html',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
-        function(config, model, Mustache, CongTableRowTemplate, CongInfowindowTemplate){
+        function(config, model, Mustache, CongTableRowTemplate, CongInfowindowTemplate, AddressTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -16,11 +17,17 @@ define([
             this.markers = []
             // Create infowindow                              
             this.infowindow = new google.maps.InfoWindow();
+            // Close the open infowindow if the user clicks on the map
+            var thiz = this
+            google.maps.event.addListener(window.app.map, 'click', function() {
+                thiz.infowindow.close()
+            })
         },
         render: function(){
             // TODO: Convert this to use Mustache
             config.render_to_id(this, "#search_template")
-
+            $('#')
+            
             // Attach search event handler to search button and text box
             $('.search').click(this.do_search)
             $('.location').keyup(this.location_keyup)
@@ -132,7 +139,6 @@ define([
                         // Remove existing table rows that contain congregation data (don't remove the header row)
                         // $("#congregation_list tbody tr").remove();
 
-                        thiz.infowindows = [];
                         var congs_coll = new model.Congs()
                         var ids = _.pluck(congs,'id')
                         congs_coll.db = {}
@@ -175,20 +181,20 @@ define([
                                         // Get cong's latlng
                                         var coords = cong.get('loc')
                                         // This is the case we want to handle.
+                                        var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
                                         var marker = new google.maps.Marker({
                                             position: new google.maps.LatLng(coords[0], coords[1]),
                                             map: window.app.map,
-                                            title: cong.get('name')
+                                            title: cong.get('name') + denomination
                                         });
                                         google.maps.event.addListener(marker, 'click', function() {
                                         	// Render the infowindow HTML
                                             // TODO: make it its own backbone view
-                                            cong.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong.toJSON()).replace('\n', '')
+                                            // Dynamically create an address to feed into maps.google.com's search page
+                                            cong.attributes.address = Mustache.render(AddressTemplate, cong.toJSON()).replace('\n', '')
                                             var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
-                                            // TODO: Is this needed anymore?
-                                            //thiz.infowindow.setContent()
-                                            thiz.infowindow.open(map, marker);
-                                            var iw = thiz.infowindow
+                                            thiz.infowindow.setContent(contentString)
+                                            thiz.infowindow.open(window.app.map, marker);
                                             // If the "Directions" link is clicked,
                                             // If we already know the user's location
                                             if (navigator.geolocation){
@@ -210,10 +216,8 @@ define([
                                                                 $(event.target).hide()
                                                                 $(event.target).parent().children("form.get_directions_form").show()
                                                                 var content = $(event.target).parent()[0].innerHTML
-                                                                // TODO: Why, after this is called, does a click on a different marker
-                                                                //    not cause this infowindow to be closed?
-                                                                // Start here
-                                                                iw.setContent(content)
+                                                                // Force the infowindow to resize to fit its new content height
+                                                                thiz.infowindow.setContent(content)
                                                             });
                                                             break;
                                                         case error.POSITION_UNAVAILABLE:
