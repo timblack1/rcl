@@ -8,7 +8,10 @@ define([
 
         return Backbone.View.extend({
             initialize: function(){
-                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors')
+                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors', 'refresh_congs')
+                // TODO: Set the map view to listen to congs collection change events.
+                // This returns an Uncaught TypeError: Object [object Object] has no method 'listenTo'
+                this.listenTo(this.collection, 'all', this.refresh_congs)
             },
             render: function(){
                 $('#map').html(Mustache.render(template))
@@ -62,6 +65,9 @@ define([
                         console.log("An unknown error occurred.")
                         break;
                 }
+            },
+            refresh_congs:function(){
+                // TODO: Use this.collection to repopulate the map
             }
         });
     }
