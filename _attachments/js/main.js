@@ -30,15 +30,15 @@ require.config({
   },
   shim: {
       "bootstrap": {
-        //deps: ["jquery"],
-        exports: "$.fn.typeahead"
+          deps: ["jquery"],
+          exports: "$.fn.typeahead"
       },
       underscore: {
           exports: '_'
       },
       backbone: {
-          //deps: ["jquery", "underscore"],
-          deps: ["underscore"],
+          deps: ["jquery", "underscore"],
+          //deps: ["underscore"],
           exports: "Backbone"
       },
       backbone_relational: {
@@ -48,13 +48,13 @@ require.config({
           deps: ["backbone_relational"]
       },
       jquery_couchLogin: {
-          //deps: ["jquery", "jquery_couch"]
-          deps: ["jquery_couch"]
+          deps: ["jquery", "jquery_couch"]
+          //deps: ["jquery_couch"]
       },
       // TODO: Use require-css to inject the CSS as needed
       backgrid: {
-          //deps: ["jquery", "backbone", "underscore"],
-          deps: ["backbone", "underscore"],
+          deps: ["jquery", "backbone", "underscore"],
+          //deps: ["backbone", "underscore"],
           exports: 'Backgrid'
       }
   }
