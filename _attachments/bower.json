@@ -13,8 +13,8 @@
     "mustache": "latest",
     "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery",
     "jquery.xpath": "https://github.com/ilinsky/jquery-xpath",
-    "async": "https://github.com/requirejs/async",
-    "requirejs-plugins": "https://github.com/millermedeiros/requirejs-plugins",
+    "requirejs-text": "latest",
+    "requirejs-plugins": "latest",
     "modernizr": "latest",
     "respond": "latest",
     "jasmine": "latest"
