@@ -1,7 +1,7 @@
 define([
         'config',
-        '../../model',
-        '../../vendor/mustache',
+        'model',
+        'mustache',
         'text!views/FindAChurch/CongTableRow.html',
         'text!views/FindAChurch/CongInfowindow.html',
         'text!views/FindAChurch/Address.html',

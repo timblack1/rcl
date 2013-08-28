@@ -1,7 +1,7 @@
 define([
         'config',
-        '../../model',
-        '../../vendor/mustache',
+        'model',
+        'mustache',
         'text!views/FindAChurch/main_template.html',
         './MapView',
         './SearchView',
@@ -45,6 +45,8 @@ define([
             // mapbounds contains an array containing two lat/lng pairs in this order:
             // (south bottom 36, west left -96)
             // (north top 37, east right -95)
+            // TODO: This throws an error since the map hasn't been rendered yet at this point in the code execution
+            //    (when this line is called from line 39 above)
             var mapbounds = window.app.map.getBounds();
             var north_east = mapbounds.getNorthEast();
             var south_west = mapbounds.getSouthWest();

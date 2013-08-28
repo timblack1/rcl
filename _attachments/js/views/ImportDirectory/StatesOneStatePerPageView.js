@@ -1,6 +1,6 @@
 define([
-        '../../config',
-        '../../vendor/mustache',
+        'config',
+        'mustache',
         'text!views/ImportDirectory/StatesOneStatePerPage.html',
         './CongDetailsURLView'
         ], 

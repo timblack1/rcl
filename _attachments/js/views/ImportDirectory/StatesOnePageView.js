@@ -1,9 +1,10 @@
 define([
-        '../../config',
-        '../../vendor/mustache',
+        'config',
+        'backbone',
+        'mustache',
         'text!views/ImportDirectory/StatesOnePage.html'
         ], 
-        function(config, Mustache, template){
+        function(config, Backbone, Mustache, template){
     
     var StatesOnePageView = Backbone.View.extend({
         initialize:function(){

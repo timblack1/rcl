@@ -1,17 +1,17 @@
 define(
    [
-    '../../config',
-    '../../model',
-    '../../vendor/mustache',
+    'config',
+    'model',
+    'mustache',
     './DirURLView',
     'text!views/ImportDirectory/main.html'
     ],
-    function(config, model, Mustache, DirURLView, template){
+    function(config, model, Mustache, wgxpath, DirURLView, template){
 
         var ImportDirectoryView = Backbone.View.extend({
             initialize : function(){
                 db = config.db
-                wgxpath.install()
+                window.wgxpath.install()
                 
                 // Set up browser changes listener to watch for and handle Node changes
                 //  listener's response
