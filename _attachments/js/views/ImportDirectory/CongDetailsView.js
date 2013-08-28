@@ -1,6 +1,6 @@
 define([
-        '../../config',
-        '../../vendor/mustache',
+        'config',
+        'mustache',
         'text!views/ImportDirectory/CongDetails.html',
         './CongFieldsView',
         'text!views/ImportDirectory/CongDetails_Heres_why_how_modal.html'

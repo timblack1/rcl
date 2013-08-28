@@ -1,10 +1,11 @@
 define(
    [
     '../config',
-    '../vendor/mustache', 
+    'mustache', 
+    'backbone',
     'text!views/Menu.html'
     ], 
-    function(config, Mustache, template){
+    function(config, Mustache, Backbone, template){
 
     return Backbone.View.extend({
         initialize: function(){
