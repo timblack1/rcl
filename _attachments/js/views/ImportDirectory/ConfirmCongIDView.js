@@ -1,6 +1,6 @@
 define([
         'config',
-        '../../vendor/mustache', 
+        'mustache', 
         'text!views/ImportDirectory/ConfirmCongID.html',
         "./CongDetailsView"
         ], 

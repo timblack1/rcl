@@ -1,8 +1,10 @@
 define(
    [
-    'vendor/underscore'
+    'underscore',
+    'jquery',
+    'jquery_couch'
     ],
-    function(){
+    function(_, $){
        // TODO: Dynamically get the database name
        //   https://blueprints.launchpad.net/reformedchurcheslocator/+spec/dynamically-get-db-name
        // TODO: Run unit tests on test copy of the database

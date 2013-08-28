@@ -1,6 +1,6 @@
 define([
-        '../../config',
-        '../../vendor/mustache',
+        'config',
+        'mustache',
         'text!views/ImportDirectory/CongFieldsData.html'
         ], 
         function(config, Mustache, template){

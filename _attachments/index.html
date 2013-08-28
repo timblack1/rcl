@@ -20,7 +20,7 @@
         <link rel="stylesheet" href="css/bootstrap-responsive.min.css">
         <link rel="stylesheet" href="css/main.css">
 
-        <script src="js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+        <script src="js/vendor/modernizr/modernizr.js"></script>
     </head>
     <body class='rcl'>
         <!--[if lt IE 7]>
@@ -124,62 +124,15 @@
 
     </body>
 
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.8.3.min.js"><\/script>')</script>
-        
         <!-- Backgrid.js -->
         <!-- use shims like at http://www.crazed.org.uk/2013/05/backgrid-js-plus-requirejs/ or https://github.com/jrburke/requirejs/issues/691 -->
         <link rel="stylesheet" href="js/vendor/backgrid/lib/backgrid.css" />
 
+        <!-- Reformed Churches Locator JavaScript files -->
         
-        <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> -->
-        <!-- <script>window.jQuery || document.write('<script src="js/vendor/jquery.js"><\/script>')</script> -->
-        <!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script> -->
-        <!-- <script>window.jQuery || document.write('<script src="/_utils/script/jquery.js"><\/script>')</script> -->
-
-        <script src="js/vendor/bootstrap.min.js"></script>
-
-    <!--  Couchapp JavaScript files -->
-
-    <script>
-
-        function couchapp_load(scripts) {
-          for (var i=0; i < scripts.length; i++) {
-            document.write('<script src="'+scripts[i]+'"><\/script>')
-          }
-        }
-
-        couchapp_load([
-          "/_utils/script/sha1.js",
-          "/_utils/script/json2.js",
-          // "/_utils/script/jquery.js",
-          "js/vendor/wgxpath.install.js",
-          "js/vendor/jquery.xpath.js",
-          "/_utils/script/jquery.couch.js"
-        ]);
-
-    </script>
-
-    <!-- Reformed Churches Locator JavaScript files -->
-
-    <script src="js/vendor/jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="js/vendor/jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" media="all">
-
-    <!-- TODO: Put these script & CSS loads into their associated Backbone views -->
-    <link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/ui.css" media="all">
-    <script src="js/vendor/jquery.tablesorter/jquery.tablesorter-ui.js"></script>
-    <script src="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.js"></script>
-    <link rel="stylesheet" type="text/css" href="js/vendor/jquery.tablesorter/addons/pager/jquery.tablesorter.pager.css" media="all">
-
-    <!-- TODO: Put this script into app.js -->
-    <!-- <script src="js/search_the_map.js"></script> -->
-    <script type="text/javascript" src="js/vendor/underscore.js"></script>
-    <script type="text/javascript" src="js/vendor/backbone.js"></script>
-    <script type="text/javascript" src="js/vendor/backbone-relational.js"></script>
-    <script type="text/javascript" src="js/vendor/backbone-couchdb.js"></script>
-
-    <script data-main="js/main" src="js/require.js"></script>
-    <script src="js/app.js"></script>
+        <script src="js/wgxpath.install.js"></script>
+    
+        <script data-main="js/main" src="js/vendor/requirejs/require.js"></script>
 
         <script>
             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];

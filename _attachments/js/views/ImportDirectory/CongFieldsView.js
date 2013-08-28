@@ -1,5 +1,5 @@
 define([
-        '../../config',
+        'config',
         './CongFieldView'
         ], 
         function(config, CongFieldView){
