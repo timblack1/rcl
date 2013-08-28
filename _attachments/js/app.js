@@ -1,22 +1,90 @@
+// Up-to-date library dependency map
+// TODO: Start heres
+/*
+requirejs (2.1.8 is available):
+jquery 1.7.0 (1.10.2 or 2.0.3 are available): 
+underscore (1.5.1 available): 
+backbone 1.0.0: ['underscore>1.4.3', 'jquery>1.7.0']
+backbone-relational 1.3: ['backbone>=1.0.0']
+backbone-couchdb (1.3 is available): ['backbone>?', 'underscore>?']
+backgrid (0.2.6 is available): ['jquery>=1.7.0', 'underscore ~1.4.0', 'backbone>=0.9.10']
+boostrap (2.3.2 is available): ['']
+*/
+// TODO: Download and install these dependencies
+
+// RequireJS shim config
+// TODO: There is sometimes a script loading order error on the first load:
+//  RunTestsView.js:8, Backbone is not defined
 require.config({
   waitSeconds: 15000,
-})
+  paths: {
+      "bootstrap": "vendor/bootstrap.min",
+      "jquery_couch": "/_utils/script/jquery.couch",
+      "underscore": "vendor/underscore",
+      "backbone": "vendor/backbone",
+      "backbone_relational": "vendor/backbone-relational",
+      "backbone_couchdb": "vendor/backbone-couchdb",
+      "jquery_couchLogin": "vendor/jquery.couchLogin",
+      "backgrid":"vendor/backgrid/lib/backgrid"
+  },
+  shim: {
+      "bootstrap": {
+        //deps: ["jquery"],
+        exports: "$.fn.typeahead"
+      },
+      underscore: {
+          exports: '_'
+      },
+      backbone: {
+          //deps: ["jquery", "underscore"],
+          deps: ["underscore"],
+          exports: "Backbone"
+      },
+      backbone_relational: {
+          deps: ["backbone"]
+      },
+      backbone_couchdb: {
+          deps: ["backbone_relational"]
+      },
+      jquery_couchLogin: {
+          //deps: ["jquery", "jquery_couch"]
+          deps: ["jquery_couch"]
+      },
+      // TODO: Use require-css to inject the CSS as needed
+      backgrid: {
+          //deps: ["jquery", "backbone", "underscore"],
+          deps: ["backbone", "underscore"],
+          exports: 'Backgrid'
+      }
+  }
+});
 // Define require() from require.js using the standard AMD define
 
 require(
    [
+    'jquery_couch',
+    'vendor/underscore',
+    'backbone',
     'config',
-    'model', 
+    'model',
     'views/view_loader',
-    'vendor/jquery.couchLogin'
+    'jquery_couchLogin'
     ], 
-    function(config, model, views){
+    function(
+             $_couch,
+             underscore,
+             backbone,
+             config,
+             model,
+             views
+        ){
 
        // Create main application
         var App = Backbone.Router.extend({
             initialize : function(){
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this, 'find_a_church', 'import_directory')
+                console.log('this is running.')
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
