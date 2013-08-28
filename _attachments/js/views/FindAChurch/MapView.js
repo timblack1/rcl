@@ -1,10 +1,11 @@
 define([
     'config',
-    '../../vendor/mustache',
+    'backbone',
+    'mustache',
     'text!views/FindAChurch/Map.html',
     'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
     ], 
-    function(config, Mustache, template){
+    function(config, Backbone, Mustache, template){
 
         return Backbone.View.extend({
             initialize: function(){

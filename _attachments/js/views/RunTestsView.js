@@ -1,6 +1,7 @@
 define(
    [
-    '../config'
+    '../config',
+    'backbone'
     ], 
     function(config){
 

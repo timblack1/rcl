@@ -1,9 +1,10 @@
 define([
-        '../../config',
-        '../../vendor/mustache',
+        'config',
+        'backbone',
+        'mustache',
         'text!views/ImportDirectory/CongField.html'
         ], 
-        function(config, Mustache, template){
+        function(config, Backbone, Mustache, template){
     
     return Backbone.View.extend({
         initialize:function(){

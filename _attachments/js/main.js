@@ -18,44 +18,64 @@ bootstrap (2.3.2 is available): ['']
 require.config({
   waitSeconds: 15000,
   paths: {
-      "jquery": "vendor/jquery/jquery.min",
-      "bootstrap": "vendor/bootstrap/bootstrap.min",
-      "jquery_couch": "/_utils/script/jquery.couch",
-      "underscore": "vendor/underscore-amd/underscore",
-      "backbone": "vendor/backbone-amd/backbone",
-      "backbone_relational": "vendor/backbone-relational/backbone-relational",
+      "async": "vendor/requirejs-plugins/src/async",
+      "backbone": "vendor/backbone/backbone",
+      // Note this may import the .coffee instead of the .js file
       "backbone_couchdb": "vendor/backbone-couchdb/backbone-couchdb",
+      "backbone_relational": "vendor/backbone-relational/backbone-relational",
+      // Note this may import the .css instead of the .js file
+      "backgrid":"vendor/backgrid/lib/backgrid",
+      "bootstrap": "vendor/bootstrap/dist/js/bootstrap.min",
+      "config": "config",
+      "jquery": "vendor/jquery/jquery.min",
+      "jquery_migrate": "vendor/jquery/jquery-migrate",
+      "jquery_couch": "/_utils/script/jquery.couch",
       "jquery_couchLogin": "vendor/jquery.couchLogin/jquery.couchLogin",
-      "backgrid":"vendor/backgrid/lib/backgrid"
+      "jquery_xpath": "vendor/jquery.xpath/jquery.xpath",
+      "model": "model",
+      "mustache": "vendor/mustache/mustache",
+      "text": "vendor/requirejs-text/text",
+      "underscore": "vendor/underscore/underscore"
   },
   shim: {
-      "bootstrap": {
-          deps: ["jquery"],
-          exports: "$.fn.typeahead"
-      },
-      underscore: {
-          exports: '_'
-      },
       backbone: {
           deps: ["jquery", "underscore"],
-          //deps: ["underscore"],
           exports: "Backbone"
       },
       backbone_relational: {
           deps: ["backbone"]
       },
       backbone_couchdb: {
-          deps: ["backbone_relational"]
-      },
-      jquery_couchLogin: {
-          deps: ["jquery", "jquery_couch"]
-          //deps: ["jquery_couch"]
+          deps: ["backbone_relational", "jquery_couch"],
+          init: function(){
+              // TODO: Handle injecting Backbone.RelationalModel into backbone_couchdb here
+              // return this.
+          }
       },
       // TODO: Use require-css to inject the CSS as needed
       backgrid: {
           deps: ["jquery", "backbone", "underscore"],
-          //deps: ["backbone", "underscore"],
           exports: 'Backgrid'
+      },
+      // TODO: Use require-css to inject the CSS as needed
+      "bootstrap": {
+          deps: ["jquery"],
+          exports: "$.fn.typeahead"
+      },
+      jquery_couch: {
+          deps: ["jquery", "jquery_migrate"]
+      },
+      jquery_couchLogin: {
+          deps: ["jquery", "jquery_couch"]
+      },
+      jquery_migrate: {
+          deps: ["jquery"]
+      },
+      jquery_xpath: {
+          deps: ["jquery"]
+      },
+      underscore: {
+          exports: '_'
       }
   }
 });
@@ -64,7 +84,7 @@ require.config({
 require(
    [
     'jquery_couch',
-    'vendor/underscore',
+    'underscore',
     'backbone',
     'config',
     'model',
@@ -85,7 +105,6 @@ require(
             initialize : function(){
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this, 'find_a_church', 'import_directory')
-                console.log('this is running.')
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this

@@ -2,21 +2,20 @@
   "name": "Reformed Churches Locator",
   "version": "0.0.1",
   "dependencies": {
-    "requirejs": "latest",
-    "jquery": "latest",
-    "backbone-amd": "latest",
-    "underscore-amd": "latest",
-    "backbone-relational": "latest",
     "backbone-couchdb": "latest",
+    "backbone-relational": "latest",
     "backgrid": "latest",
     "bootstrap": "latest",
+    "jasmine": "latest",
+    "jquery": "latest",
+    "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery.git",
+    "jquery.xpath": "https://github.com/ilinsky/jquery-xpath.git",
+    "modernizr": "latest",
     "mustache": "latest",
-    "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery",
-    "jquery.xpath": "https://github.com/ilinsky/jquery-xpath",
+    "requirejs": "latest",
     "requirejs-text": "latest",
     "requirejs-plugins": "latest",
-    "modernizr": "latest",
     "respond": "latest",
-    "jasmine": "latest"
+    "underscore": "latest"
   }
 }
