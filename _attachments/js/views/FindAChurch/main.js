@@ -47,6 +47,7 @@ define([
             // (north top 37, east right -95)
             // TODO: This throws an error since the map hasn't been rendered yet at this point in the code execution
             //    (when this line is called from line 39 above)
+            //    So how do we fix this?
             var mapbounds = window.app.map.getBounds();
             var north_east = mapbounds.getNorthEast();
             var south_west = mapbounds.getSouthWest();

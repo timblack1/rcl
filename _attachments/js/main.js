@@ -12,7 +12,10 @@ require.config({
       "config": "config",
       "jquery": "vendor/jquery/jquery.min",
       "jquery_migrate": "vendor/jquery/jquery-migrate",
-      "jquery_couch": "/_utils/script/jquery.couch",
+      // Commented out because it uses $.browser, which is deprecated
+      // But this may break msie compatibility!
+      //"jquery_couch": "/_utils/script/jquery.couch",
+      "jquery_couch": "jquery.couch",
       "jquery_couchLogin": "vendor/jquery.couchLogin/jquery.couchLogin",
       "jquery_xpath": "vendor/jquery.xpath/jquery.xpath",
       "model": "model",
