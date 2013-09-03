@@ -1,13 +1,14 @@
 define([
-        'config'
+        'config',
+        "text!views/FindAChurch/congregations.html"
         ], 
-        function(config){
+        function(config,template){
 
     return Backbone.View.extend({
         initialize: function(){
         },
         render: function(){
-            config.render_to_id(this, "#congregations_template")
+            this.$el.html(Mustache.render(template))
             // Apply tablesorter widget to table containing congregation list
             $("#congregation_list")
             .tablesorter({widgets: ['zebra'], locale: 'us', useUI: true});
