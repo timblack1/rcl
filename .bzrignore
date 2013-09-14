@@ -7,3 +7,5 @@ port.txt
 libpeerconnection.log
 _attachments/js/vendor
 _attachments/js/vendor/**/*
+rcl.sublime-project
+rcl.sublime-workspace
