@@ -57,8 +57,12 @@
 }
 
 /* Jasmine HTMLReporter */
-.navbar-inner .container .jasmine_reporter {
-    float:right;
+body>.container .jasmine_reporter {
+    position:relative;
+    top:50px;
+}
+.symbolSummary li {
+    display:inline;
 }
 
 /* Radio button fix */
