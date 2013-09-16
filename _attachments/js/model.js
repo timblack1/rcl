@@ -56,11 +56,8 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'underscore',
-        'backbone',
-        'backbone_relational',
-        'backbone_couchdb'
-        ], function(config){
+        'backbone'
+        ], function(config, Backbone){
     // Fill this with your database information.
 
     // `ddoc_name` is the name of your couchapp project.
@@ -170,6 +167,7 @@ define([
 //          meeting_address1 : '',
 //          meeting_address2:'',
 //          meeting_city:'',
+//          meeting_region:'',
 //          meeting_state:'',
 //          meeting_zip:'',
 //          meeting_country:'',
@@ -190,6 +188,8 @@ define([
 //          other_info:'',
 //          presbytery_name:'',
 //          pastor_name:'',
+//          contact_type:'',
+//          contact_name:'',
 //          date_founded:'', // date
 //          number_of_members:'', // integer
 //          range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
