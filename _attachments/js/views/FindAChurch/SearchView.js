@@ -128,6 +128,7 @@ define([
                     config.db_name+'/_spatial/points?bbox='+
                     south_lat+','+west_lng+','+north_lat+','+east_lng,
                 function(data, textStatus, jqXHR){
+                    if (data == '') return;
                     var congs = eval('('+data+')')['rows'];
                     if (typeof congs !== 'undefined' && congs.length > 0){
                         // TODO: Refactor this so it's not redeclared every time this code is called
