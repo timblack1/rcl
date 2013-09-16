@@ -4,7 +4,7 @@ require.config({
       "async": "vendor/requirejs-plugins/src/async",
       "backbone": "vendor/backbone/backbone",
       // Note this may import the .coffee instead of the .js file
-      "backbone_couchdb": "vendor/backbone-couchdb/backbone-couchdb",
+      "backbone_couchdb": "backbone-couchdb/backbone-couchdb",
       "backbone_relational": "vendor/backbone-relational/backbone-relational",
       // Note this may import the .css instead of the .js file
       "backgrid":"vendor/backgrid/lib/backgrid",
