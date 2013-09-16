@@ -36,7 +36,8 @@ require.config({
           init: function(){
               // TODO: Handle injecting Backbone.RelationalModel into backbone_couchdb here
               // return this.
-          }
+          },
+          exports: 'Backbone'
       },
       // TODO: Use require-css to inject the CSS as needed
       backgrid: {
@@ -59,6 +60,12 @@ require.config({
       },
       jquery_xpath: {
           deps: ["jquery"]
+      },
+      model: {
+          deps: ["jquery", "config", "backbone", "backbone_relational", "backbone_couchdb"]
+      },
+      mustache: {
+          exports: ["Mustache"]
       },
       underscore: {
           exports: '_'
@@ -121,11 +128,11 @@ require(
                 // Run tests only if configured to do so
                 var thiz = this
                 if (config.run_jasmine_tests === true) {
+                    $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-core/jasmine.css" type="text/css" />')
                     // TODO: Is the setTimeout call necessary?  Its purpose is to fix the problem where the tests
                     //  don't run on page load, maybe because they are loaded too early.  But loading them late
                     //  doesn't fix the problem either.  They just sometimes run, and sometimes don't.
                     setTimeout(function(){
-                        $('head').append('<link rel="stylesheet" href="js/vendor/jasmine/lib/jasmine-1.3.0/jasmine.css" type="text/css" />')
                         thiz.run_tests_view = new views.RunTestsView({ el: $("#tests") });
                     }, 3000)
                 }

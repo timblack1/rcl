@@ -10,7 +10,7 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this)
+            _.bindAll(this, 'init_changes_listener', 'get_church_dir_from_url', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
             this.init_changes_listener()
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
