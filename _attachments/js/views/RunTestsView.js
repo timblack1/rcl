@@ -1,9 +1,11 @@
 define(
    [
-    '../config',
-    'backbone'
+    'config',
+    'backbone',
+    'mustache',
+    'text!views/RunTests.html'
     ], 
-    function(config){
+    function(config, Backbone, Mustache, RunTestsTemplate){
 
     var RunTestsView = Backbone.View.extend({
         initialize: function(){
@@ -11,8 +13,7 @@ define(
             this.render()
         },
         render: function(){
-            var template = _.template( $('#test_template').html().replace(/script2/g, 'script'), {} );
-            $(this.el).html( template );
+            $(this.el).html(Mustache.render(RunTestsTemplate));
         }     
     });
     
