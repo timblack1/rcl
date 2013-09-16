@@ -26,7 +26,7 @@ define([
         render: function(){
             // TODO: Convert this to use Mustache
             config.render_to_id(this, "#search_template")
-            $('#')
+            //$('#')
             
             // Attach search event handler to search button and text box
             $('.search').click(this.do_search)

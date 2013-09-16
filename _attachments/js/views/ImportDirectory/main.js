@@ -6,9 +6,9 @@ define(
     './DirURLView',
     'text!views/ImportDirectory/main.html'
     ],
-    function(config, model, Mustache, wgxpath, DirURLView, template){
+    function(config, model, Mustache, DirURLView, template){
 
-        var ImportDirectoryView = Backbone.View.extend({
+        return Backbone.View.extend({
             initialize : function(){
                 db = config.db
                 window.wgxpath.install()
@@ -31,6 +31,5 @@ define(
                 this.delegateEvents()
             }
         })
-        return ImportDirectoryView
 
 });
