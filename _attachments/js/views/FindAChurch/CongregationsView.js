@@ -1,14 +1,15 @@
 define([
         'config',
-        'backbone'
+		'backbone',
+        "text!views/FindAChurch/congregations.html"
         ], 
-        function(config, Backbone){
+        function(config, Backbone, template){
 
     return Backbone.View.extend({
         initialize: function(){
         },
         render: function(){
-            config.render_to_id(this, "#congregations_template")
+            this.$el.html(Mustache.render(template))
             // TODO: Replace the tablesorter with a Backgrid
             // Apply tablesorter widget to table containing congregation list
             // $("#congregation_list")
