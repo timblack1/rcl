@@ -33,7 +33,6 @@ define([
         render: function(){
             // TODO: Convert this to use Mustache
             config.render_to_id(this, "#search_template")
-            //$('#')
             
             // Attach search event handler to search button and text box
             $('.search').click(this.do_search)
@@ -55,44 +54,48 @@ define([
                 thiz.plot_congs_on_map()
             })
         },
+        geocode: function ( address_line){
+        	var thiz=this
+            window.app.geocoder.geocode( { 'address': $('.location').val()}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                	  // Use Circle() as a helper to avoid doing math. 
+        		    // Convert radius*units to meters
+        		    var radius = $('#radius').val(); 
+        		    var units = $('#units').val();
+        		    var distance;
+        		    if (units == 'miles'){
+        		        distance = radius * 1609.344;
+        		    } else if (units == 'km') {
+        		        distance = radius * 1000;
+        		    }
+        		    // Create an instance of Circle() with the selected radius
+        		    var loc = results[0].geometry.location;
+        		    var center = new google.maps.LatLng(loc.lat(), loc.lng());
+        		    var circle = new google.maps.Circle({radius: distance, center: center}); 
+        		    // Center and zoom the map to the bounds of the circle. 
+        		    window.app.map.setCenter(loc);
+        		    window.app.map.fitBounds(circle.getBounds()); // this sets the zoom 
+        		    // Plot congs on map
+        		    thiz.plot_congs_on_map()
+                } else {
+                    alert("Geocode was not successful for the following reason: " + status);
+                }
+            });
+
+		},
         do_search: function( event ){
             // If user submitted an address,
             // Geocode user-submitted address
             event.preventDefault()
-            var thiz = this
             // Clear any existing markers from map
-            thiz.remove_markers()
+            this.remove_markers()
             // Use location user entered
             var location = $('.location').val()
             if (location == ''){
                 // Or just use map's center
                 location = window.app.map.getCenter().toUrlValue()
-            }
-            window.app.geocoder.geocode( { 'address': $('.location').val()}, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    // Use Circle() as a helper to avoid doing math. 
-                    // Convert radius*units to meters
-                    var radius = $('#radius').val(); 
-                    var units = $('#units').val();
-                    var distance;
-                    if (units == 'miles'){
-                        distance = radius * 1609.344;
-                    } else if (units == 'km') {
-                        distance = radius * 1000;
-                    }
-                    // Create an instance of Circle() with the selected radius
-                    var loc = results[0].geometry.location;
-                    var center = new google.maps.LatLng(loc.lat(), loc.lng());
-                    var circle = new google.maps.Circle({radius: distance, center: center}); 
-                    // Center and zoom the map to the bounds of the circle. 
-                    window.app.map.setCenter(loc);
-                    window.app.map.fitBounds(circle.getBounds()); // this sets the zoom 
-                    // Plot congs on map
-                    thiz.plot_congs_on_map()
-                } else {
-                    alert("Geocode was not successful for the following reason: " + status);
-                }
-            });
+            } 
+            this.geocode(location)
         },
         close_infowindows:function() {
             _.each(this.infowindows, function(iw){
