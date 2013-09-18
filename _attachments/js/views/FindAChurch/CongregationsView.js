@@ -1,9 +1,10 @@
 define([
         'config',
+        'mustache',
 		'backbone',
         "text!views/FindAChurch/congregations.html"
         ], 
-        function(config, Backbone, template){
+        function(config, Mustache, Backbone, template){
 
     return Backbone.View.extend({
         initialize: function(){
