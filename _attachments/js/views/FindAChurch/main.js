@@ -30,9 +30,8 @@ define([
             // Render the search form view
             this.search_view = new SearchView({ el: $("#search_container") });
             this.search_view.render()
-            // TODO: Render a Backgrid view for a table of congregations, passing the congs collection, to whose changes
-            //    the Backgrid listens to automatically.
-            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-list-in-backbone-template
+            // Render a Backgrid view for a table of congregations, passing the congs collection, to whose changes
+            //    the Backgrid listens automatically.
             this.congregations_view = new CongregationsView({ el: $("#congregations_container"), collection:this.congs_coll });
             this.congregations_view.render()
 
@@ -42,8 +41,6 @@ define([
         },
         after_map_load:function(){
             this.get_congs({success:this.prep_congs_coll})
-            // TODO: Fetch the initial set of congs, triggering the views to display that collection
-            this.congs_coll.fetch()
         },
         get_congs:function(options){
             var thiz = this
@@ -70,9 +67,6 @@ define([
                     config.db_name+'/_spatial/points?bbox='+
                     south_lat+','+west_lng+','+north_lat+','+east_lng,
                 function(data, textStatus, jqXHR){
-                    // TODO: Start here.  This throws:
-                    //    Uncaught SyntaxError: Unexpected token ) 
-                    //var congs = eval('('+data+')')['rows'];
                     if (data !== ''){
                         var congs = eval('('+data+')')['rows'];
                         options.success(congs)                        
@@ -87,6 +81,8 @@ define([
                 this.congs_coll.db.keys = ids
                 // Switch view to get arbitrary ids
                 this.congs_coll.db.view = 'by_id'
+                // TODO: Fetch the initial set of congs, triggering the views to display that collection
+                this.congs_coll.fetch()
             }
         }
     })

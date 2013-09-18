@@ -198,6 +198,15 @@ define([
 //          source:'', // Foreign key:  Which source this cong's data came from
 //          source_cong_id:'', // The ID of this cong in the source's database
 //      },
+        initialize: function(){
+            // Make congs save themselves immediately when their attributes change
+            //    to make Backgrid more useful
+            Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
+            this.on("change", function (model, options) {
+                if (options && options.save === false) return;
+                model.save();
+            });
+        },
       relations:[
                  {
                      type:'HasMany', // many-to-many

@@ -41,7 +41,7 @@ require.config({
       },
       // TODO: Use require-css to inject the CSS as needed
       backgrid: {
-          deps: ["jquery", "backbone", "underscore"],
+          deps: ["jquery", "backbone_couchdb", "underscore"],
           exports: 'Backgrid'
       },
       // TODO: Use require-css to inject the CSS as needed
@@ -76,18 +76,15 @@ require.config({
 
 require(
    [
-    'jquery_couch',
-    'underscore',
-    'backbone',
     'config',
     'model',
     'views/view_loader',
-    'jquery_couchLogin'
+    'jquery_couchLogin',
+    'underscore',
+    'backbone',
+    'jquery_couch'
     ], 
     function(
-             $_couch,
-             underscore,
-             backbone,
              config,
              model,
              views

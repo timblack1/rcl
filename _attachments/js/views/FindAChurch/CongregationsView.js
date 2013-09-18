@@ -2,23 +2,63 @@ define([
         'config',
         'mustache',
 		'backbone',
-        "text!views/FindAChurch/congregations.html"
+        'backgrid',
+        "text!views/FindAChurch/Congregations.html"
         ], 
-        function(config, Mustache, Backbone, template){
+        function(config, Mustache, Backbone, Backgrid, template){
 
     return Backbone.View.extend({
         initialize: function(){
         },
         render: function(){
+            // TODO: render() is being called twice!
+            Backgrid.CitystateCell = Backgrid.Cell.extend({
+                className: "citystate-cell",
+                formatter: Backgrid.StringFormatter,
+                render:function(){
+                    var model = this.model
+                    this.$el.val(model.get('meeting_city') + ', ' + model.get('meeting_state'));
+                    return this;
+                }
+            });
+            Backgrid.ContactinfoCell = Backgrid.Cell.extend({
+                className: "contactinfo-cell",
+                formatter: Backgrid.StringFormatter,
+                render:function(){
+                    var model = this.model
+                    this.$el.val(model.get('contact_type') + model.get('contact_name') + 
+                        '<br />' + model.get('phone') + '<br />' + model.get('website'));
+                    return this;
+                }
+            });
             this.$el.html(Mustache.render(template))
-            // TODO: Replace the tablesorter with a Backgrid
-            // Apply tablesorter widget to table containing congregation list
-            // $("#congregation_list")
-            // .tablesorter({widgets: ['zebra'], locale: 'us', useUI: true});
-            // TODO: For some reason the pager doesn't display, its div wraps around the table and filter widgets,
-            //       and it breaks the sorter so when you click on the table header the rows disappear.
-            //.tablesorterPager({container: $("#pager")});
-            // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/get-tablesorter-pager-to-display
+            // Declare Backgrid columns
+            var columns = [{
+                name: "name",
+                label: "Name",
+                cell: "string",
+                editable: false
+            }, {
+                name: "city_state",
+                label: "City, State",
+                cell: 'citystate',
+                editable: false
+            }, {
+                name: "contact_info",
+                label: "Contact info",
+                cell: 'contactinfo',
+                editable: false
+            }];
+            
+            // Initialize a new Grid instance
+            var grid = new Backgrid.Grid({
+                columns: columns,
+                collection: this.collection
+            });
+            
+            // Render the grid and attach the root to the HTML document
+            $(".congregation_list").append(grid.render().$el);
+            
         }
     });
 });
