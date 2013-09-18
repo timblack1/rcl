@@ -14,6 +14,13 @@ define([
             _.bindAll(this, 'location_keyup', 'add_listener', 'do_search', 'add_listener', 
                 'close_infowindows', 'remove_markers', 'plot_congs_on_map')
             window.app.geocoder = new google.maps.Geocoder();
+            // TODO: Start here.  Decide which variables should be passed into this and other views from main.js.
+            //    this.markers
+            //    this.infowindow
+            //    this.map
+            //    this.collection
+            //    maybe just this.parent, and put all of the above in the parent, except for any which are
+            //        possible to set as defaults in the view constructor
             this.markers = []
             // Create infowindow                              
             this.infowindow = new google.maps.InfoWindow();
@@ -133,8 +140,7 @@ define([
                     if (typeof congs !== 'undefined' && congs.length > 0){
                         // TODO: Refactor this so it's not redeclared every time this code is called
                         // Plot the congregations returned on the map
-                        // TODO: Use a template rather than constructing HTML here,
-                        //    and wrap the display in a self-updating Backbone view tied to the congs_coll collection,
+                        // TODO: Wrap the display in a self-updating Backbone view tied to the congs_coll collection,
                         //    which should render this .remove() call unnecessary
                         //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-list-in-backbone-template
                         // Remove existing table rows that contain congregation data (don't remove the header row)
