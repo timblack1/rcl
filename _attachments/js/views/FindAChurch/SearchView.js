@@ -1,32 +1,15 @@
 define([
         'config',
-        'model',
         'mustache',
         'text!views/FindAChurch/CongInfowindow.html',
-        'text!views/FindAChurch/Address.html',
-        'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
+        'text!views/FindAChurch/Address.html'
         ], 
-        function(config, model, Mustache, CongInfowindowTemplate, AddressTemplate){
+        function(config, Mustache, CongInfowindowTemplate, AddressTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
-            _.bindAll(this, 'location_keyup', 'add_listener', 'do_search', 'add_listener', 
-                'close_infowindows', 'remove_markers', 'plot_congs_on_map')
+            _.bindAll(this, 'location_keyup', 'geocode', 'do_search')
             window.app.geocoder = new google.maps.Geocoder();
-            // TODO: Decide which variables should be passed into this and other views from main.js.
-            //    Maybe just pass this.parent, and put all of the above in the parent, except for any which are
-            //        possible to set as defaults in the view constructor
-            
-            // Not yet passed in
-            //    this.markers
-            //    this.infowindow
-            //    this.map
-            
-            // Passed as defaults into view constructor
-            //    this.collection
-            
-            // TODO: Start here.  Use search location & parameters to update congs collection, not map directly
-            
         },
         render: function(){
             // TODO: Convert this to use Mustache
@@ -37,20 +20,11 @@ define([
             $('.location').keyup(this.location_keyup)
             $('#radius').on('change', this.do_search)
             // $('#radius').on('change', ($('.search').click())
-            // Attach event handler to display new congs when the map's bounds change
-            this.add_listener()
         },
         location_keyup:function(event){
             if (event.which == 13){
                 this.do_search(event)
             }
-        },
-        add_listener:function(){
-            // Attach event handler to display new congs when the map's bounds change
-            var thiz = this
-            google.maps.event.addListener(window.app.map, 'idle', function(event){
-                thiz.plot_congs_on_map()
-            })
         },
         geocode: function ( address_line){
         	var thiz=this
@@ -74,7 +48,8 @@ define([
         		    window.app.map.setCenter(loc);
         		    window.app.map.fitBounds(circle.getBounds()); // this sets the zoom 
         		    // Plot congs on map
-        		    thiz.plot_congs_on_map()
+                    // TODO: Start here.  Just update congs collection, not map directly
+        		    //thiz.plot_congs_on_map()
                 } else {
                     alert("Geocode was not successful for the following reason: " + status);
                 }
@@ -91,6 +66,7 @@ define([
             var location = $('.location').val()
             if (location == ''){
                 // Or just use map's center
+                // TODO: Avoid accessing the map here somehow; maybe just get congs using the map's center in MapView.js
                 location = window.app.map.getCenter().toUrlValue()
             } 
             this.geocode(location)
