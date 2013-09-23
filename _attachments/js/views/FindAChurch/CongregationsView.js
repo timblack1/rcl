@@ -2,10 +2,9 @@ define([
         'config',
         'mustache',
 		'backbone',
-        'backgrid',
-        "text!views/FindAChurch/Congregations.html"
+        'backgrid'
         ], 
-        function(config, Mustache, Backbone, Backgrid, template){
+        function(config, Mustache, Backbone, Backgrid){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -31,7 +30,6 @@ define([
                     return this;
                 }
             });
-            this.$el.html(Mustache.render(template))
             // Declare Backgrid columns
             var columns = [{
                 name: "name",
@@ -56,8 +54,9 @@ define([
                 collection: this.collection
             });
             
+            // TODO: For some reason this isn't rendering to the DOM
             // Render the grid and attach the root to the HTML document
-            $(".congregation_list").append(grid.render().$el);
+            this.$el.append(grid.render().$el);
             
         }
     });

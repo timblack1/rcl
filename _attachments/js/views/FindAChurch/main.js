@@ -28,11 +28,11 @@ define([
             this.map_view.render()
             
             // Render the search form view
-            this.search_view = new SearchView({ el: $("#search_container") });
+            this.search_view = new SearchView({ el: $("#search_container"), collection:this.congs_coll });
             this.search_view.render()
             // Render a Backgrid view for a table of congregations, passing the congs collection, to whose changes
             //    the Backgrid listens automatically.
-            this.congregations_view = new CongregationsView({ el: $("#congregations_container"), collection:this.congs_coll });
+            this.congregations_view = new CongregationsView({ el: $(".congregations_container"), collection:this.congs_coll });
             this.congregations_view.render()
 
             // Get the list of congs related to the default map center, and put in this.congs_coll
