@@ -1,18 +1,20 @@
 define([
     'config',
+    'model',
     'backbone',
     'mustache',
     'text!views/FindAChurch/Map.html',
     'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
     ], 
-    function(config, Backbone, Mustache, template){
+    function(config, model, Backbone, Mustache, template){
 
         return Backbone.View.extend({
             initialize: function(){
-                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors', 'refresh_congs', 'close_infowindows',
-                    'remove_markers', 'plot_congs_on_map')
+                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors', 'close_infowindows',
+                    'remove_markers', 'plot_congs_on_map',
+                    'get_congs', 'prep_congs_coll')
                 // TODO: Set the map view to listen to congs collection change events.
-                this.listenTo(this.collection, 'all', this.refresh_congs)
+                this.listenTo(this.collection, 'all', this.plot_congs_on_map)
                 this.markers = []
             },
             render: function(){
@@ -21,17 +23,72 @@ define([
 
                 // Create infowindow                              
                 this.infowindow = new google.maps.InfoWindow();
-                // Close the open infowindow if the user clicks on the map
-                var thiz = this
-                google.maps.event.addListener(this.map, 'click', function() {
-                    thiz.infowindow.close()
-                })
 
                 // Initialize Google map
                 // First without user's location, centered on Philadelphia
                 this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
                 this.getLocation()
                 // TODO: use navigator.geolocation.watchPosition(this.create_map) to track user's moving location
+
+                // Close the open infowindow if the user clicks on the map
+                var thiz = this
+                google.maps.event.addListener(this.map, 'click', function() {
+                    thiz.infowindow.close()
+                })
+
+                // TODO: Start here.  Consolidate these event handlers into one if possible
+                // Attach event handler to display new congs when the map's bounds change
+                google.maps.event.addListener(this.map, 'idle', function(event){
+                    thiz.plot_congs_on_map()
+                })
+                // Get the list of congs related to the default map center, and put in this.collection
+                // Delay this call until after the map has loaded
+                google.maps.event.addListenerOnce(this.map, 'bounds_changed', function(event){
+                    thiz.get_congs({success:this.prep_congs_coll})
+                })
+            },
+            get_congs:function(options){
+                var thiz = this
+                // mapbounds contains an array containing two lat/lng pairs in this order:
+                // (south bottom 36, west left -96)
+                // (north top 37, east right -95)
+                // TODO: This throws an error since the map hasn't been rendered yet at this point in the code execution
+                //    (when this line is called from line 39 above)
+                //    So how do we fix this?
+                var mapbounds = this.map.getBounds();
+                //console.log('Before getNorthEast() call ' + new Date().getTime())
+                var north_east = mapbounds.getNorthEast();
+                var south_west = mapbounds.getSouthWest();
+    
+                var west_lng = south_west.lng();
+                var east_lng = north_east.lng();
+                var north_lat = north_east.lat();
+                var south_lat = south_west.lat();
+    
+                // Send AJAX call to geocouch containing bounds within which congregations are found
+                // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
+                //  order Google Maps uses
+                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/'+
+                        config.db_name+'/_spatial/points?bbox='+
+                        south_lat+','+west_lng+','+north_lat+','+east_lng,
+                    function(data, textStatus, jqXHR){
+                        if (data !== ''){
+                            var congs = eval('('+data+')')['rows'];
+                            options.success(congs)                        
+                        }
+                    }
+                )            
+            },
+            prep_congs_coll:function(congs){
+                if (congs.length > 0){
+                    var ids = _.pluck(congs,'id')
+                    this.collection.db = {}
+                    this.collection.db.keys = ids
+                    // Switch view to get arbitrary ids
+                    this.collection.db.view = 'by_id'
+                    // TODO: Fetch the initial set of congs, triggering the views to display that collection
+                    this.collection.fetch()
+                }
             },
             create_map:function(position){
                 var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
@@ -40,10 +97,8 @@ define([
                     center: latlng,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 }
-                window.app.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+                this.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
                 // TODO: Plot congs in this user's vicinity by default
-                //  This requires using code currently found in SearchView.js
-                //  So maybe move that code into a library?
                 //  As a simple workaround, I'll just use the form for now:
                 $('.location').val(position.coords.latitude + ',' + position.coords.longitude)
                 $('.search').click()
@@ -76,9 +131,6 @@ define([
                         break;
                 }
             },
-            refresh_congs:function(){
-                // TODO: Use this.collection to repopulate the map
-            },
             close_infowindows:function() {
                 _.each(this.infowindows, function(iw){
                     iw.close();
@@ -99,7 +151,7 @@ define([
                 // mapbounds contains an array containing two lat/lng pairs in this order:
                 // (south bottom 36, west left -96)
                 // (north top 37, east right -95)
-                var mapbounds = window.app.map.getBounds();
+                var mapbounds = this.map.getBounds();
                 var north_east = mapbounds.getNorthEast();
                 var south_west = mapbounds.getSouthWest();
                 
@@ -116,6 +168,8 @@ define([
                 // Send AJAX call to geocouch containing bounds within which congregations are found
                 // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
                 //  order Google Maps uses
+                // TODO: Set this URL as this.collection's URL, then fetch, to get the congs in these bounds.
+                //    The advantage is that the collection will be populated correctly and its change event will fire.
                 $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/'+
                       config.db_name+'/_spatial/points?bbox='+
                       south_lat+','+west_lng+','+north_lat+','+east_lng,
@@ -177,7 +231,7 @@ define([
                                               var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
                                               var marker = new google.maps.Marker({
                                                   position: new google.maps.LatLng(coords[0], coords[1]),
-                                                  map: window.app.map,
+                                                  map: thiz.map,
                                                   title: cong.get('name') + denomination
                                               });
                                               google.maps.event.addListener(marker, 'click', function() {
@@ -187,7 +241,7 @@ define([
                                                   cong.attributes.address = Mustache.render(AddressTemplate, cong.toJSON()).replace('\n', '')
                                                   var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
                                                   thiz.infowindow.setContent(contentString)
-                                                  thiz.infowindow.open(window.app.map, marker);
+                                                  thiz.infowindow.open(this.map, marker);
                                                   // If the "Directions" link is clicked,
                                                   // If we already know the user's location
                                                   if (navigator.geolocation){
