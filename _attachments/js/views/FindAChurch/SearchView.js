@@ -2,25 +2,30 @@ define([
         'config',
         'model',
         'mustache',
-        'text!views/FindAChurch/CongTableRow.html',
         'text!views/FindAChurch/CongInfowindow.html',
         'text!views/FindAChurch/Address.html',
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], 
-        function(config, model, Mustache, CongTableRowTemplate, CongInfowindowTemplate, AddressTemplate){
+        function(config, model, Mustache, CongInfowindowTemplate, AddressTemplate){
 
     return Backbone.View.extend({
         initialize: function(){
             _.bindAll(this, 'location_keyup', 'add_listener', 'do_search', 'add_listener', 
                 'close_infowindows', 'remove_markers', 'plot_congs_on_map')
             window.app.geocoder = new google.maps.Geocoder();
-            // TODO: Start here.  Decide which variables should be passed into this and other views from main.js.
+            // TODO: Decide which variables should be passed into this and other views from main.js.
+            //    Maybe just pass this.parent, and put all of the above in the parent, except for any which are
+            //        possible to set as defaults in the view constructor
+            
+            // Not yet passed in
             //    this.markers
             //    this.infowindow
             //    this.map
+            
+            // Passed as defaults into view constructor
             //    this.collection
-            //    maybe just this.parent, and put all of the above in the parent, except for any which are
-            //        possible to set as defaults in the view constructor
+            
+            // TODO: Start here.  Use search location & parameters to update congs collection, not map directly
             this.markers = []
             // Create infowindow                              
             this.infowindow = new google.maps.InfoWindow();
@@ -157,7 +162,8 @@ define([
                     		// Get all the congregations in this collection
                     		// For each congregation: Create a table row
                     		var row_list = congs_coll.map(function(element, index, list){
-                    			return Mustache.render(CongTableRowTemplate, element.attributes)
+                                // TODO: Backgrid rendered this obsolete
+//                     			return Mustache.render(CongTableRowTemplate, element.attributes)
                                 // TODO: Create marker for this cong here
                                 //  Move code from below up to here
                     		})
