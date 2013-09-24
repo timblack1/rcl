@@ -1,0 +1,7 @@
+{
+    "name": "reformed-churches-locator",
+    "version": "0.0.1",
+    "dependencies": {
+        "request": "2.9.201"
+    }
+}

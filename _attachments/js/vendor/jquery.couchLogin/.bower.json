@@ -1,0 +1,13 @@
+{
+  "name": "jquery.couchLogin",
+  "homepage": "https://github.com/couchapp/couchdb-login-jquery",
+  "_release": "593437b3be",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "593437b3be910ff86e4cf2e2b9a86f8ce034dc21"
+  },
+  "_source": "https://github.com/couchapp/couchdb-login-jquery.git",
+  "_target": "*",
+  "_originalSource": "https://github.com/couchapp/couchdb-login-jquery.git"
+}
