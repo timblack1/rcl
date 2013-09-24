@@ -10,11 +10,11 @@ define([
 
         return Backbone.View.extend({
             initialize: function(){
-                _.bindAll(this, 'create_map', 'getLocation', 'handleErrors', 'close_infowindows',
+                _.bindAll(this, 'create_map', 'get_location', 'handleErrors', 'close_infowindows',
                     'remove_markers', 'plot_congs_on_map',
-                    'get_congs', 'prep_congs_coll')
-                // TODO: Set the map view to listen to congs collection change events.
-                this.listenTo(this.collection, 'all', this.plot_congs_on_map)
+                    'update_congs_collection', 'update_map')
+                // Set the map view to listen to congs collection change events.
+                this.listenTo(this.collection, 'all', this.update_map)
                 this.markers = []
             },
             render: function(){
@@ -25,41 +25,22 @@ define([
                 this.infowindow = new google.maps.InfoWindow();
 
                 // Initialize Google map
-                // First without user's location, centered on Philadelphia
-                this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
-                this.getLocation()
+                this.get_location()
                 // TODO: use navigator.geolocation.watchPosition(this.create_map) to track user's moving location
-
-                // Close the open infowindow if the user clicks on the map
-                var thiz = this
-                google.maps.event.addListener(this.map, 'click', function() {
-                    thiz.infowindow.close()
-                })
-
-                // TODO: Start here.  Consolidate these event handlers into one if possible
-                // Attach event handler to display new congs when the map's bounds change
-                google.maps.event.addListener(this.map, 'idle', function(event){
-                    thiz.plot_congs_on_map()
-                })
-                // Get the list of congs related to the default map center, and put in this.collection
-                // Delay this call until after the map has loaded
-                google.maps.event.addListenerOnce(this.map, 'bounds_changed', function(event){
-                    thiz.get_congs({success:this.prep_congs_coll})
-                })
             },
-            get_congs:function(options){
+            
+            // Main methods
+            update_congs_collection:function(){
+                // Updates congs collection to get all congs within map's current bounds
                 var thiz = this
                 // mapbounds contains an array containing two lat/lng pairs in this order:
                 // (south bottom 36, west left -96)
                 // (north top 37, east right -95)
-                // TODO: This throws an error since the map hasn't been rendered yet at this point in the code execution
-                //    (when this line is called from line 39 above)
-                //    So how do we fix this?
                 var mapbounds = this.map.getBounds();
                 //console.log('Before getNorthEast() call ' + new Date().getTime())
                 var north_east = mapbounds.getNorthEast();
                 var south_west = mapbounds.getSouthWest();
-    
+
                 var west_lng = south_west.lng();
                 var east_lng = north_east.lng();
                 var north_lat = north_east.lat();
@@ -74,22 +55,26 @@ define([
                     function(data, textStatus, jqXHR){
                         if (data !== ''){
                             var congs = eval('('+data+')')['rows'];
-                            options.success(congs)                        
+                            if (typeof congs !== 'undefined' && congs.length > 0){
+                                var ids = _.pluck(congs,'id')
+                                thiz.collection.db = {}
+                                thiz.collection.db.keys = ids
+                                // Switch view to get arbitrary ids
+                                thiz.collection.db.view = 'by_id'
+                                // Fetch the congs, triggering the views to display that collection
+                                thiz.collection.fetch()
+                            }
                         }
                     }
                 )            
             },
-            prep_congs_coll:function(congs){
-                if (congs.length > 0){
-                    var ids = _.pluck(congs,'id')
-                    this.collection.db = {}
-                    this.collection.db.keys = ids
-                    // Switch view to get arbitrary ids
-                    this.collection.db.view = 'by_id'
-                    // TODO: Fetch the initial set of congs, triggering the views to display that collection
-                    this.collection.fetch()
-                }
+            update_map:function(){
+                
             },
+            
+            // TODO: Consolidate these event handlers into one if possible
+            
+            // Utility methods
             create_map:function(position){
                 var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                 var myOptions = {
@@ -98,13 +83,21 @@ define([
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 }
                 this.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
-                // TODO: Plot congs in this user's vicinity by default
-                //  As a simple workaround, I'll just use the form for now:
-                $('.location').val(position.coords.latitude + ',' + position.coords.longitude)
-                $('.search').click()
-                $('.location').val('')
+
+                // Attach event listeners to the map
+                // Close the open infowindow if the user clicks on the map
+                var thiz = this
+                google.maps.event.addListener(this.map, 'click', function() {
+                    thiz.infowindow.close()
+                })
+                // Attach event handler to display new congs when the map's bounds change
+                // TODO: Will this create an infinite loop?
+                google.maps.event.addListener(this.map, 'idle', this.update_congs_collection)
+                google.maps.event.addListener(this.map, 'bounds_changed', this.update_congs_collection)
+                // Update map when congs collection changes
+                this.listenTo(this.collection, 'all', this.update_map)
             },
-            getLocation:function(){
+            get_location:function(){
                 if (navigator.geolocation){
                     // Center the map on the viewer's country by default
                     navigator.geolocation.getCurrentPosition(this.create_map,this.handleErrors);
@@ -147,29 +140,11 @@ define([
                 this.markers = [];
             },
             plot_congs_on_map:function(){
-                var thiz = this
-                // mapbounds contains an array containing two lat/lng pairs in this order:
-                // (south bottom 36, west left -96)
-                // (north top 37, east right -95)
-                var mapbounds = this.map.getBounds();
-                var north_east = mapbounds.getNorthEast();
-                var south_west = mapbounds.getSouthWest();
-                
-                var west_lng = south_west.lng();
-                var east_lng = north_east.lng();
-                var north_lat = north_east.lat();
-                var south_lat = south_west.lat();
-                
                 // TODO: When the map is panned or otherwise moved,
                 //  Remove from the map the markers that are not in the new list
                 //  Add to the map the markers that are not in the old list
                 //  This will prevent losing focus on the infowindow that is currently 
                 //  open, and avoid an unneccessary marker refresh
-                // Send AJAX call to geocouch containing bounds within which congregations are found
-                // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
-                //  order Google Maps uses
-                // TODO: Set this URL as this.collection's URL, then fetch, to get the congs in these bounds.
-                //    The advantage is that the collection will be populated correctly and its change event will fire.
                 $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/'+
                       config.db_name+'/_spatial/points?bbox='+
                       south_lat+','+west_lng+','+north_lat+','+east_lng,
@@ -177,20 +152,6 @@ define([
                           if (data == '') return;
                           var congs = eval('('+data+')')['rows'];
                           if (typeof congs !== 'undefined' && congs.length > 0){
-                              // TODO: Refactor this so it's not redeclared every time this code is called
-                              // Plot the congregations returned on the map
-                              // TODO: Wrap the display in a self-updating Backbone view tied to the congs_coll collection,
-                              //    which should render this .remove() call unnecessary
-                              //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-list-in-backbone-template
-                              // Remove existing table rows that contain congregation data (don't remove the header row)
-                              // $("#congregation_list tbody tr").remove();
-                              
-                              var congs_coll = new model.Congs()
-                              var ids = _.pluck(congs,'id')
-                              congs_coll.db = {}
-                              congs_coll.db.keys = ids
-                              // Switch view to get arbitrary ids
-                              congs_coll.db.view = 'by_id'
                               // Note: Binding the "all" event maxed out the CPU, so don't do it!
                               congs_coll.on("add,remove,reset,change,destroy", function(event_name){
                                   // Get all the congregations in this collection
@@ -229,6 +190,7 @@ define([
                                               var coords = cong.get('loc')
                                               // This is the case we want to handle.
                                               var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
+                                              // TODO: Here is where we actually plot the congs on the map
                                               var marker = new google.maps.Marker({
                                                   position: new google.maps.LatLng(coords[0], coords[1]),
                                                   map: thiz.map,

@@ -3,7 +3,7 @@ define([
         'mustache',
 		'backbone',
         'backgrid'
-        ], 
+        ],
         function(config, Mustache, Backbone, Backgrid){
 
     return Backbone.View.extend({
