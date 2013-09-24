@@ -1,0 +1,36 @@
+[
+   {
+      "from": "",
+      "to": "index.html"
+   },
+   {
+      "_comment":"Decide whether we should take this line out, because it opens all URLs to the public, which we might not want to do.",
+      "from": "/*",
+      "to": "/*"
+   },
+   {
+      "from": "vendor/*",
+      "to": "vendor/*"
+    },
+    {
+      "from": "rcl/*",
+      "to": "rcl/*"
+    },
+    {
+      "_comment":"This may not do anything for us",
+      "from": "rcl2/*",
+      "to": "rcl/*"
+    },
+    {
+      "from": "config/*",
+      "to": "config/*"
+    },
+    {
+      "from": "_view/*",
+      "to": "_view/*"
+    },
+   {
+      "from": "style/*",
+      "to": "style/*"
+    }
+]

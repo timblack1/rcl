@@ -1,0 +1,25 @@
+<div class="modal hide">
+ <div class="modal-header">
+    <button class="close" data-dismiss="modal">×</button>
+    <h3>Here's Why &amp; How</h3>
+  </div>
+    <div class="modal-body">
+        <p>
+            Please replace text that should NOT be part of the regex 
+            (because it is data that should go into another field)
+            with this expression:  <code>.*?</code>
+        </p>
+        <p>
+            For example, if you are choosing the mailing state, change this:<br />
+            &nbsp; &nbsp;<code>P\\\.O\\\. Box 873741&lt;br&gt;Wasilla, (?P&lt;mailing_state&gt;.+) 99687-3741</code><br />
+            into this:<br />
+            &nbsp; &nbsp;<code>.*?&lt;br&gt;.*?, (?P&lt;mailing_state&gt;.+) .*?</code>
+        </p>
+        <p>
+            You can read documentation about the regular expression syntax at 
+            <a href='http://www.w3schools.com/jsref/jsref_obj_regexp.asp' target='_blank'>W3Schools</a>
+            and <a href='https://developer.mozilla.org/en-US/docs/JavaScript/Guide/Regular_Expressions'
+            target='_blank'>Mozilla Developer Network</a>.
+        </p>
+    </div>
+</div>
