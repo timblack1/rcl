@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## Generated CouchApp
 
 This is meant to be an example CouchApp and to ship with most of the CouchApp goodies.
@@ -31,3 +32,9 @@ Deprecated: *couchapp generate proto && cd proto*
 ## License
 
 Apache 2.0
+=======
+rcl
+===
+
+Reformed Churches Locator
+>>>>>>> 09742b5c7fa704e8f045193c820cdf790103e0f0
