@@ -1,4 +1,0 @@
-{
-  "#url" : {"keyup": "get_church_dir_from_url" },
-  "#directory_type input" : {"click": "show_directory_type"}
-}
