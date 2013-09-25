@@ -1,10 +1,8 @@
 define([
         'config',
-        'mustache',
-        'text!views/FindAChurch/CongInfowindow.html',
-        'text!views/FindAChurch/Address.html'
+        'mustache'
         ], 
-        function(config, Mustache, CongInfowindowTemplate, AddressTemplate){
+        function(config, Mustache){
 
     return Backbone.View.extend({
         initialize: function(){

@@ -4,18 +4,23 @@ define([
     'backbone',
     'mustache',
     'text!views/FindAChurch/Map.html',
+    'text!views/FindAChurch/Address.html',
+    'text!views/FindAChurch/CongInfowindow.html',
     'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
     ], 
-    function(config, model, Backbone, Mustache, template){
+    function(config, model, Backbone, Mustache, template, AddressTemplate, CongInfowindowTemplate){
 
         return Backbone.View.extend({
             initialize: function(){
                 _.bindAll(this, 'create_map', 'get_location', 'handleErrors', 'close_infowindows',
-                    'remove_markers', 'plot_congs_on_map',
-                    'update_congs_collection', 'update_map')
-                // Set the map view to listen to congs collection change events.
-                this.listenTo(this.collection, 'all', this.update_map)
+                    'update_congs_collection', 'update_map', 'hide_link_show_get_directions_form')
                 this.markers = []
+                // Center on Philadelphia, PA by default
+                this.default_map_center = {latitude:39.951596,longitude:-75.160095}
+                this.default_zoom = 14
+                // Update map when congs collection changes
+                this.listenTo(this.collection, 'all', this.update_map)
+                //this.listenTo(this.collection, 'add,remove,reset,change,destroy', this.update_map)
             },
             render: function(){
                 $('#map').html(Mustache.render(template))
@@ -63,7 +68,8 @@ define([
                                 thiz.collection.db.view = 'by_id'
                                 // Fetch the congs, triggering the views to display that collection
                                 thiz.collection.fetch({
-                                    include_docs:true
+                                    include_docs:true,
+                                    reset:true
                                 })
                             }
                         }
@@ -77,7 +83,6 @@ define([
                 //  This will prevent losing focus on the infowindow that is currently 
                 //  open, and avoid an unneccessary marker refresh.
                 
-                // TODO: Start here.  Move code from this function into this.update_congs_collection()
                 // Instead of removing all markers from the map, then plotting all new congs on new markers,
                 //  do two set operations to remove only markers not displayed, and add only the markers that
                 //  are new, to the map.  This will preserve the state (e.g., a directions origin address entered
@@ -99,7 +104,7 @@ define([
                     var coords = cong.get('loc')
                     // This is the case we want to handle.
                     var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
-                    // TODO: Here is where we actually plot the congs on the map
+                    // Here is where we actually plot the congs on the map
                     var marker = new google.maps.Marker({
                         position: new google.maps.LatLng(coords[0], coords[1]),
                         map: thiz.map,
@@ -107,7 +112,7 @@ define([
                     });
                     google.maps.event.addListener(marker, 'click', function() {
                         // Render the infowindow HTML
-                        // TODO: make it its own backbone view
+                        // TODO: make it its own backbone view to prepare for giving it more functionality
                         // Dynamically create an address to feed into maps.google.com's search page
                         cong.attributes.address = Mustache.render(AddressTemplate, cong.toJSON()).replace('\n', '')
                         var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
@@ -115,6 +120,7 @@ define([
                         thiz.infowindow.open(this.map, marker);
                         // If the "Directions" link is clicked,
                         // If we already know the user's location
+                        // TODO: Is this code duplicated in the get_location() function?
                         if (navigator.geolocation){
                             // Use it without showing the form
                             var evt = event
@@ -130,13 +136,7 @@ define([
                                     case error.PERMISSION_DENIED:
                                         // console.log("User denied the request for Geolocation.")
                                         // Hide the link and show the "Get directions" form
-                                        $('body').on('click', 'a.get_directions', function(event) {
-                                            $(event.target).hide()
-                                            $(event.target).parent().children("form.get_directions_form").show()
-                                            var content = $(event.target).parent()[0].innerHTML
-                                            // Force the infowindow to resize to fit its new content height
-                                            thiz.infowindow.setContent(content)
-                                        });
+                                        $('body').on('click', 'a.get_directions', thiz.hide_link_show_get_directions_form);
                                         break;
                                     case error.POSITION_UNAVAILABLE:
                                         // console.log("Location information is unavailable.")
@@ -168,135 +168,34 @@ define([
                     // Name:    Caney OPC
                     // Add1:    YMCA
                     // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
-                    
-                    
-                    
-                    // Add infowindow to map
-                    google.maps.event.addListener(marker, 'click', function() {
-                        
-                    });
-                    
-                    
-                    // Add congregation info to the table below the map.
-                    // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
-                    // Construct the table rows that we're going to append to the table
                 })
-                // thiz.remove_markers()
-                // if (typeof thiz.open_infowindow !== 'undefined'){
-                //     thiz.open_infowindow.open(window.app.map,thiz.open_marker);
-                // }
-                // _.each(congs,function(cong,index,congs){
-                //     var cong_data = congs_coll.get(cong.id)
-                //     var coords = cong.geometry.coordinates
-                //     var point = new google.maps.LatLng(coords[0], coords[1]);
-                //     var marker = new google.maps.Marker({
-                //         position: point,
-                //         map: window.app.map,
-                //         title: cong_data.get('name')
-                //     });
-                //     thiz.markers.push(marker)
-                //     // TODO: Make it so the city entered has a different color than results 
-                //     //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
-                
-                //     // TODO: Figure out what address formats we need to parse before sending address to Google.
-                //     // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
-                //     //  Maybe if geocoding add1 fails, try add2
-                //     //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
-                //     // Name:    Caney OPC
-                //     // Add1:    CVHS Gym
-                //     // Add2:    300 A St <-- We need this, not addr1
-                
-                //     // Name:    Caney OPC
-                //     // Add1:    YMCA
-                //     // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
-                
-                //     // Render the infowindow HTML
-                //     // TODO: make it its own backbone view
-                //     cong_data.attributes.address = Mustache.render("{{#meeting_address1}}{{meeting_address1}},{{/meeting_address1}} {{#meeting_city}}{{meeting_city}},{{/meeting_city}} {{meeting_state}} {{meeting_zip}} ({{name}})", cong_data.attributes).replace('\n', '')
-                //     var contentString = Mustache.render(CongInfowindowTemplate, cong_data.attributes)
-                
-                //     // Create infowindow                              
-                //     var infowindow = new google.maps.InfoWindow({
-                //         content: contentString
-                //     });
-                //     //$(document['#infowindow'+i]).parent.style = 'overflow-y:hidden';
-                //     // Add the infowindow as an attribute of this marker to make it accessible within marker events.
-                //     marker.infowindow = infowindow;
-                //     // Add the infowindow to an array so we can close all infowindows from the events below.
-                //     thiz.infowindows[index] = infowindow;
-                //     // Add infowindow to map
-                //     google.maps.event.addListener(marker, 'click', function() {
-                //         thiz.close_infowindows();
-                //         this.infowindow.open(window.app.map,marker);
-                //         // Record the open marker so we can reopen it after the map pans
-                //         thiz.open_marker = marker
-                //         thiz.open_infowindow = this.infowindow
-                //         // If the "Directions" link is clicked,
-                //         // If we already know the user's location
-                //         if (navigator.geolocation){
-                //             // Use it without showing the form
-                //             var evt = event
-                //             navigator.geolocation.getCurrentPosition(function(position){
-                //                 window.target = $(evt.target)
-                //                 // Set the href of the link so if the user clicks it it will go to the right URL
-                //                 $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
-                //                     position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
-                //                     cong_data.attributes.address)
-                //                 $('a.get_directions').attr('target', '_blank')
-                //             },function(error){
-                //                 switch(error.code){
-                //                     case error.PERMISSION_DENIED:
-                //                         // console.log("User denied the request for Geolocation.")
-                //                         // Hide the link and show the "Get directions" form
-                //                         var iw = this.infowindow
-                //                         window.infowindow = iw
-                //                         $('body').on('click', 'a.get_directions', function(event) {
-                //                             $(event.target).hide()
-                //                             $(event.target).parent().children("form.get_directions_form").show()
-                //                             var content = $(event.target).parent()[0].innerHTML
-                //                             thiz.infowindows[index].setContent(content)
-                //                         });
-                //                         break;
-                //                     case error.POSITION_UNAVAILABLE:
-                //                         // console.log("Location information is unavailable.")
-                //                         break;
-                //                     case error.TIMEOUT:
-                //                         // console.log("The request to get user location timed out.")
-                //                         break;
-                //                     case error.UNKNOWN_ERROR:
-                //                         // console.log("An unknown error occurred.")
-                //                         break;
-                //                 }
-                //             });
-                //         }else{
-                //             // console.log("Geolocation is not supported by this browser.");
-                //         }
-                //     });
-                //     // Close all infowindows when user clicks on map
-                //     google.maps.event.addListener(window.app.map, 'click', function() {
-                //         thiz.close_infowindows();
-                //     });
-                
-                //     // Add congregation info to the table below the map.
-                //     // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cong-search-results-in-table-template
-                //     // Construct the table rows that we're going to append to the table
-                // })
-                // thiz.add_listener()
             },
             
-            // TODO: Consolidate these event handlers into one if possible
-            
             // Utility methods
+            get_location:function(){
+                if (navigator.geolocation){
+                    // Center the map on the viewer's country by default
+                    navigator.geolocation.getCurrentPosition(this.create_map,this.handleErrors);
+                }else{
+                    console.log("Geolocation is not supported by this browser.");
+                    // TODO: Find a different way to locate the user, perhaps by IP address
+                    this.create_map({coords:this.default_map_center})
+                }
+            },
             create_map:function(position){
                 var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                 var myOptions = {
-                    zoom: 8,
+                    zoom: (position.coords.latitude !== this.default_map_center.latitude) ? 8 : 14,
                     center: latlng,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
                 }
                 this.map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
 
                 // Attach event listeners to the map
+                // TODO: This currently creates multiple identical event listeners, which is a memory leak.
+                //    That is because these event listeners are created every time create_map runs,
+                //    which is every time the user clicks the menu link for the "Find a church" page.
+                //    So, figure out how to create these event listeners only once.
                 // Close the open infowindow if the user clicks on the map
                 var thiz = this
                 google.maps.event.addListener(this.map, 'click', function() {
@@ -306,33 +205,24 @@ define([
                 // TODO: Will this create an infinite loop?
                 google.maps.event.addListener(this.map, 'idle', this.update_congs_collection)
                 google.maps.event.addListener(this.map, 'bounds_changed', this.update_congs_collection)
-                // Update map when congs collection changes
-                this.listenTo(this.collection, 'add,remove,reset,change,destroy', this.update_map)
-            },
-            get_location:function(){
-                if (navigator.geolocation){
-                    // Center the map on the viewer's country by default
-                    navigator.geolocation.getCurrentPosition(this.create_map,this.handleErrors);
-                }else{
-                    console.log("Geolocation is not supported by this browser.");
-                    // TODO: Find a different way to locate the user, perhaps by IP address
-                    // Center on Philadelphia, PA
-                    this.create_map({coords:{latitude:39.951596,longitude:-75.160095}})
-                }
             },
             handleErrors:function(error){
                 switch(error.code){
                     case error.PERMISSION_DENIED:
                         console.log("User denied the request for Geolocation.")
+                        this.create_map({coords:this.default_map_center})
                         break;
                     case error.POSITION_UNAVAILABLE:
                         console.log("Location information is unavailable.")
+                        this.create_map({coords:this.default_map_center})
                         break;
                     case error.TIMEOUT:
                         console.log("The request to get user location timed out.")
+                        this.create_map({coords:this.default_map_center})
                         break;
                     case error.UNKNOWN_ERROR:
                         console.log("An unknown error occurred.")
+                        this.create_map({coords:this.default_map_center})
                         break;
                 }
             },
@@ -341,17 +231,12 @@ define([
                     iw.close();
                 })
             },
-            remove_markers:function(){
-                // Remove each marker from the map
-                var thiz = this
-                _.each(this.markers,function(marker){
-                    if (marker !== thiz.open_marker)
-                        marker.setMap(null)
-                        })
-                // Empty the array itself
-                this.markers = [];
-            },
-            plot_congs_on_map:function(){
+            hide_link_show_get_directions_form:function(event) {
+                $(event.target).hide()
+                $(event.target).parent().children("form.get_directions_form").show()
+                var content = $(event.target).parent()[0].innerHTML
+                // Force the infowindow to resize to fit its new content height
+                this.infowindow.setContent(content)
             }
         });
     }

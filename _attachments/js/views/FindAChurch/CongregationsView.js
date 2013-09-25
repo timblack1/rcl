@@ -11,6 +11,17 @@ define([
         },
         render: function(){
             // TODO: render() is being called twice!
+            // TODO: Why do these custom cells not render anything?
+            Backgrid.NamedenomCell = Backgrid.Cell.extend({
+                className: "namedenom-cell",
+                formatter: Backgrid.StringFormatter,
+                render:function(){
+                    var model = this.model
+                    var denomination = model.get('denomination_abbr')?' ('+model.get('denomination_abbr')+')':''
+                    this.$el.val(model.get('name') + denomination);
+                    return this;
+                }
+            });
             Backgrid.CitystateCell = Backgrid.Cell.extend({
                 className: "citystate-cell",
                 formatter: Backgrid.StringFormatter,
@@ -31,6 +42,8 @@ define([
                 }
             });
             // Declare Backgrid columns
+            // TODO: Once we have cgroup data related to each cong,
+            //    Add the denomination abbreviation into the name column using a custom renderer
             var columns = [{
                 name: "name",
                 label: "Name",
@@ -54,7 +67,6 @@ define([
                 collection: this.collection
             });
             
-            // TODO: For some reason this isn't rendering to the DOM
             // Render the grid and attach the root to the HTML document
             this.$el.append(grid.render().$el);
             
