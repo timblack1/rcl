@@ -185,6 +185,8 @@ define([
             create_map:function(position){
                 var latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                 var myOptions = {
+                    // If we're centered on Philadelphia, zoom in close; otherwise, zoom out some to hopefully
+                    //    display at least one congregation
                     zoom: (position.coords.latitude !== this.default_map_center.latitude) ? 8 : 14,
                     center: latlng,
                     mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -197,7 +199,7 @@ define([
                 //    which is every time the user clicks the menu link for the "Find a church" page.
                 //    So, figure out how to create these event listeners only once.
                 // Close the open infowindow if the user clicks on the map
-                var thiz = this;
+                var thiz = this
                 google.maps.event.addListener(this.map, 'click', function() {
                     thiz.infowindow.close()
                 })
