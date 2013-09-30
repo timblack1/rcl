@@ -197,7 +197,7 @@ define([
                 //    which is every time the user clicks the menu link for the "Find a church" page.
                 //    So, figure out how to create these event listeners only once.
                 // Close the open infowindow if the user clicks on the map
-                var thiz = this
+                var thiz = this;
                 google.maps.event.addListener(this.map, 'click', function() {
                     thiz.infowindow.close()
                 })
