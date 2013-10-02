@@ -1,8 +1,9 @@
 define([
         'config',
-        'mustache'
+        'mustache',
+        'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Mustache){
+        function(config, Mustache, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -10,8 +11,7 @@ define([
             window.app.geocoder = new google.maps.Geocoder();
         },
         render: function(){
-            // TODO: Convert this to use Mustache
-            config.render_to_id(this, "#search_template")
+            this.$el.html(Mustache.render(template))
             
             // Attach search event handler to search button and text box
             $('.search').click(this.do_search)
