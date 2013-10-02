@@ -46,7 +46,6 @@ define([
         		    window.app.map.setCenter(loc);
         		    window.app.map.fitBounds(circle.getBounds()); // this sets the zoom 
         		    // Plot congs on map
-                    // TODO: Start here.  Just update congs collection, not map directly
         		    //thiz.plot_congs_on_map()
                 } else {
                     alert("Geocode was not successful for the following reason: " + status);
@@ -58,11 +57,13 @@ define([
             // If user submitted an address,
             // Geocode user-submitted address
             event.preventDefault()
-            // Clear any existing markers from map
-            this.remove_markers()
             // Use location user entered
             var location = $('.location').val()
             if (location == ''){
+                // TODO: Start here.  Create a new Backbone model named
+                //    search_params and update it, then update map bounds when it changes.  Create this model
+                //    in main.js, then pass it into SearchView as its model, and into
+                //    MapView via new View([options]) syntax (accessed as this.options.name).
                 // Or just use map's center
                 // TODO: Avoid accessing the map here somehow; maybe just get congs using the map's center in MapView.js
                 location = window.app.map.getCenter().toUrlValue()
