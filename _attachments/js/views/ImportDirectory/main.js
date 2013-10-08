@@ -21,7 +21,8 @@ define(
                 this.DirURLView = DirURLView;
             },
             render: function(){
-                // TODO: Consider using assign() as described here:  http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
+                // TODO: Consider using assign() as described here:
+                //  http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
                 //config.render_to_id(this, "#import_directory_template")
                 // Render Mustache template
                 $('#content').html(Mustache.render(this.template));
