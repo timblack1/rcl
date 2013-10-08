@@ -20,8 +20,6 @@ define([
                 this.default_zoom = 14
                 // Update map when congs collection changes
                 this.listenTo(this.collection, 'all', this.update_map)
-                // Update the map when the search params change
-                this.listenTo(this.options.search_params, 'all', this.update_map)
             },
             render: function(){
                 $('#map').html(Mustache.render(template))
@@ -36,14 +34,38 @@ define([
             },
             
             // Main methods
-            update_congs_collection:function(){
+            update_congs_collection:function(event){
                 // Updates congs collection to get all congs within map's current bounds
                 var thiz = this
+                var mapbounds;
+                // Determine whether the new bounds were set by moving the map, or by a user's search.  If the map
+                //  was moved, the event is undefined because google.maps.event.addListener() does not pass
+                //  the event to the callback.
+                if (typeof event !== 'undefined'){
+                    // Get the bounds from this.search_params.
+                    // Create an instance of Circle() with the selected radius
+                    var loc = this.options.search_params.get('results')[0].geometry.location;
+                    var center = new google.maps.LatLng(loc.lat(), loc.lng());
+                    var circle = new google.maps.Circle({
+                        radius: this.options.search_params.get('distance'),
+                        center: center
+                    });
+                    // Center and zoom the map to the bounds of the circle
+                    this.map.setCenter(loc);
+                    mapbounds = circle.getBounds()
+                    this.map.fitBounds(mapbounds); // this sets the zoom 
+                }else{
+                    // Get the bounds from the map
+                    mapbounds = this.map.getBounds()
+                    // Store the new center
+                    // TODO: Is this the right code location for this code?
+//                     var center = this.map.getCenter()
+//                     this.options.search_params.set('location', center.lat() + ',' + center.lng())
+                }
+                
                 // mapbounds contains an array containing two lat/lng pairs in this order:
                 // (south bottom 36, west left -96)
                 // (north top 37, east right -95)
-                var mapbounds = this.map.getBounds();
-                //console.log('Before getNorthEast() call ' + new Date().getTime())
                 var north_east = mapbounds.getNorthEast();
                 var south_west = mapbounds.getSouthWest();
 
@@ -205,10 +227,11 @@ define([
                     thiz.infowindow.close()
                 })
                 // Attach event handler to display new congs when the map's bounds change
-                // TODO: Will this create an infinite loop?
                 google.maps.event.addListener(this.map, 'idle', this.update_congs_collection)
                 google.maps.event.addListener(this.map, 'bounds_changed', this.update_congs_collection)
-            },
+                // Update the collection when the search params change
+                this.listenTo(this.options.search_params, 'change', this.update_congs_collection)
+          },
             handleErrors:function(error){
                 switch(error.code){
                     case error.PERMISSION_DENIED:
