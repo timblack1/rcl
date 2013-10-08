@@ -12,7 +12,7 @@ define(
         },
         render: function(){
             $('.navbar').html(Mustache.render(template));
-            this.delegateEvents()
+            this.delegateEvents();
         },
         events: {
             "click a": "make_menu_item_active",
