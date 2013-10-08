@@ -20,18 +20,32 @@ define([
                 
                 // Create congs collection
                 this.congs_coll = new model.Congs()
+                // Create search_params model
+                var SearchParams = Backbone.Model.extend()
+                var search_params = new SearchParams()
                 
                 // Render child views
                 // Render a map view, passing in the collection as its collection
-                this.map_view = new MapView({ el: $("#map"), collection:this.congs_coll });
+                this.map_view = new MapView({
+                    el: $("#map"), 
+                    collection:this.congs_coll,
+                    search_params:search_params
+                });
                 this.map_view.render()
                 
                 // Render the search form view
-                this.search_view = new SearchView({ el: $("#search_container"), collection:this.congs_coll });
+                this.search_view = new SearchView({
+                    el: $("#search_container"), 
+                    collection:this.congs_coll, 
+                    model:search_params
+                });
                 this.search_view.render()
                 // Render a Backgrid view for a table of congregations, passing the congs collection, to whose changes
                 //    the Backgrid listens automatically.
-                this.congregations_view = new CongregationsView({ el: $(".congregations_container"), collection:this.congs_coll });
+                this.congregations_view = new CongregationsView({
+                    el: $(".congregations_container"), 
+                    collection:this.congs_coll
+                });
                 this.congregations_view.render()
             }
         })
