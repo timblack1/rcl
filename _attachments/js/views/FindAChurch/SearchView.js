@@ -68,10 +68,6 @@ define([
             event.preventDefault()
             // If user submitted an address, put that address into this.model
             // Use location user entered
-            // TODO: Start here.  Create a new Backbone model named
-            //    search_params and update it [DONE], then update map bounds when it changes.  Create this model
-            //    in main.js, then pass it into SearchView as its model, and into
-            //    MapView via new View([options]) syntax (accessed as this.options.name).
 
             // Convert radius*units to meters
             var radius = $('#radius').val(); 

@@ -20,7 +20,8 @@ define([
                 this.default_zoom = 14
                 // Update map when congs collection changes
                 this.listenTo(this.collection, 'all', this.update_map)
-                //this.listenTo(this.collection, 'add,remove,reset,change,destroy', this.update_map)
+                // Update the map when the search params change
+                this.listenTo(this.options.search_params, 'all', this.update_map)
             },
             render: function(){
                 $('#map').html(Mustache.render(template))
