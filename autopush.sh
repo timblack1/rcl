@@ -11,7 +11,7 @@ LOGIN=$(cat login.txt)
 PORT=80
 HOST=arwd.iriscouch.com
 # HOST=arwd.cloudant.com
-DBNAME=rcl
+DBNAME=rcl-dev
 
 # Production copy
 # Get the admin username and password for couchdb
@@ -63,7 +63,7 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-gnome-open $URL/_design/$DBNAME/index.html &
+gnome-open $URL/_design/rcl/index.html &
 # erica browse rcl
 
 # Start watching the filesystem for changes, and push new changes into the database
