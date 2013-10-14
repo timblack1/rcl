@@ -5,10 +5,10 @@ define(
     'jquery_couch'
     ],
     function(_, $){
-       // TODO: Dynamically get the database name
-       //   https://blueprints.launchpad.net/reformedchurcheslocator/+spec/dynamically-get-db-name
+       // Dynamically get the database name
+       // TODO: This won't work anymore if we use vhosts
        // TODO: Run unit tests on test copy of the database
-       var db_name = 'rcl',
+       var db_name = window.location.pathname.split('/')[1],
            db = $.couch.db(db_name),
            run_jasmine_tests = true,
            // Select view to load at root URL

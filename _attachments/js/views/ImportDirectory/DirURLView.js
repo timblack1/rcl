@@ -10,11 +10,21 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'init_changes_listener', 'get_church_dir_from_url', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
+            _.bindAll(this, 'init_changes_listener', 'get_church_dir_from_url', 'parse_json', 
+                'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
             this.init_changes_listener()
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
+            // TODO: Start here.  Decide what sub-views to create out of this view, and under what conditions
+            //  to display them.
+            /* Steps:
+                Enter URL.
+                Test URL to see if it is one of the following:
+                        Regular HTML page > display directory name, abbreviation inputs
+                        Batchgeo URL > import batchgeo JSON > report
+                        RPCNA JSON feed > import feed > report
+            */
         },
         render: function(){
             $('#steps').html(Mustache.render(template))
@@ -24,6 +34,8 @@ define([
             'keyup #url':'get_church_dir_from_url'
         },
         init_changes_listener:function(event){
+            // TODO: Start here.  Could this code be simplified by using Hoodie, and writing a Hoodie worker to handle
+            //  our changes?
             if (typeof window.app.watching_import_directory_view_changes == 'undefined'){
                 window.app.watching_import_directory_view_changes = true;
                 var thiz = this

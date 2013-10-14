@@ -22,10 +22,19 @@ define([
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
             //  some input from the user.
             // TODO:   * Event Handler: On page load
-            // TODO:     * If the distance unit cookie is set, set the distance units in the form based
-            //              on what is in the cookie.
-            // TODO:     * Else, on page load, before the person searches, guess what units they want based 
-            //                  on one of the following:
+			
+            // TODO:     * If the distance unit cookie is set,
+			if ( this.is_distance_unit_cookie_set() ){
+				// TODO:  set the distance units in the form based
+            	//              on what is in the cookie.
+				
+			}
+            // TODO:     * Else, on page load, before the person searches, 
+			else {
+				// TODO: guess what units they want based 
+            	//                  on one of the following:
+				
+			}
             // TODO:       * First try the users' browser's geolocation information. Google for "calculate
             //                  distance units from geolocation" to see how others have done this. You can
             //                  geocode the location using window.app.geocoder = new google.maps.Geocoder(); 
@@ -37,6 +46,14 @@ define([
             // TODO:       * Next, try the browser country or language setting.
             // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
         },
+		is_distance_unit_cookie_set:function(){
+			// TODO: Get cookie here
+			
+		},
+		set_distance_unit_cookie:function(){
+			// TODO: Set cookie here
+			
+		},
         location_keyup:function(event){
             if (event.which == 13){
                 this.geocode(event)
