@@ -71,8 +71,7 @@ describe("Reformed Churches Locator", function() {
         // These specs are nested because the later ones depend on the earlier ones
         describe('url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
-                // TODO: Because this test writes to the database, decide whether
-                //  the tests should run in a test copy of the database.
+                // Note:  Because this test writes to the database, it runs in a test copy of the database
                 runs(trigger_url_field)
                 waitsFor(directory_type_is_visible, "AJAX call to get URL HTML", timeout)
                 runs(function(){
