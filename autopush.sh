@@ -40,7 +40,7 @@ erica push $URL
 
 # You can run node-inspector like this:  node-inspector &
 
-# TODO: If I start nosetests from this file too, and run autopush in the background, 
+# TODO: If I start the node script from this file too, and run autopush in the background, 
 #   I can use this example to kill the autopush process before killing this process:
 #   http://hacktux.com/bash/control/c
 # TODO: Here is how to start the forked process and kill it afterward:  http://hacktux.com/bash/ampersand
