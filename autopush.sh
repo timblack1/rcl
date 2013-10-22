@@ -36,7 +36,7 @@ erica push $URL
 # couchapp push $URL
 
 #echo "Starting the Node.js changes listener as a forked child process..."
-#( ./_attachments/node_changes_listeners/start.sh & )
+( ./_attachments/node_changes_listeners/start.sh & )
 
 # You can run node-inspector like this:  node-inspector &
 
