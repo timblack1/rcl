@@ -21,6 +21,7 @@ require.config({
       "model": "model",
       "mustache": "vendor/mustache/mustache",
       "text": "vendor/requirejs-text/text",
+      "typeahead": "vendor/typeahead.js/dist/typeahead",
       "underscore": "vendor/underscore/underscore"
   },
   shim: {
@@ -66,6 +67,9 @@ require.config({
       },
       mustache: {
           exports: ["Mustache"]
+      },
+      typeahead: {
+          deps: ["bootstrap"]
       },
       underscore: {
           exports: '_'
