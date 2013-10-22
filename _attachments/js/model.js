@@ -61,7 +61,7 @@ define([
     // Fill this with your database information.
 
     // `ddoc_name` is the name of your couchapp project.
-    Backbone.couch_connector.config.db_name = "rcl";
+    Backbone.couch_connector.config.db_name = config.db_name;
     Backbone.couch_connector.config.ddoc_name = "rcl";
     // If set to true, the connector will listen to the changes feed
     //  and will provide your models with real time remote updates.
