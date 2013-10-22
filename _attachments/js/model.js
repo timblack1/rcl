@@ -281,11 +281,15 @@ define([
         model:Directory,
         url:'/directory'
     })
+    // TODO: This is deprecated because it can be created dynamically when needed
     DirectoriesByURL = Backbone.Collection.extend({
         model:Directory,
         url:'/directory',
         db:{
             view: 'directories_by_url'
+        },
+        initialize:function(){
+            console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
     Person = Backbone.RelationalModel.extend({
