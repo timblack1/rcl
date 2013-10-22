@@ -3,7 +3,8 @@ define([
         'model',
         'mustache',
         'text!views/ImportDirectory/DirURL.html',
-        './DirTypeView'
+        './DirTypeView',
+        'typeahead'
         ], 
         function(config, model, Mustache, template, DirTypeView){
     
@@ -20,6 +21,27 @@ define([
         render: function(){
             $('#steps').html(Mustache.render(template))
             this.delegateEvents()
+            var thiz = this
+            // Render typeahead for URL textbox
+            var directories = new model.Directories()
+            directories.fetch({
+                include_docs:true,
+                success:function(dirs, response, options){
+                    // Render typeahead
+                    thiz.$('#url').typeahead({
+                        name: 'directories',
+                        remote: {
+                            url:'/rcl-dev/_design/rcl/_view/directories',
+                            filter: function(parsedResponse){
+                                return _.filter(_.pluck(parsedResponse.rows, 'key'), function(val){
+                                    var patt = new RegExp($('.twitter-typeahead span').text(), 'i')
+                                    return val.match(patt) !== null
+                                })
+                            }
+                        }
+                    })
+                }
+            })
         },
         events: {
             'keyup #url':'get_church_dir_from_url'
@@ -38,6 +60,8 @@ define([
                         // Fetch document's new contents from db
                         // TODO: Why doesn't backbone-couchdb automatically update the
                         //  model object for me when the associated doc changes in the db?
+                        //  UPDATE: I enabled the changes listener on the model object itself, so this feature
+                        //   should be working now.
                         window.app.dir.fetch({success:function(model,response){
                             
                             // ----------------------------------------------------------
