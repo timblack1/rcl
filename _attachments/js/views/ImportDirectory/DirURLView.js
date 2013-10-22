@@ -16,15 +16,6 @@ define([
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
-            // TODO: Start here.  Decide what sub-views to create out of this view, and under what conditions
-            //  to display them.
-            /* Steps:
-                Enter URL.
-                Test URL to see if it is one of the following:
-                        Regular HTML page > display directory name, abbreviation inputs
-                        Batchgeo URL > import batchgeo JSON > report
-                        RPCNA JSON feed > import feed > report
-            */
         },
         render: function(){
             $('#steps').html(Mustache.render(template))
@@ -134,13 +125,13 @@ define([
           };
         })(),
         get_church_dir_from_url:function(event){
+            var thiz = this
             // Delay this to run after typing has stopped for 3 seconds, so we don't
             //  send too many requests
-            // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
-            //  Instead after the delay, notify the user with
-            //  "Is that URL correct?  It returns a '404 page not found' error."
-            var thiz = this
             this.delay(function(){
+                // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
+                //  Instead after the delay, notify the user with
+                //  "Is that URL correct?  It returns a '404 page not found' error."
                 // Declare several utility functions for use further below
                 function save_cgroup_and_dir(cgroup, dir){
                     // Save the dir so if the URL has changed in the browser, it gets
@@ -209,6 +200,8 @@ define([
                 function get_cgroup(dir){
                     // Make the dir available globally so it can be reused if the user causes
                     //  this function to be invoked again
+                    // TODO: Start here.  Set up changes listener on dir to handle responses from node_changes_listener.js
+                    
                     // Reset status flag so the status messages will display
                     dir.set('get_state_url_html', '')
                     var cgroup_name = $('#cgroup_name').val()
@@ -248,19 +241,35 @@ define([
                 
                 // --------- Main code section begins here ----------
                 
+                    // TODO: Start here.  Decide what sub-views to create out of this view, and under what conditions
+                    //  to display them.
+                    /* Steps:
+                        Event handler:  Wait for $('#url') to change
+                        Enter URL.
+                        Event handler:  Test URL to see if it is one of the following:
+                                Regular HTML page > display directory name, abbreviation inputs
+                                Batchgeo URL > import batchgeo JSON > report
+                                RPCNA JSON feed > import feed > report
+                    */
+
+                
                 // If we have not already created a directory on this page, create it; else get the existing directory
                 if (typeof(window.app.dir) === 'undefined'){
                     // The dir hasn't been created in the browser yet
                     // If the cgroup's associated directory exists in the db, get it
-                    var page_url = $('#url').val()
+                    var page_url = thiz.$('#url').val()
                     model.get_one(model.DirectoriesByURL, [page_url], {success:function(dir){
                         // If it does not exist in the db, then create it
+                        // TODO: Why is it that this can't be refactored to just use model.get_or_create_one()?
+                        //      Is it because I didn't realize I could use model.set('url', page_url) after 
+                        //      get_or_create_one()?
                         if (typeof(dir) === 'undefined'){
                             // TODO: Don't create the dir if the URL is not valid.
                             //  Maybe mark the dir's URL as invalid in the node.js script (by
                             //  checking for a 404 response), and/or
                             //  just delete the dir from node.js in an asynchronous cleanup task.
-                            // TODO: Provide a list of similar URLs in an autocompleter
+                            // TODO: Provide a list of similar URLs in an autocompleter.  Get the list from
+                            //  the set of directories already found in the RCL database.
                             // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                             console.log(new Date().getTime() + "\t saving dir 239")
                             // We wait until later to set get_url_html = 'requested', so as not 

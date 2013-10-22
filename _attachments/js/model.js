@@ -324,20 +324,24 @@ define([
 //          select_element_xpath:'' // xpath of the select element containing state IDs
 //        },
         relations:[
-                   {
-                       type:'HasOne', // many-to-one
-                       key: 'cgroup',
-                       // TODO: the directory's 'cgroup' is null in the db
-                       relatedModel: 'CGroup', // was 'CGroup_Directory'
-                       collectionType:'CGroups',
-                       includeInJSON:'_id',
-                       // reverseRelation: {
-                       //     key: 'directories',
-                       //     // TODO: Is this needed?
-                       //     includeInJSON:'_id'
-                       // }
-                   }
-                   ]
+            {
+               type:'HasOne', // many-to-one
+               key: 'cgroup',
+               // TODO: the directory's 'cgroup' is null in the db
+               relatedModel: 'CGroup', // was 'CGroup_Directory'
+               collectionType:'CGroups',
+               includeInJSON:'_id',
+               // reverseRelation: {
+               //     key: 'directories',
+               //     // TODO: Is this needed?
+               //     includeInJSON:'_id'
+               // }
+            }
+        ],
+        db:{
+            changes:true
+        }
+
     })
     Directories = Backbone.Collection.extend({
         model:Directory,
