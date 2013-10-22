@@ -3,10 +3,10 @@ define(
     'config',
     'model',
     'mustache',
-    './DirURLView',
+    './URLView',
     'text!views/ImportDirectory/main.html'
     ],
-    function(config, model, Mustache, DirURLView, template){
+    function(config, model, Mustache, URLView, template){
 
         return Backbone.View.extend({
             initialize : function(){
@@ -18,7 +18,7 @@ define(
                 var changes = db.changes();
                 this.template = template;
                 // Register necessary subviews
-                this.DirURLView = DirURLView;
+                this.URLView = URLView;
             },
             render: function(){
                 // TODO: Consider using assign() as described here:
@@ -27,8 +27,8 @@ define(
                 // Render Mustache template
                 $('#content').html(Mustache.render(this.template));
                 // Render first subview
-                this.DirURLView = new DirURLView({el: '#steps'})
-                this.DirURLView.render()
+                this.URLView = new URLView({el: '#steps'})
+                this.URLView.render()
                 this.delegateEvents()
             }
         })
