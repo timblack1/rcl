@@ -243,6 +243,51 @@ define([
             view: 'congs_by_name'
         }
     })
+    Directory = Backbone.RelationalModel.extend({
+        collection:'Directories',
+        urlRoot:'/directory',
+//          defaults:{
+//          url:'', // url of directory's main page
+//          url_html:'', // HTML of directory's main page
+//          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
+//          pagetype:'', // html or rss
+//          state_page_urls:'', // template URL of state pages
+//          state_url_html:'', // HTML of state page
+//          state_url_method:'', // 'get' or 'post', tells Node script which to use
+//          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
+//          state_page_values:[], // list of select box options for this directory's states
+//          select_element_xpath:'' // xpath of the select element containing state IDs
+//        },
+        relations:[
+            {
+               type:'HasOne', // many-to-one
+               key: 'cgroup',
+               // TODO: the directory's 'cgroup' is null in the db
+               relatedModel: 'CGroup', // was 'CGroup_Directory'
+               collectionType:'CGroups',
+               includeInJSON:'_id',
+               // reverseRelation: {
+               //     key: 'directories',
+               //     // TODO: Is this needed?
+               //     includeInJSON:'_id'
+               // }
+            }
+        ],
+        db:{
+            changes:true
+        }
+    })
+    Directories = Backbone.Collection.extend({
+        model:Directory,
+        url:'/directory'
+    })
+    DirectoriesByURL = Backbone.Collection.extend({
+        model:Directory,
+        url:'/directory',
+        db:{
+            view: 'directories_by_url'
+        }
+    })
     Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
         collection:'People',
@@ -307,52 +352,6 @@ define([
     People = Backbone.Collection.extend({
         model:Person,
         url:'/people'
-    })
-    Directory = Backbone.RelationalModel.extend({
-        collection:'Directories',
-        urlRoot:'/directory',
-//          defaults:{
-//          url:'', // url of directory's main page
-//          url_html:'', // HTML of directory's main page
-//          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
-//          pagetype:'', // html or rss
-//          state_page_urls:'', // template URL of state pages
-//          state_url_html:'', // HTML of state page
-//          state_url_method:'', // 'get' or 'post', tells Node script which to use
-//          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
-//          state_page_values:[], // list of select box options for this directory's states
-//          select_element_xpath:'' // xpath of the select element containing state IDs
-//        },
-        relations:[
-            {
-               type:'HasOne', // many-to-one
-               key: 'cgroup',
-               // TODO: the directory's 'cgroup' is null in the db
-               relatedModel: 'CGroup', // was 'CGroup_Directory'
-               collectionType:'CGroups',
-               includeInJSON:'_id',
-               // reverseRelation: {
-               //     key: 'directories',
-               //     // TODO: Is this needed?
-               //     includeInJSON:'_id'
-               // }
-            }
-        ],
-        db:{
-            changes:true
-        }
-
-    })
-    Directories = Backbone.Collection.extend({
-        model:Directory,
-        url:'/directories'
-    })
-    DirectoriesByURL = Backbone.Collection.extend({
-        model:Directory,
-        url:'/directories',
-        db:{
-            view: 'directories_by_url'
-        }
     })
     Office = Backbone.RelationalModel.extend({
         collection:'Offices',
