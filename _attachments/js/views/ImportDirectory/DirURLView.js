@@ -31,9 +31,12 @@ define([
                     thiz.$('#url').typeahead({
                         name: 'directories',
                         remote: {
-                            url:'/rcl-dev/_design/rcl/_view/directories',
+                            url:'/' + config.db_name + '/_design/rcl/_view/directories',
+                            // The filter is needed to allow filtering for strings not found at the beginning
+                            //  of the URL, and to format CouchDB's response into an array.
                             filter: function(parsedResponse){
                                 return _.filter(_.pluck(parsedResponse.rows, 'key'), function(val){
+                                    // This method of getting the query text works, but feels like a hack.
                                     var patt = new RegExp($('.twitter-typeahead span').text(), 'i')
                                     return val.match(patt) !== null
                                 })
