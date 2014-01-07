@@ -18,10 +18,12 @@ define(
            //   Display this in the address bar: (to facilitate manually refreshing the page by
            //   hitting F5)
            test_home_address = 'index.html',
-           // port = '5984',
-           port = '80',
-           // domain = 'localhost',
-           domain = 'arwd.iriscouch.com';
+           // Run locally
+           port = '5984',
+           domain = 'localhost';
+           // Or run remotely
+//            port = '80',
+//            domain = 'arwd.iriscouch.com';
 
         // TODO: Move these functions into a library
        function render_to_id(obj, id){
