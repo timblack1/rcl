@@ -302,7 +302,7 @@ Backbone.RelationalModel = (function(_super) {
 
   return RelationalModel;
 
-})(Backbone.Model);
+})(Backbone.RelationalModel);
 
 Backbone.Collection = (function(_super) {
   __extends(Collection, _super);
