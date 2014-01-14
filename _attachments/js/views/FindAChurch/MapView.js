@@ -78,8 +78,7 @@ define([
                 // Send AJAX call to geocouch containing bounds within which congregations are found
                 // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
                 //  order Google Maps uses
-                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/'+
-                        config.db_name+'/_spatial/points?bbox='+
+                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/rcl/_spatial/points?bbox='+
                         south_lat+','+west_lng+','+north_lat+','+east_lng,
                     function(data, textStatus, jqXHR){
                         if (data !== ''){
