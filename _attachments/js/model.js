@@ -56,7 +56,7 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'backbone'
+        'backbone_couchdb'
         ], function(config, Backbone){
     // Fill this with your database information.
 
@@ -79,6 +79,66 @@ define([
             }
         }
     }) 
+    
+    // Define base classes
+    
+    var CollectionBase = Backbone.Collection.extend({}, {
+        get_one:function(keys, options) {
+            var coll = new this
+            coll.db.keys = keys
+            coll.fetch({
+                success:function(col, res){
+                    var model = col.at(0)
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(model)
+                    }
+                },
+                error:function(){
+                    console.error('Could not get_one')
+                    if (typeof options.error !== 'undefined'){
+                        options.error()
+                    }
+                }
+            })
+        },
+        create_one:function(attrs_obj, options){
+            var coll = new this
+            var model = coll.create(attrs_obj, {
+                success:function(model){
+                    console.log('create_one: ', model)
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(model)
+                    }
+                },
+                error:function(){
+                    console.error('Could not create_one')
+                    if (typeof options.error !== 'undefined'){
+                        options.error()
+                    }
+                }
+            })
+        },
+        get_or_create_one:function(search_keys, attrs, options){
+            var thiz = this
+            this.get_one(search_keys,{success:function(doc){
+                if (typeof(doc) === 'undefined'){
+                    // The doc didn't exist in the db, so create and return it
+                    thiz.create_one(attrs, {
+                        success:function(doc){
+                            if (typeof(options.success) !== 'undefined'){
+                                options.success(doc)
+                            }
+                        }
+                    })
+                }else{
+                    // The doc did exist in the db, so return it
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(doc)
+                    }
+                }
+            }})
+        }
+    })
     
     // Define model objects & collections for querying the database
     
@@ -148,11 +208,11 @@ define([
                    }
                    ]
     })
-    CGroups = Backbone.Collection.extend({
+    CGroups = CollectionBase.extend({
         model:CGroup,
         url:'/cgroups'
     })
-    CGroupsByAbbrOrName = Backbone.Collection.extend({
+    CGroupsByAbbrOrName = CollectionBase.extend({
         model:CGroup,
         url:'/cgroups',
         db:{
@@ -232,11 +292,11 @@ define([
                  }
                  ]
     })
-    Congs = Backbone.Collection.extend({
+    Congs = CollectionBase.extend({
         model:Cong,
         url:'/congs'
     })
-    CongsByName = Backbone.Collection.extend({
+    CongsByName = CollectionBase.extend({
         model:Cong,
         url:'/congs',
         db:{
@@ -277,19 +337,20 @@ define([
             changes:true
         }
     })
-    Directories = Backbone.Collection.extend({
+    Directories = CollectionBase.extend({
         model:Directory,
         url:'/directory'
     })
     // TODO: This is deprecated because it can be created dynamically when needed
-    DirectoriesByURL = Backbone.Collection.extend({
+    DirectoriesByURL = CollectionBase.extend({
         model:Directory,
         url:'/directory',
         db:{
             view: 'directories_by_url'
         },
         initialize:function(){
-            console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
+            // TODO: Should we proliferate collections here in the model, or create them dynamically in the client code?
+            // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
     Person = Backbone.RelationalModel.extend({
@@ -353,7 +414,7 @@ define([
                    }
                    ]
     })
-    People = Backbone.Collection.extend({
+    People = CollectionBase.extend({
         model:Person,
         url:'/people'
     })
@@ -378,7 +439,7 @@ define([
                    }
                    ]
     })
-    Offices = Backbone.Collection.extend({
+    Offices = CollectionBase.extend({
         model:Office,
         url:'/offices'
     })
@@ -415,7 +476,7 @@ define([
                    }
                    ]
     })
-    Roles = Backbone.Collection.extend({
+    Roles = CollectionBase.extend({
         model:Role,
         url:'/roles'
     })
