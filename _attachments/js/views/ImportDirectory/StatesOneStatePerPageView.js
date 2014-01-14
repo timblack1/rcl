@@ -8,7 +8,7 @@ define([
     
     var StatesOneStatePerPageView = Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this)
+            _.bindAll(this,'show_state_page')
         },
         render: function(){
             $('#steps').html(Mustache.render(template));

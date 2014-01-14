@@ -8,7 +8,7 @@ define([
     
     return Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this)
+            //_.bindAll(this)
         },
         render: function(){
             this.delegateEvents()
