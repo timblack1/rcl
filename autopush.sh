@@ -30,11 +30,11 @@ DBNAME=rcl-dev
 
 URL=http://$LOGIN@$HOST:$PORT/$DBNAME
 
-
 # Create .couchapprc file if this has not been done yet
+# TODO: erica loads .couchapprc.* so we need to rename this file to not start with the dot.
 if [ ! -e .couchapprc ];
 then
-    cp .couchapprc.template .couchapprc
+    cp couchapprc.template .couchapprc
     sed -i "s/username:password/$LOGIN/g" .couchapprc
     sed -i "s/5984/$PORT/g" .couchapprc
 fi
@@ -44,7 +44,10 @@ erica push $URL
 # couchapp push $URL
 
 #echo "Starting the Node.js changes listener as a forked child process..."
-( ./_attachments/node_changes_listeners/start.sh & )
+#( ./_attachments/node_changes_listeners/start.sh & )
+echo "Starting the Node.js changes listener as a background process..."
+# It's in the background in order to allow iwatch to push new changes to the db
+nodejs ./_attachments/node_changes_listeners/changes_listeners.js &
 
 # You can run node-inspector like this:  node-inspector &
 
