@@ -74,7 +74,7 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-gnome-open $URL/_design/rcl/index.html &
+xdg-open $URL/_design/rcl/index.html &
 # erica browse rcl
 
 # Start watching the filesystem for changes, and push new changes into the database
