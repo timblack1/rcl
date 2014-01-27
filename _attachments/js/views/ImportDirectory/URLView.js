@@ -11,9 +11,8 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'init_changes_listener', 'get_church_dir_from_url', 'parse_json', 
-                'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
-            this.init_changes_listener()
+            _.bindAll(this, 'changes_listener', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
+                'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -32,9 +31,12 @@ define([
                     //  of the URL, and to format CouchDB's response into an array.
                     filter: function(parsedResponse){
                         return _.filter(_.pluck(parsedResponse.rows, 'key'), function(val){
-                            // This method of getting the query text works, but feels like a hack.
-                            var patt = new RegExp($('.twitter-typeahead span').text(), 'i')
-                            return val.match(patt) !== null
+                            if (val !== null){
+                                // This method of getting the query text works, but feels like a hack.
+                                // TODO: Consider filtering and sorting by levenshtein distance
+                                var patt = new RegExp($('.twitter-typeahead span').text(), 'i')
+                                return val.match(patt) !== null
+                            }
                         })
                     }
                 }
@@ -43,100 +45,104 @@ define([
         events: {
             'keyup #url':'get_church_dir_from_url'
         },
-        init_changes_listener:function(event){
-            // TODO: Start here.  Could this code be simplified by using Hoodie, and writing a Hoodie worker to handle
-            //  our changes?
-            if (typeof window.app.watching_import_directory_view_changes == 'undefined'){
-                window.app.watching_import_directory_view_changes = true;
-                var thiz = this
-                changes.onChange(function(change){
-                    var change_id = change.results[0].id
-                    var rev = change.results[0].changes[0].rev
-                    // Determine if the changed document is the dir we are editing
-                    if (typeof window.app.dir != 'undefined' && change_id == window.app.dir.get('_id')){
-                        // Fetch document's new contents from db
-                        // TODO: Why doesn't backbone-couchdb automatically update the
-                        //  model object for me when the associated doc changes in the db?
-                        //  UPDATE: I enabled the changes listener on the model object itself, so this feature
-                        //   should be working now.
-                        window.app.dir.fetch({success:function(model,response){
-                            
-                            // ----------------------------------------------------------
-                            // These are the main cases - different types of changes that
-                            //  need to be handled
-                            
-                            // console.log(new Date().getTime() + '\tb: start here')
-                            // TODO: Fix this order so it works right?
-                            //  Why is this creating an infinite loop?
-                            
-                            // Handle directory's first page of content
-                            if (window.app.dir.get('url_html') &&
-                                window.app.dir.get('get_url_html') == 'gotten'){
-                                var html = window.app.dir.get('url_html')
-                                // Determine whether this URL's data is HTML, RSS, KML, or JSON
-                                if (html.indexOf("</html>") > -1){
-                                    window.app.dir.set('pagetype', 'html')
-                                    // Determine what type of directory this is
-                                    // batchgeo
-                                    if (thiz.uses_batch_geo(html) === true && 
-                                        typeof window.app.dir.get('get_batchgeo_map_html') == 'undefined' &&
-                                        typeof window.app.dir.get('get_json') == 'undefined'){
-                                        // console.log(new Date().getTime() + '\tb: get_batchgeo_map_html: ' + window.app.dir.get('get_batchgeo_map_html'))
-                                        console.log('get_batchgeo_map_html: ' + window.app.dir.get('get_batchgeo_map_html'))
-                                        console.log('get_json: ' + window.app.dir.get('get_json'))
-                                        console.log(new Date().getTime() + '\tb: getting batchgeo_map_html')
-                                        thiz.process_batch_geo(html)
-                                    }
-                                }
-                                else if (html.indexOf("</rss>") > -1){
-                                    // TODO: Display the right form controls for an RSS feed
-                                    window.app.dir.set('pagetype', 'rss')
-                                }
-                                else if (html.indexOf("<kml") > -1){
-                                    // TODO: Display the right form controls for a KML feed
-                                    window.app.dir.set('pagetype', 'kml')
-                                }
-                                else if (html.indexOf("{") === 0 || 
-                                    // batchgeo format
-                                    html.indexOf("per = {") === 0){
-                                    // TODO: Make this a separate batchgeo_json pagetype
-                                    window.app.dir.set('pagetype', 'json')
-                                    if (html.indexOf('{') === 0){
-                                        // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
-                                        console.log(new Date().getTime() + '\tb: parsing json')
-                                        thiz.parse_json()
-                                    }
-                                }
-                                else { // We got an error code
-                                }
-                                window.app.dir.set('get_url_html', '')
-                                // TODO: Is this the right place to save the dir?
-                                //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                                //window.app.dir.save({_id:dir.get('_id')})
-                            }
-                            // Handle batchgeo map page
-                            if (typeof window.app.dir.get('batchgeo_map_html') !== 'undefined' && 
-                                window.app.dir.get('get_batchgeo_map_html') == 'gotten'){
-                                console.log(new Date().getTime() + '\tb: getting batchgeo_json')
-                                thiz.get_batchgeo_json()
-                            }
-                            // Handle JSON
-                            if (typeof window.app.dir.get('json') !== 'undefined' && 
-                                window.app.dir.get('get_json') == 'gotten'){
-                                var json = window.app.dir.get('json')
-                                // Batchgeo JSON
-                                if (json.indexOf('per = {') === 0){
-                                    console.log(new Date().getTime() + '\tb: parsing batchgeo_json')
-                                    thiz.batchgeo_parse_json()
-                                }
-                            }
-                            
-                            // ----------------------------------------------------------
-
-                        }})
+        changes_listener:function(){
+            // ----------------------------------------------------------
+            // These are the main cases - different types of changes that
+            //  need to be handled
+            
+            // console.log(new Date().getTime() + '\tb: start here')
+            // TODO: Fix this order so it works right?
+            //  Why is this creating an infinite loop?
+            
+            console.log('running changes_listener() because the change event was triggered on this.model')
+            // Handle directory's first page of content
+            if (this.model.get('url_html') &&
+                this.model.get('get_url_html') == 'gotten'){
+                var html = this.model.get('url_html')
+                
+                // Determine whether this URL's data is HTML, RSS, KML, or JSON, or a 404 page
+                
+                // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
+                //  Instead after the delay, notify the user with
+                //  "Is that URL correct?  It returns a '404 page not found' error."
+                if (this.model.get('error_code')){
+                    var msg = 'We got error code ' + this.model.get('error_code') + ' from this URL: ' + this.model.get('url')
+                    console.log(msg)
+                    // TODO: Report this to the user, including what error code we got
+                }
+                
+                if (html.indexOf("</html>") > -1){
+                    console.log('We got HTML')
+                    this.model.set('pagetype', 'html')
+                    // Determine what type of directory this is
+                    // batchgeo
+                    if (this.uses_batch_geo(html) === true && 
+                        typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
+                        typeof this.model.get('get_json') == 'undefined'){
+                        // console.log(new Date().getTime() + '\tb: get_batchgeo_map_html: ' + this.model.get('get_batchgeo_map_html'))
+                        console.log('get_batchgeo_map_html: ' + this.model.get('get_batchgeo_map_html'))
+                        console.log('get_json: ' + this.model.get('get_json'))
+                        console.log(new Date().getTime() + '\tb: getting batchgeo_map_html')
+                        this.process_batch_geo(html)
+                    }else{
+                        // TODO: If the other form fields are empty,
+                        //     auto-populate them with info from this
+                        //     directory's cgroup to help the user
+                        // TODO: Maybe only display those fields after
+                        //     the URL is filled in
+                        //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                     }
-                })
+                }
+                else if (html.indexOf("</rss>") > -1){
+                    console.log('We got RSS')
+                    // TODO: Display the right form controls for an RSS feed
+                    this.model.set('pagetype', 'rss')
+                }
+                else if (html.indexOf("<kml") > -1){
+                    console.log('We got KML')
+                    // TODO: Display the right form controls for a KML feed
+                    this.model.set('pagetype', 'kml')
+                }
+                else if (html.indexOf("per = {") === 0){
+                    // batchgeo format
+                    console.log('We got batchgeo JSON')
+                    this.model.set('pagetype', 'batchgeo_json')
+                }
+                else if (html.indexOf("{") === 0){
+                    console.log('We got JSON')
+                    this.model.set('pagetype', 'json')
+                    // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
+                    console.log(new Date().getTime() + '\tb: parsing json')
+                    this.parse_json()
+                }
+                else { // We got an error code
+                    console.log('We got an error code from this URL:' + this.model.get('url'))
+                    // TODO: Report this to the user, including what error code we got
+                }
+                this.model.set('get_url_html', '')
+                // TODO: Is this the right place to save the dir?
+                //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
+                //this.model.save({_id:dir.get('_id')})
             }
+            // Handle batchgeo map page
+            if (typeof this.model.get('batchgeo_map_html') !== 'undefined' && 
+                this.model.get('get_batchgeo_map_html') == 'gotten'){
+                console.log(new Date().getTime() + '\tb: getting batchgeo_json')
+                this.get_batchgeo_json()
+            }
+            // Handle JSON
+            if (typeof this.model.get('json') !== 'undefined' && 
+                this.model.get('get_json') == 'gotten'){
+                var json = this.model.get('json')
+                // Batchgeo JSON
+                if (json.indexOf('per = {') === 0){
+                    console.log(new Date().getTime() + '\tb: parsing batchgeo_json')
+                    this.batchgeo_parse_json()
+                }
+            }
+            
+            // ----------------------------------------------------------
+            
         },
         delay:(function(){
           var timer = 0;
