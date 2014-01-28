@@ -74,9 +74,16 @@ control_c(){
 trap control_c INT
 
 # Launch the application in the browser
-xdg-open $URL/_design/rcl/index.html &
 # erica browse rcl
+xdg-open $URL/_design/rcl/index.html &
 
 # Start watching the filesystem for changes, and push new changes into the database
-iwatch -e close_write -r -c "~/bin/erica push $URL" .
-# iwatch -e close_write -r -c "couchapp push $URL" .
+# Avoid multiple pushes caused by text editors saving the file more than once.
+inotifywait -mr . --exclude .git -e close_write --format '%w %e %T' --timefmt '%H%M%S' | while read file event tm; do
+    current=$(date +'%H%M%S')
+    delta=`expr $current - $tm`
+    if [ $delta -lt 2 -a $delta -gt -2 ] ; then
+        sleep 1  # sleep 1 second to let file operations end
+        ~/bin/erica push $URL
+    fi
+done
