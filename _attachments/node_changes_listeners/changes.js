@@ -59,12 +59,10 @@ function start_child_process(){
 p = start_child_process();
 console.log('Starting child process...')
 
-var it = 0;
-
 // Only get changes after "update_seq"
 db.get('', function(err,doc){
+	console.log('doc: ' + doc)
     db.changes({since:doc.update_seq}).on('change', function (change) {
-        it++;
         db.get(change.id, change.changes[0].rev, function(err, doc){
             if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
                 // This is a change to the design document
@@ -81,7 +79,7 @@ db.get('', function(err,doc){
 				*/
 				// This may be due to my changing the filesystem location of changes.js, which is 
 				//	referenced immediately below.
-				//console.log(doc.node_changes_listeners.changes)
+				console.log(doc.node_changes_listeners.changes)
                 if (doc.node_changes_listeners.changes) {
 					return;
 					//console.log('Restarting because design doc changed...')
@@ -91,14 +89,6 @@ db.get('', function(err,doc){
                     // start up the process with the new design doc
                     write_new_changes_listener_file(doc.node_changes_listeners.changes_listeners);
                     p = start_child_process();
-                }
-            } else {
-                // This is a change to a data document
-                // Feed the new doc into the changes listeners
-                if (doc) { // Don't handle docs that have been deleted
-                    if (p.connected){
-                        p.send(doc);
-                    }
                 }
             }
         });
