@@ -39,18 +39,25 @@ function get_url(doc, from_url, to_html, status_flag, options){
             pageData += chunk
         })
         res.on('end', function(){
-            // TODO: Check to see if we got a 404 response
-            // Write the contents of the html variable back to the database
-            doc[to_html] = pageData
-            doc[status_flag] = 'gotten'
-            console.log(new Date().getTime() + '\t n: ' + status_flag + ': ' + doc[status_flag] + ' ' + doc[from_url])
-            // TODO: Use Backbone here instead of cradle
-            db.save(doc._id, doc._rev, doc, function(err, res){
-                // TODO: Do anything more that needs to be done here
-                if (options && options.success){
-                    options.success()
-                }
-            });
+            // Check to see if we got a 404 response
+			if (res.statusCode == '404'){
+				console.log('Got a 404!')
+				// TODO: If we got a 404, then notify the user this page doesn't exist
+				doc[status_flag] = '404'
+				db.save(doc._id, doc._rev, doc)
+			}else{
+				// Write the contents of the html variable back to the database
+				doc[to_html] = pageData
+				doc[status_flag] = 'gotten'
+				// console.log(new Date().getTime() + '\t n: ' + status_flag + ': ' + doc[status_flag] + ' ' + doc[from_url])
+				// TODO: Use Backbone here instead of cradle
+				db.save(doc._id, doc._rev, doc, function(err, res){
+					// TODO: Do anything more that needs to be done here
+					if (options && options.success){
+						options.success()
+					}
+				});
+			}
         })
     });
 }
@@ -71,16 +78,16 @@ function save(options){
                     // Only recurse a certain number of times, then fail, to avoid a memory leak
                     if (options.save_attempts <= 5){
                         options.save_attempts++;
-                        console.log('options.save_attempts: ' + options.save_attempts)
+                        // console.log('options.save_attempts: ' + options.save_attempts)
                         save(options)
                     }else{
                         // TODO: This is where we get an error.  For some reason sometimes,
                         //  but not always, we have the wrong revision here, and this causes get_state_url_html
                         //  to never == 'gotten', (so the state details page doesn't display?)
-                        console.error('Failed to save doc: ' + options.doc._id, options.doc._rev)
+                        // console.error('Failed to save doc: ' + options.doc._id, options.doc._rev)
                     }
                 }else{
-                    console.log('Succeeded at saving all the states\' HTML pages')
+                    // console.log('Succeeded at saving all the states\' HTML pages')
                     options.output_array_saved = true
                     // Remove this options.status_flag from the list of tasks
                     currently_getting.splice(currently_getting.indexOf(options.status_flag),1)
