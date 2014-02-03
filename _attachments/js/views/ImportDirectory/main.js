@@ -19,6 +19,7 @@ define(
                 this.template = template;
                 // Register necessary subviews
                 this.URLView = URLView;
+                // TODO: Consider using kimonolabs.com as a web scraper, though maybe not if it costs too much.
             },
             render: function(){
                 // TODO: Consider using assign() as described here:
