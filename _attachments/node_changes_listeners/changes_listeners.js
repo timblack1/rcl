@@ -8,23 +8,25 @@
 // TODO: Could we use backbone-couch.js here instead of cradle, in order to use our
 //	Backbone model here?
 
-console.log(process.cwd())
 var buffer = '',
 	http = require('http'),
     https = require('https'),
-	ncl_dir = './rcl/_attachments/node_changes_listeners/',
-	config = require(ncl_dir + 'config'),
+	ncl_dir = '/_attachments/node_changes_listeners/',
+	config = require('./config'),
 	db = config.db,
-	log = require(ncl_dir + 'lib').log;
+	log = require('./lib').log;
 	//$ = require('jquery');
 //var model = require('model.js').model
 	//stdin = process.openStdin();
-if (config.debug)
-	var longjohn = require(ncl_dir + 'node_modules/longjohn')
+// if (config.debug)
+// 	var longjohn = require('./node_modules/longjohn')
 
 //stdin.setEncoding('utf8');
 
-// Declare utility functions
+console.log('Starting changes listener...')
+
+// -------- Declare utility functions --------
+
 function get_url(doc, from_url, to_html, status_flag, options){
     var http_lib = http
     if (doc[from_url].indexOf('https') === 0){
