@@ -120,6 +120,7 @@ define([
         },
         get_or_create_one:function(search_keys, attrs, options){
             var thiz = this
+            // TODO: First use modeltype.findOrCreate() to return the model if it already exists in the local store
             this.get_one(search_keys,{success:function(doc){
                 if (typeof(doc) === 'undefined'){
                     // The doc didn't exist in the db, so create and return it
