@@ -7,7 +7,7 @@ define([
         'typeahead'
         ], 
         function(config, model, Mustache, template, DirTypeView){
-    
+
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
@@ -280,7 +280,6 @@ define([
                                 RPCNA JSON feed > import feed > report
                                 Arbitrary RSS or JSON > display field matching interface
                     */
-
                 
                 // If we have not already created a directory on this page, create it; else get the existing directory
                 if (typeof(window.app.dir) === 'undefined'){
