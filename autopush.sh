@@ -5,28 +5,52 @@
 
 # . ../bin/activate
 
-# # Development copy - arwd.iriscouch.com
-# # Get the admin username and password for couchdb
-#LOGIN=$(cat login.txt)
-#PORT=80
-#HOST=arwd.iriscouch.com
-# HOST=arwd.cloudant.com
-#DBNAME=rcl-dev
+MODE="dev-local"
+#MODE="dev-iriscouch"
+#MODE="prod-local"
+#MODE="prod-iriscouch"
 
-# # Development copy - local
-# # Get the admin username and password for couchdb
-LOGIN=$(cat login.txt)
-PORT=5984
-HOST=localhost
-# HOST=arwd.cloudant.com
-DBNAME=rcl-dev
+if [ "$MODE" = 'dev-iriscouch' ];
+then
+  # # Development copy - arwd.iriscouch.com
+  # # Get the admin username and password for couchdb
+  LOGIN=$(cat login.txt)
+  PORT=80
+  HOST=arwd.iriscouch.com
+  # HOST=arwd.cloudant.com
+  DBNAME=rcl-dev;
+fi
 
-# Production copy
-# Get the admin username and password for couchdb
-# LOGIN=$(cat login.txt)
-# PORT=5984
-# HOST=localhost
-# DBNAME=rcl
+if [ "$MODE" = 'dev-local' ];
+then
+  # # Development copy - local
+  # # Get the admin username and password for couchdb
+  LOGIN=$(cat login.txt)
+  PORT=5984
+  HOST=localhost
+  # HOST=arwd.cloudant.com
+  DBNAME=rcl-dev;
+fi;
+
+if [ "$MODE" = 'prod-local' ];
+then
+  # Production copy
+  # Get the admin username and password for couchdb
+  LOGIN=$(cat login.txt)
+  PORT=5984
+  HOST=localhost
+  DBNAME=rcl;
+fi;
+
+if [ "$MODE" = 'prod-iriscouch' ];
+then
+  # Production copy
+  # Get the admin username and password for couchdb
+  LOGIN=$(cat login.txt)
+  PORT=80
+  HOST=arwd.iriscouch.com
+  DBNAME=rcl;
+fi;
 
 URL=http://$LOGIN@$HOST:$PORT/$DBNAME
 
