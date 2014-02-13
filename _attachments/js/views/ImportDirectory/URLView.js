@@ -11,8 +11,10 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'changes_listener', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
+            _.bindAll(this, 'changes_listener', 'get_church_dir_from_url',
                 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
+//             _.bindAll(this, 'changes_listener', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
+//                 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
