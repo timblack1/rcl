@@ -8,13 +8,12 @@ define([
     
     return Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this)
         },
         render: function(){
             var thiz = this
             // Notify the user that we are downloading the requested data
             $('#steps').html('Getting state page data for ' +
-                window.app.dir.get('state_page_values').length + 
+                this.model.get('state_page_values').length + 
                 ' state pages (this may take a while)...')
             // Set up changes listener here to write first state page's HTML to cong_details_url_selector
             config.db.changes().onChange(function(change){
