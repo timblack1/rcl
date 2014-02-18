@@ -211,7 +211,7 @@ define([
                                                 // TODO: This isn't necessary on dirtypes other than HTML
                                                 // Render DirTypeView
                                                 $('#steps').hide()
-                                                thiz.dir_type_view  = new DirTypeView({el: '#steps'})
+                                                thiz.dir_type_view  = new DirTypeView({el: '#steps', model: thiz.model})
                                                 thiz.dir_type_view.render()
                                                 $('#steps').fadeIn(2000)
                                             }})
@@ -284,7 +284,7 @@ define([
                     */
                 
                 // If we have not already created a directory on this page, create it; else get the existing directory
-                if (typeof(window.app.dir) === 'undefined'){
+                if (typeof(thiz.model) === 'undefined'){
                     // The dir hasn't been created in the browser yet
                     // If the cgroup's associated directory exists in the db, get it
                     var page_url = thiz.$('#url').val()
@@ -298,9 +298,8 @@ define([
                             //  Maybe mark the dir's URL as invalid in the node.js script (by
                             //  checking for a 404 response), and/or
                             //  just delete the dir from node.js in an asynchronous cleanup task.
-                            // TODO: Provide a list of similar URLs in an autocompleter.  Get the list from
+                            // Provide a list of similar URLs in an autocompleter.  Get the list from
                             //  the set of directories already found in the RCL database.
-                            // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/directoryimporter-url-autocompleter
                             console.log(new Date().getTime() + "\t saving dir 239")
                             // We wait until later to set get_url_html = 'requested', so as not 
                             //  to fire that request event twice
@@ -315,7 +314,7 @@ define([
                                          // TODO: Maybe only display those fields after
                                          //     the URL is filled in
                                          //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-                                         window.app.dir = dir
+                                         thiz.model = dir
                                          get_cgroup(dir)
                                      },error:function(){
                                         console.error('Could not create_one')
@@ -323,7 +322,7 @@ define([
                             )
                         }else{
                             // It exists in the db, so use the existing dir
-                            window.app.dir = dir
+                            thiz.model = dir
                             get_cgroup(dir)
                         }
                     },error:function(){
@@ -331,7 +330,7 @@ define([
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
-                    get_cgroup(window.app.dir)
+                    get_cgroup(thiz.model)
                 }
                 
                 // TODO: Is this code needed anymore?
@@ -375,7 +374,7 @@ define([
         },
         parse_json:function(){
             var thiz = this
-            var json = window.app.dir.get('url_html')
+            var json = this.model.get('url_html')
             // console.log(json)
             // TODO: This handles the RPCNA data's current format, which does not yet
             //  perfectly match the RCL format.  So put this in a conditional if(){} block 
@@ -498,7 +497,7 @@ define([
             var congs = JSON.parse(new_json).docs
             _.each(congs, function(cong, index, list){
                 // TODO: Record cgroup id for this directory, by appending it to the list
-                congs[index].cgroups = [window.app.dir.get('cgroup')]
+                congs[index].cgroups = [thiz.model.get('cgroup')]
                 // TODO: Record the denomination abbreviation for other denominations here too
                 //  Get it from the cgroup.abbr
                 congs[index].denomination_abbr = 'RPCNA'
@@ -543,26 +542,27 @@ define([
             var map_url = html.match(/(https:\/\/batchgeo.com\/map\/.+?)['"]{1}/i)[1]
             // Get the batchgeo JSON URL out of the map's HTML
             console.log(new Date().getTime() + '\tb: ' + map_url)
-            window.app.dir.set('pagetype', 'batchgeo')
-            window.app.dir.set('batchgeo_map_url', map_url)
-            window.app.dir.set('get_batchgeo_map_html', 'requested')
-            window.app.dir.save()
+            this.model.set('pagetype', 'batchgeo')
+            this.model.set('batchgeo_map_url', map_url)
+            this.model.set('get_batchgeo_map_html', 'requested')
+            this.model.save()
         },
         get_batchgeo_json:function(){
-            window.app.dir.fetch({success:function(){
-                window.app.dir.unset('get_batchgeo_map_html')
-                var html = window.app.dir.get('batchgeo_map_html')
+            var thiz = this
+            this.model.fetch({success:function(){
+                thiz.model.unset('get_batchgeo_map_html')
+                var html = thiz.model.get('batchgeo_map_html')
                 // console.log(html)
                 var json_url = html.match(/(https:\/\/.+?.cloudfront.net\/map\/json\/.+?)['"]{1}/i)[1]
                 console.log(new Date().getTime() + '\tb: get_json for ' + json_url)
                 // TODO: Request that the node script get this URL's contents
-                window.app.dir.set('json_url', json_url)
-                window.app.dir.set('get_json', 'requested')
-                window.app.dir.save()
+                thiz.model.set('json_url', json_url)
+                thiz.model.set('get_json', 'requested')
+                thiz.model.save()
              }})
          },
          batchgeo_parse_json:function(){
-            window.app.dir.unset('get_json')
+            this.model.unset('get_json')
             // The PCA has a KML file at http://batchgeo.com/map/kml/c78fa06a3fbdf2642daae48ca62bbb82
             //  Some (all?) data is also in JSON at http://static.batchgeo.com/map/json/c78fa06a3fbdf2642daae48ca62bbb82/1357687276
             //  The PCA directory's main HTML URL is http://www.pcaac.org/church-search/
@@ -591,9 +591,9 @@ define([
 
             // Get the relevant JSON in a variable
             // This regex took forever
-            // var json = window.app.dir.get('json').replace(/.*?"mapRS":/, '{"congs":').replace(/,"dataRS":.*/, '}')
+            // var json = this.model.get('json').replace(/.*?"mapRS":/, '{"congs":').replace(/,"dataRS":.*/, '}')
             // So although this could be unsafe, it is expedient!
-            eval(window.app.dir.get('json'))
+            eval(this.model.get('json'))
             var congs = per.mapRS
             // Convert the JSON's fieldnames to RCL fieldnames
             var replacements = [
