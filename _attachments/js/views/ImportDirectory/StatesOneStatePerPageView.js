@@ -36,6 +36,7 @@ define([
                     sub_render()
                 }
             }
+            fetch()
         },
         show_state_page:function(event){
             // Get the list of state page URLS out of its option values
@@ -93,6 +94,7 @@ define([
                 state_url += '&' + input.attr('name') + '=' + input.val()
             })
             var it = 0
+            var thiz = this
             // Note this is a recursive function!  It tries to save until it succeeds.
             function save_dir(dir){
                 it++;
@@ -132,7 +134,7 @@ define([
                                 delete window.app.import_directory_view.rev_currently_being_saved
                                 // Render next step's view
                                 $('#steps').hide()
-                                this.cong_details_url = new CongDetailsURLView({el:$('#steps')})
+                                this.cong_details_url = new CongDetailsURLView({el:$('#steps'), model: thiz.model})
                                 this.cong_details_url.render()
                                 // Show state details page div
                                 $("#steps").fadeIn(1000);
