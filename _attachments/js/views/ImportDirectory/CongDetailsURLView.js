@@ -31,6 +31,8 @@ define([
                         //  need to be handled
                         
                         // Display state details page's content
+                        // TODO: Start here 2014.  state_url_html is empty but shouldn't be.
+                        //  So verify whether it's being gotten by the changes_listener.
                         if (thiz.model.get('state_url_html')){
                             if (thiz.model.get('get_state_url_html') == 'gotten'){
                                 // Notify user
@@ -94,7 +96,7 @@ define([
                                         // var href_regex = href.replace()
                                         // var url = thiz.model.get('state_url_html')
 
-                                        thiz.confirm_cong_id_view = new ConfirmCongIDView({el: $("#steps")})
+                                        thiz.confirm_cong_id_view = new ConfirmCongIDView({el: $("#steps"), model: thiz.model})
                                         thiz.confirm_cong_id_view.render()
                                     });
                                 }

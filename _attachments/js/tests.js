@@ -1,7 +1,7 @@
 describe("Reformed Churches Locator", function() {
     
     // Set this to increase or decrease the tests' timeout
-    var timeout = 4000
+    var timeout = 80000
     
     afterEach(function() {
         // Remove the docs we just created
