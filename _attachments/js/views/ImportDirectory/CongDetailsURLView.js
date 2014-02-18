@@ -20,23 +20,23 @@ define([
                 var change_id = change.results[0].id
                 var rev = change.results[0].changes[0].rev
                 // Determine if the changed document is the dir we are editing
-                if (typeof window.app.dir != 'undefined' && change_id == window.app.dir.get('_id')){
+                if (typeof thiz.model != 'undefined' && change_id == thiz.model.get('_id')){
                     // Fetch document's new contents from db
                     // TODO: Why doesn't backbone-couchdb automatically update the
                     //  model object for me when the associated doc changes in the db?
-                    window.app.dir.fetch({success:function(model,response){
+                    thiz.model.fetch({success:function(model,response){
                         
                         // ----------------------------------------------------------
                         // These are the main cases - different types of changes that
                         //  need to be handled
                         
                         // Display state details page's content
-                        if (window.app.dir.get('state_url_html')){
-                            if (window.app.dir.get('get_state_url_html') == 'gotten'){
+                        if (thiz.model.get('state_url_html')){
+                            if (thiz.model.get('get_state_url_html') == 'gotten'){
                                 // Notify user
                                 $('#cong_details_url #status').html('Downloaded data for all states!')
                                 $('#cong_details_url #status').delay(5000).fadeOut(1000).slideUp(1000)
-                                if (window.app.dir.get('state_url_html').length >0 &&
+                                if (thiz.model.get('state_url_html').length >0 &&
                                         typeof displayed_state_page == 'undefined'){
                                     // Display the contents of the state page
                                     // TODO: This displays only one state's page.  Create a way
@@ -44,7 +44,7 @@ define([
                                     //  to see if the regex works on them, after getting
                                     //  a regex that works from this first state page.
                                     var index = 0
-                                    var new_html_set = config.rewrite_urls(window.app.dir.get('state_url'), window.app.dir.get('state_url_html'), index)
+                                    var new_html_set = config.rewrite_urls(thiz.model.get('state_url'), thiz.model.get('state_url_html'), index)
                                     $('#steps #status').fadeOut(1000)
                                     $('#cong_details_url_selector').fadeIn(1000)
                                     // Finally render the template here!
@@ -79,7 +79,7 @@ define([
                                         var dom = document.implementation.createHTMLDocument('temp document')
                                         try{
                                             // this avoids breaking on this error:  GControl is not defined
-                                            dom.documentElement.innerHTML = window.app.dir.get('state_url_html')[0]
+                                            dom.documentElement.innerHTML = thiz.model.get('state_url_html')[0]
                                         }catch (e){}
                                         window.dom = dom
                                         window.xpath = xpath
@@ -92,7 +92,7 @@ define([
                                         
                                         // Create a regex to find this kind of href
                                         // var href_regex = href.replace()
-                                        // var url = window.app.dir.get('state_url_html')
+                                        // var url = thiz.model.get('state_url_html')
 
                                         thiz.confirm_cong_id_view = new ConfirmCongIDView({el: $("#steps")})
                                         thiz.confirm_cong_id_view.render()

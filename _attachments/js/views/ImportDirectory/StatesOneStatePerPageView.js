@@ -16,10 +16,9 @@ define([
 
             var thiz = this
             function sub_render(){
-                // TODO: Why is the second argument to rewrite_urls below undefined?
                 var new_html_set = config.rewrite_urls(thiz.model.get('url'), [thiz.model.get('url_html')], 0)
                 thiz.$('#state_drop_down_selector').html(new_html_set[0]);
-                // We bind the event here because the select element didn't exist at this Backbone view's
+                // We bind the event here because the select element didn't exist during this Backbone view's
                 //  initialization
                 thiz.$('#state_drop_down_selector select')
                     .click({thiz2:thiz},function(event){ event.data.thiz2.show_state_page(event)})
