@@ -11,9 +11,10 @@ define([
     function(config, model, Backbone, Mustache, template, AddressTemplate, CongInfowindowTemplate){
 
         return Backbone.View.extend({
-            initialize: function(){
+            initialize: function(options){
                 _.bindAll(this, 'create_map', 'get_location', 'handleErrors', 'close_infowindows',
                     'update_congs_collection', 'update_map', 'hide_link_show_get_directions_form')
+                this.options = options
                 this.markers = []
                 // Center on Philadelphia, PA by default
                 this.default_map_center = {latitude:39.951596,longitude:-75.160095}
@@ -77,8 +78,7 @@ define([
                 // Send AJAX call to geocouch containing bounds within which congregations are found
                 // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
                 //  order Google Maps uses
-                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/'+
-                        config.db_name+'/_spatial/points?bbox='+
+                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/rcl/_spatial/points?bbox='+
                         south_lat+','+west_lng+','+north_lat+','+east_lng,
                     function(data, textStatus, jqXHR){
                         if (data !== ''){
@@ -231,7 +231,7 @@ define([
                 google.maps.event.addListener(this.map, 'bounds_changed', this.update_congs_collection)
                 // Update the collection when the search params change
                 this.listenTo(this.options.search_params, 'change', this.update_congs_collection)
-          },
+            },
             handleErrors:function(error){
                 switch(error.code){
                     case error.PERMISSION_DENIED:
