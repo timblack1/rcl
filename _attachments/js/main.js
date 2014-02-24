@@ -21,6 +21,7 @@ require.config({
       "model": "model",
       "mustache": "vendor/mustache/mustache",
       "text": "vendor/requirejs-text/text",
+      "typeahead": "vendor/typeahead.js/dist/typeahead",
       "underscore": "vendor/underscore/underscore"
   },
   shim: {
@@ -66,6 +67,9 @@ require.config({
       },
       mustache: {
           exports: ["Mustache"]
+      },
+      typeahead: {
+          deps: ["bootstrap"]
       },
       underscore: {
           exports: '_'
@@ -158,7 +162,7 @@ require(
         window.app.config = config
        
         // Create SEF URLs and handle clicks
-        Backbone.history.start({pushState: true, root: "/rcl/_design/rcl/"})
+        Backbone.history.start({pushState: true, root: "/" + config.db_name + "/_design/rcl/"})
         // Globally capture clicks. If they are internal and not in the pass 
         // through list, route them through Backbone's navigate method.
         // TODO: Create vhosts entry to allow pages to load from direct access to the URL, like

@@ -16,6 +16,8 @@
     "requirejs-text": "latest",
     "requirejs-plugins": "latest",
     "respond": "latest",
+    "typeahead.js": "latest",
+    "typeahead.js-bootstrap.css": "git://github.com/jharding/typeahead.js-bootstrap.css.git",
     "underscore": "latest"
   }
 }

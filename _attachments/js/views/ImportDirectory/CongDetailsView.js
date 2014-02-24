@@ -9,7 +9,7 @@ define([
     
     return Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this)
+            _.bindAll(this, 'create_regular_expression')
         },
         render: function(){
             $('#steps').html(Mustache.render(template));
