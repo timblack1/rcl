@@ -1,17 +1,10 @@
-/* Congregation list */
+/* Search page */
 
-#congregation_list td {
-    background-color: #F8F8F7;
-    vertical-align: top;
+.radius {
+    width: 5em;
 }
-
-#congregation_list th, #congregation_list td {
-    padding: 0.5em;
-}
-
-#congregation_list th {
-    background-color: #EFEFEF;
-    text-align: center;
+.units {
+    width: 5em;
 }
 
 /*Put a box around the group filter*/

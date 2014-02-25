@@ -7,8 +7,9 @@ define([
         function(config, Backbone, Mustache, template){
     
     return Backbone.View.extend({
-        initialize:function(){
+        initialize:function(options){
             _.bindAll(this)
+            this.options = options
         },
         render: function(){
             // TODO: Render individual views for each field, and append them to fields_container

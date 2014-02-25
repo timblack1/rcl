@@ -71,7 +71,7 @@ erica push $URL
 #( ./_attachments/node_changes_listeners/start.sh & )
 echo "Starting the Node.js changes listener as a background process..."
 # It's in the background in order to allow iwatch to push new changes to the db
-nodejs ./changes_listeners.js &
+nodejs ./_attachments/node_changes_listeners/changes_listeners.js &
 
 # You can run node-inspector like this:  node-inspector &
 
