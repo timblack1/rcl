@@ -6,9 +6,9 @@ define([
         ], 
         function(config, Mustache, template, CongDetailsURLView){
     
-    var StatesOneStatePerPageView = Backbone.View.extend({
+    return Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this)
+            _.bindAll(this,'show_state_page')
         },
         render: function(){
             $('#steps').html(Mustache.render(template));
@@ -16,19 +16,18 @@ define([
 
             var thiz = this
             function sub_render(){
-                // TODO: Why is the second argument to rewrite_urls below undefined?
-                var new_html_set = config.rewrite_urls(window.app.dir.get('url'), [window.app.dir.get('url_html')], 0)
+                var new_html_set = config.rewrite_urls(thiz.model.get('url'), [thiz.model.get('url_html')], 0)
                 thiz.$('#state_drop_down_selector').html(new_html_set[0]);
-                // We bind the event here because the select element didn't exist at this Backbone view's
+                // We bind the event here because the select element didn't exist during this Backbone view's
                 //  initialization
                 thiz.$('#state_drop_down_selector select')
                     .click({thiz2:thiz},function(event){ event.data.thiz2.show_state_page(event)})
             }
             // We (sometimes?) have to wait for url_html to be available
             function fetch(){
-                if (typeof window.app.dir.get('url_html') === 'undefined'){
+                if (typeof thiz.model.get('url_html') === 'undefined'){
                     setTimeout(function(){
-                        window.app.dir.fetch({success:function(model,response,options){
+                        thiz.model.fetch({success:function(model,response,options){
                             fetch()
                         }})
                     },300)
@@ -36,6 +35,7 @@ define([
                     sub_render()
                 }
             }
+            fetch()
         },
         show_state_page:function(event){
             // Get the list of state page URLS out of its option values
@@ -68,10 +68,10 @@ define([
             var form = el.closest('form')
             // Handle cases where there is or is not a final slash in base_url, or
             //  an initial slash in form.attr('action').
-            if(typeof window.app.dir.get('url') === 'undefined'){
-                console.error('window.app.dir.get(url) is ' + window.app.dir.get('url'))
+            if(typeof this.model.get('url') === 'undefined'){
+                console.error('this.model.get(url) is ' + this.model.get('url'))
             }
-            var base_url = window.app.dir.get('url').replace(/\/+$/,'')
+            var base_url = this.model.get('url').replace(/\/+$/,'')
             var state_url = ''
             if (form.attr('action').indexOf('/') === 0){
                 // action is a partial absolute URL, so attach it to the domain name
@@ -93,6 +93,7 @@ define([
                 state_url += '&' + input.attr('name') + '=' + input.val()
             })
             var it = 0
+            var thiz = this
             // Note this is a recursive function!  It tries to save until it succeeds.
             function save_dir(dir){
                 it++;
@@ -132,7 +133,7 @@ define([
                                 delete window.app.import_directory_view.rev_currently_being_saved
                                 // Render next step's view
                                 $('#steps').hide()
-                                this.cong_details_url = new CongDetailsURLView({el:$('#steps')})
+                                this.cong_details_url = new CongDetailsURLView({el:$('#steps'), model: thiz.model})
                                 this.cong_details_url.render()
                                 // Show state details page div
                                 $("#steps").fadeIn(1000);
@@ -146,10 +147,9 @@ define([
                     }
                 }})
             }
-            save_dir(window.app.dir)
+            save_dir(this.model)
         }
 
     });
-    return StatesOneStatePerPageView;
 
 });

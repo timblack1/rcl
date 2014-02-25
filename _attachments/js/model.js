@@ -56,12 +56,12 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'backbone'
+        'backbone_couchdb'
         ], function(config, Backbone){
     // Fill this with your database information.
 
     // `ddoc_name` is the name of your couchapp project.
-    Backbone.couch_connector.config.db_name = "rcl";
+    Backbone.couch_connector.config.db_name = config.db_name;
     Backbone.couch_connector.config.ddoc_name = "rcl";
     // If set to true, the connector will listen to the changes feed
     //  and will provide your models with real time remote updates.
@@ -79,6 +79,67 @@ define([
             }
         }
     }) 
+    
+    // Define base classes
+    
+    var CollectionBase = Backbone.Collection.extend({}, {
+        get_one:function(keys, options) {
+            var coll = new this
+            coll.db.keys = keys
+            coll.fetch({
+                success:function(col, res){
+                    var model = col.at(0)
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(model)
+                    }
+                },
+                error:function(){
+                    console.error('Could not get_one')
+                    if (typeof options.error !== 'undefined'){
+                        options.error()
+                    }
+                }
+            })
+        },
+        create_one:function(attrs_obj, options){
+            var coll = new this
+            var model = coll.create(attrs_obj, {
+                success:function(model){
+                    console.log('create_one: ', model)
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(model)
+                    }
+                },
+                error:function(){
+                    console.error('Could not create_one')
+                    if (typeof options.error !== 'undefined'){
+                        options.error()
+                    }
+                }
+            })
+        },
+        get_or_create_one:function(search_keys, attrs, options){
+            var thiz = this
+            // TODO: First use modeltype.findOrCreate() to return the model if it already exists in the local store
+            this.get_one(search_keys,{success:function(doc){
+                if (typeof(doc) === 'undefined'){
+                    // The doc didn't exist in the db, so create and return it
+                    thiz.create_one(attrs, {
+                        success:function(doc){
+                            if (typeof(options.success) !== 'undefined'){
+                                options.success(doc)
+                            }
+                        }
+                    })
+                }else{
+                    // The doc did exist in the db, so return it
+                    if (typeof(options.success) !== 'undefined'){
+                        options.success(doc)
+                    }
+                }
+            }})
+        }
+    })
     
     // Define model objects & collections for querying the database
     
@@ -148,11 +209,11 @@ define([
                    }
                    ]
     })
-    CGroups = Backbone.Collection.extend({
+    CGroups = CollectionBase.extend({
         model:CGroup,
         url:'/cgroups'
     })
-    CGroupsByAbbrOrName = Backbone.Collection.extend({
+    CGroupsByAbbrOrName = CollectionBase.extend({
         model:CGroup,
         url:'/cgroups',
         db:{
@@ -232,15 +293,65 @@ define([
                  }
                  ]
     })
-    Congs = Backbone.Collection.extend({
+    Congs = CollectionBase.extend({
         model:Cong,
         url:'/congs'
     })
-    CongsByName = Backbone.Collection.extend({
+    CongsByName = CollectionBase.extend({
         model:Cong,
         url:'/congs',
         db:{
             view: 'congs_by_name'
+        }
+    })
+    Directory = Backbone.RelationalModel.extend({
+        collection:'Directories',
+        urlRoot:'/directory',
+//          defaults:{
+//          url:'', // url of directory's main page
+//          url_html:'', // HTML of directory's main page
+//          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
+//          pagetype:'', // html or rss
+//          state_page_urls:'', // template URL of state pages
+//          state_url_html:'', // HTML of state page
+//          state_url_method:'', // 'get' or 'post', tells Node script which to use
+//          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
+//          state_page_values:[], // list of select box options for this directory's states
+//          select_element_xpath:'' // xpath of the select element containing state IDs
+//        },
+        relations:[
+            {
+               type:'HasOne', // many-to-one
+               key: 'cgroup',
+               // TODO: the directory's 'cgroup' is null in the db
+               relatedModel: 'CGroup', // was 'CGroup_Directory'
+               collectionType:'CGroups',
+               includeInJSON:'_id',
+               // reverseRelation: {
+               //     key: 'directories',
+               //     // TODO: Is this needed?
+               //     includeInJSON:'_id'
+               // }
+            }
+        ],
+        db:{
+            changes:true
+        }
+    })
+    Directories = CollectionBase.extend({
+        model:Directory,
+        url:'/directory'
+    })
+    // TODO: This is deprecated because it can be created dynamically when needed
+    DirectoriesByURL = CollectionBase.extend({
+        model:Directory,
+        url:'/directory',
+        db:{
+            view: 'directories_by_url'
+        },
+        initialize:function(){
+            // TODO: Should we proliferate collections here in the model, or create them dynamically in the client code?
+            // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
     Person = Backbone.RelationalModel.extend({
@@ -304,51 +415,9 @@ define([
                    }
                    ]
     })
-    People = Backbone.Collection.extend({
+    People = CollectionBase.extend({
         model:Person,
         url:'/people'
-    })
-    Directory = Backbone.RelationalModel.extend({
-        collection:'Directories',
-        urlRoot:'/directory',
-//          defaults:{
-//          url:'', // url of directory's main page
-//          url_html:'', // HTML of directory's main page
-//          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
-//          pagetype:'', // html or rss
-//          state_page_urls:'', // template URL of state pages
-//          state_url_html:'', // HTML of state page
-//          state_url_method:'', // 'get' or 'post', tells Node script which to use
-//          get_state_url_html:'', // '', 'requested', 'getting', or 'gotten'
-//          state_page_values:[], // list of select box options for this directory's states
-//          select_element_xpath:'' // xpath of the select element containing state IDs
-//        },
-        relations:[
-                   {
-                       type:'HasOne', // many-to-one
-                       key: 'cgroup',
-                       // TODO: the directory's 'cgroup' is null in the db
-                       relatedModel: 'CGroup', // was 'CGroup_Directory'
-                       collectionType:'CGroups',
-                       includeInJSON:'_id',
-                       // reverseRelation: {
-                       //     key: 'directories',
-                       //     // TODO: Is this needed?
-                       //     includeInJSON:'_id'
-                       // }
-                   }
-                   ]
-    })
-    Directories = Backbone.Collection.extend({
-        model:Directory,
-        url:'/directories'
-    })
-    DirectoriesByURL = Backbone.Collection.extend({
-        model:Directory,
-        url:'/directories',
-        db:{
-            view: 'directories_by_url'
-        }
     })
     Office = Backbone.RelationalModel.extend({
         collection:'Offices',
@@ -371,7 +440,7 @@ define([
                    }
                    ]
     })
-    Offices = Backbone.Collection.extend({
+    Offices = CollectionBase.extend({
         model:Office,
         url:'/offices'
     })
@@ -408,7 +477,7 @@ define([
                    }
                    ]
     })
-    Roles = Backbone.Collection.extend({
+    Roles = CollectionBase.extend({
         model:Role,
         url:'/roles'
     })
