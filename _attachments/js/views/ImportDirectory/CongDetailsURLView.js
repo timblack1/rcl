@@ -90,7 +90,7 @@ define([
                                         // var href = $.xpath(xpath, dom.documentElement).attr('href')
                                         var href = $(dom.evaluate(xpath, dom.documentElement, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue).attr('href')
                                         console.log('original href: ' + href)
-                                        console.log('start here')
+                                        console.log('Start here 2014')
                                         
                                         // Create a regex to find this kind of href
                                         // var href_regex = href.replace()
