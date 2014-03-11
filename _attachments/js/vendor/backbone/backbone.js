@@ -880,6 +880,10 @@
       };
       // TODO: Start here 2014.  This is the first time the model 
       //  gets saved to the db.
+      // TODO: Try upgrading backbone-relational.
+      // TODO: Try https://github.com/PaulUithol/Backbone-relational/issues/186#issuecomment-8524666
+      //    var entity = MyEntity.findOrCreate({_id : id});
+      // TODO: Try https://github.com/PaulUithol/Backbone-relational/issues/186#issuecomment-9841567
       model.save(null, options);
       return model;
     },
