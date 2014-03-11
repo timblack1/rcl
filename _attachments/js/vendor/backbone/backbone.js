@@ -480,6 +480,7 @@
         model.attributes = attributes;
         var serverAttrs = model.parse(resp, options);
         if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
+        console.warn('Start here')
         if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
           return false;
         }
@@ -880,7 +881,6 @@
       var collection = this;
       var success = options.success;
       options.success = function(model, resp) {
-        // TODO: Start here 2014. The error appears before this line is executed.
         if (options.wait) collection.add(model, options);
         if (success) success(model, resp, options);
       };
@@ -1601,6 +1601,13 @@
     options.error = function(resp) {
       if (error) error(model, resp, options);
       model.trigger('error', model, resp, options);
+    };
+  };
+
+  return Backbone;
+
+}));
+ptions);
     };
   };
 
