@@ -283,6 +283,17 @@ define([
                                 Arbitrary RSS or JSON > display field matching interface
                     */
                 
+                // TODO: Fix error:  Duplicate id! Old RelationalModel=child, new RelationalModel=child
+                //      Figure out which line causes the error.
+                //      Related cases:
+                //              1.  No breakpoint, causes the error.
+                //              2.  If I set a breakpoint at first "if" below, then step through the code,
+                //                      I get no error.
+                //              3.  Breakpoint at model.create_one( below, hit breakpoint.
+                //                      3a.  Run, then no error.
+                //                      3b.  Step through, then I sometimes get the error.
+ 
+                
                 // If we have not already created a directory on this page, create it; else get the existing directory
                 if (typeof(thiz.model) === 'undefined'){
                     // The dir hasn't been created in the browser yet
@@ -303,6 +314,8 @@ define([
                             console.log(new Date().getTime() + "\t saving dir 239")
                             // We wait until later to set get_url_html = 'requested', so as not 
                             //  to fire that request event twice
+                            // TODO: If I put the breakpoint here, and none after, I don't 
+                            //  get the error.
                             model.create_one(model.Directories,
                                      {
                                          url:page_url
@@ -315,6 +328,8 @@ define([
                                          //     the URL is filled in
                                          //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                                          thiz.model = dir
+                                         // TODO: If I put a breakpoint here, then I get the error before this 
+                                         //     breakpoint is reached.
                                          get_cgroup(dir)
                                      },error:function(){
                                         console.error('Could not create_one')

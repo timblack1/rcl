@@ -878,6 +878,8 @@
         if (options.wait) collection.add(model, options);
         if (success) success(model, resp, options);
       };
+      // TODO: Start here 2014.  This is the first time the model 
+      //  gets saved to the db.
       model.save(null, options);
       return model;
     },
