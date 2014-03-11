@@ -1052,6 +1052,20 @@ $(document).ready(function() {
 			ok( json.children.length === 1 );
 		});
 
+		test("'toJSON' should return null for relations that are set to null, even when model is not fetched", function() {
+			var person = new Person( { user : 'u1' } );
+
+			equal( person.toJSON().user_id, 'u1' );
+			person.set( 'user', null );
+			equal( person.toJSON().user_id, null );
+
+			person = new Person( { user: new User( { id : 'u2' } ) } );
+
+			equal( person.toJSON().user_id, 'u2' );
+			person.set( { user: 'unfetched_user_id' } );
+			equal( person.toJSON().user_id, 'unfetched_user_id' );
+		});
+
 		test( "`toJSON` should include ids for 'unknown' or 'missing' models (if `includeInJSON` is `idAttribute`)", function() {
 			// See GH-191
 
@@ -1064,7 +1078,7 @@ $(document).ready(function() {
 
 			var a1 = new Animal( { id: 'a1' } );
 			zooJSON = zoo.toJSON();
-			equal( zooJSON.animals.length, 1, "0 animals in zooJSON; it serializes an array of attributes" );
+			equal( zooJSON.animals.length, 1, "1 animals in zooJSON; it serializes an array of attributes" );
 
 			// Agent -> Customer; `idAttribute` on a HasMany
 			var agent = new Agent({ id: 'a1', customers: [ 'c1', 'c2' ] } ),
@@ -1113,7 +1127,26 @@ $(document).ready(function() {
 			u1.destroy();
 			personJSON = person.toJSON();
 			ok( !u1.get( 'person' ) );
-			equal( personJSON.user_id, null, "`user_id` does not get set in JSON anymore" );
+			equal( personJSON.user_id, 'u1', "`user_id` still gets set in JSON" );
+		});
+
+		test( "`toJSON` should include ids for unregistered models (if `includeInJSON` is `idAttribute`)", function() {
+	
+			// Person -> User; `idAttribute` on a HasOne
+			var person = new Person({ id: 'p1', user: 'u1' } ),
+				personJSON = person.toJSON();
+
+			equal( personJSON.user_id, 'u1', "`user_id` gets set in JSON even though no user obj exists" );
+
+			var u1 = new User( { id: 'u1' } );
+			personJSON = person.toJSON();
+			ok( u1.get( 'person' ) === person );
+			equal( personJSON.user_id, 'u1', "`user_id` gets set in JSON after matching user obj is created" );
+
+			Backbone.Relational.store.unregister(u1);
+
+			personJSON = person.toJSON();
+			equal( personJSON.user_id, 'u1', "`user_id` gets set in JSON after user was unregistered from store" );
 		});
 
 		test( "`parse` gets called through `findOrCreate`", function() {
@@ -1488,6 +1521,58 @@ $(document).ready(function() {
 			
 			ok( petPerson.get( 'pets' ).at( 3 ) instanceof Dog );
 			ok( petPerson.get( 'pets' ).at( 4 ) instanceof Poodle );
+		});
+
+		test( "Object building based on type in a custom field, when used in relations" , function() {
+			var scope = {};
+			Backbone.Relational.store.addModelScope( scope );
+
+			var Caveman = scope.Caveman = Backbone.RelationalModel.extend({
+				subModelTypes: {
+					'rubble': 'Rubble',
+					'flintstone': 'Flintstone'
+				},
+				subModelTypeAttribute: "caveman_type"
+			});
+			var Flintstone = scope.Flintstone = Caveman.extend();
+			var Rubble = scope.Rubble = Caveman.extend();
+
+			var Cartoon = scope.Cartoon = Backbone.RelationalModel.extend({
+				relations: [{
+					type: Backbone.HasMany,
+					key: 'cavemen',
+					relatedModel: Caveman
+				}]
+			});
+
+			var captainCaveman = new scope.Cartoon({
+				cavemen: [
+					{
+						type: 'rubble',
+						name: 'CaptainCaveman'
+					}
+				]
+			});
+
+			ok( !(captainCaveman.get( "cavemen" ).at( 0 ) instanceof Rubble) )
+
+			var theFlintstones = new scope.Cartoon({
+				cavemen: [
+					{
+						caveman_type: 'rubble',
+						name: 'Barney',
+
+					},
+					{
+						caveman_type: 'flintstone',
+						name: 'Wilma'
+					}
+				]
+			});
+
+			ok( theFlintstones.get( "cavemen" ).at( 0 ) instanceof Rubble )
+			ok( theFlintstones.get( "cavemen" ).at( 1 ) instanceof Flintstone )
+
 		});
 
 		test( "Automatic sharing of 'superModel' relations" , function() {
@@ -2711,47 +2796,6 @@ $(document).ready(function() {
 			var b2 = new B({ a: a2 });
 			ok( b2.get( 'a' ) instanceof A );
 			ok( b2.get( 'a' ).id == 'a2' );
-		});
-
-		test( "Can retrieve relations if it's a property or a method", function () {
-			window.Zoo.prototype._relations = window.Zoo.prototype.relations;
-			window.Zoo.prototype.relations = function () {
-				return [
-					{
-						type: Backbone.HasMany,
-						key: 'animals',
-						relatedModel: function() {
-							return Animal; // or `require` it from somewhere
-						},
-						includeInJSON: [ 'id', 'species' ],
-						collectionType: function() {
-							return AnimalCollection; // or `require` it from somewhere
-						},
-						collectionOptions: function( instance ) { return { 'url': 'zoo/' + instance.cid + '/animal/' } },
-						reverseRelation: {
-							key: 'livesIn',
-							includeInJSON: [ 'id', 'name' ]
-						}
-					}
-				];
-			};
-
-			var animalData = [
-				{ id: 1, species: 'Lion' },
-				{ id: 2 ,species: 'Zebra' }
-			];
-
-			var zoo = new Zoo( { animals: animalData } ),
-				animals = zoo.get( 'animals' );
-
-			ok( animals instanceof AnimalCollection );
-			equal( animals.length, 2, "Two animals in 'zoo'" );
-			ok( animals.at( 0 ) instanceof Animal );
-
-			zoo.destroy();
-
-			window.Zoo.prototype.relations = window.Zoo.prototype._relations;
-			delete window.Zoo.prototype._relations;
 		});
 
 

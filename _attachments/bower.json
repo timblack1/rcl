@@ -2,7 +2,7 @@
   "name": "Reformed Churches Locator",
   "version": "0.0.1",
   "dependencies": {
-    "backbone": "latest",
+    "backbone": ">= 1.0.0",
     "backbone-relational": "latest",
     "backgrid": "latest",
     "bootstrap": "latest",
