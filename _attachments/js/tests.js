@@ -70,7 +70,7 @@ describe("Reformed Churches Locator", function() {
             return $('#steps').html().indexOf('Step 5') != -1
         }
         // These specs are nested because the later ones depend on the earlier ones
-        describe('url field', function(){
+        describe(' - url field', function(){
             it('should display step 2 when a valid URL is entered', function(){
                 // Note:  Because this test writes to the database, it runs in a test copy of the database
                 runs(trigger_url_field)
@@ -79,7 +79,7 @@ describe("Reformed Churches Locator", function() {
                     expect($('#steps').html()).toContain('Step 2')
                 })
             })
-            describe('state section', function(){
+            describe(' - state section', function(){
                 it('should display when radio button is clicked', function(){
                     runs(click_state_radio_button)
                     waitsFor(state_page_is_visible, 'state page to display', timeout)
@@ -87,7 +87,7 @@ describe("Reformed Churches Locator", function() {
                         expect($('#steps').html()).toContain('Step 3')
                     })
                 })
-                describe('cong details', function(){
+                describe(' - cong details', function(){
                     it('should display when select box is clicked', function(){
                         runs(state_drop_down_selector)
                         waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
@@ -95,7 +95,7 @@ describe("Reformed Churches Locator", function() {
                             expect(cong_details_url_selector_visible()).toBe(true)
                         })
                     })
-                    describe('get congregation id', function(){
+                    describe(' - get congregation id', function(){
                         it('should display when link is clicked', function(){
                             waitsFor(cong_details_url_selector_visible,'cong_details_url_selector to be visible', timeout)
                             runs(click_cong_anchor)
@@ -104,7 +104,7 @@ describe("Reformed Churches Locator", function() {
                                 expect($('#steps').html()).toMatch('Step 4.5')
                             })
                         })
-                        describe('cong_details_selector_page', function(){
+                        describe(' - cong_details_selector_page', function(){
                             it('should display when button is clicked', function(){
                                 console.log('After Cong Details ID Selector Visible')
                                 runs(click_cong_id_yes_button)
