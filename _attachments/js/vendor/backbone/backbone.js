@@ -880,6 +880,7 @@
       var collection = this;
       var success = options.success;
       options.success = function(model, resp) {
+        // TODO: Start here 2014. The error appears before this line is executed.
         if (options.wait) collection.add(model, options);
         if (success) success(model, resp, options);
       };
