@@ -480,7 +480,6 @@
         model.attributes = attributes;
         var serverAttrs = model.parse(resp, options);
         if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
-        console.warn('Start here')
         if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
           return false;
         }
@@ -1601,13 +1600,6 @@
     options.error = function(resp) {
       if (error) error(model, resp, options);
       model.trigger('error', model, resp, options);
-    };
-  };
-
-  return Backbone;
-
-}));
-ptions);
     };
   };
 

@@ -475,6 +475,8 @@
 				duplicate = coll && coll.get( id );
 
 			if ( duplicate && model !== duplicate ) {
+				console.warn('Start here 2014')
+				debugger;
 				if ( Backbone.Relational.showWarnings && typeof console !== 'undefined' ) {
 					console.warn( 'Duplicate id! Old RelationalModel=%o, new RelationalModel=%o', duplicate, model );
 				}
