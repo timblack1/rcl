@@ -31,10 +31,6 @@ describe("Reformed Churches Locator", function() {
         });
         function trigger_url_field(){
             $('#url').val('http://opc.org/locator.html')
-//             TODO: Start here 2014.  This is what causes creating two
-//              RelationalModels with the same ID.
-            // Duplicate id! Old RelationalModel=child, new RelationalModel=child backbone-relational.js:441
-            // Uncaught Error: Cannot instantiate more than one Backbone.RelationalModel with the same id per type! 
             // This calls URLView.js:get_church_dir_from_url()
             $('#url').focus().keyup()
         }

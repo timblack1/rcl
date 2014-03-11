@@ -501,8 +501,6 @@ define([
         var coll = new collection
         var model = coll.create(attrs_obj, {success:function(model){
             if (typeof(options.success) !== 'undefined'){
-                // TODO: If I put a breakpoint here, we get the error before the
-                //  breakpoint is hit.
                 options.success(model)
             }
         }})
