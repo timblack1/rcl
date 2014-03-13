@@ -3,9 +3,10 @@ define(
     '../config',
     'mustache', 
     'backbone',
+    'model',
     'text!views/Menu.html'
     ], 
-    function(config, Mustache, Backbone, template){
+    function(config, Mustache, Backbone, model, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -48,7 +49,7 @@ define(
         },
         delete_all_directories:function(){
             // Delete all directories
-            // Get all directories
+            // Get all directories from db
             config.db.view('rcl/directories',{
                 success:function(data){
                     var docs = []
@@ -57,8 +58,11 @@ define(
                             _id:data.rows[i].id,
                             _rev:data.rows[i].value
                         })
+                        // Destroy using Backbone.Model.destroy() rather than CouchDB's config.db.bulkRemove().
+                        var dir = model.Directory.findOrCreate(data.rows[i].id)
+                        dir.destroy()
                     }
-                    config.db.bulkRemove({docs:docs}, {})
+                    // config.db.bulkRemove({docs:docs}, {})
                 }
             })
         },
