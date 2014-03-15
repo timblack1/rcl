@@ -83,23 +83,44 @@ define([
     // Define base classes
     
     var CollectionBase = Backbone.Collection.extend({}, {
-        get_one:function(keys, options) {
-            var coll = new this
-            coll.db.keys = keys
-            coll.fetch({
-                success:function(col, res){
-                    var model = col.at(0)
-                    if (typeof(options.success) !== 'undefined'){
-                        options.success(model)
-                    }
-                },
-                error:function(){
-                    console.error('Could not get_one')
-                    if (typeof options.error !== 'undefined'){
-                        options.error()
-                    }
-                }
+        get_one:function(keys, attrs, options) {
+            // TODO: First use modeltype.findOrCreate() to return the model if it already exists in the local store
+            //  Problem:  I don't know the existing model's id at this point.
+            // See if the attrs exist in a model in the local store already, so as not to duplicate it.
+            var local_models = _.map(Backbone.Relational.store._collections, function(scoll){
+                return scoll.findWhere(attrs)
             })
+            // Get rid of undefined items in the array.
+            local_models = _.reject(local_models, function(item){return typeof item == 'undefined'})
+            // Prevent creating the model in the database if it already exists in the local store.
+            if (typeof local_models !== 'undefined' && local_models.length > 0){
+                var mod = local_models[0]
+                options.success(mod)
+            }else{
+                // The model was not in the local store, so search for it in the database
+                var coll = new this
+                coll.db.keys = keys
+                coll.fetch({
+                    success:function(col, res){
+                        // TODO: The duplicate id occurs after this, without being prevented by the conditional block above.
+                        //  When I pause the debugger here, I don't get the error.
+                        //  So I should try putting the debugger later in the options.success callbacks to see at which
+                        //  stage the error is thrown.
+                        console.warn('Start here 2014')
+                        debugger;
+                        var model = col.at(0)
+                        if (typeof(options.success) !== 'undefined'){
+                            options.success(model)
+                        }
+                    },
+                    error:function(){
+                        console.error('Could not get_one')
+                        if (typeof options.error !== 'undefined'){
+                            options.error()
+                        }
+                    }
+                })
+            }
         },
         create_one:function(attrs_obj, options){
             var coll = new this
@@ -120,8 +141,7 @@ define([
         },
         get_or_create_one:function(search_keys, attrs, options){
             var thiz = this
-            // TODO: First use modeltype.findOrCreate() to return the model if it already exists in the local store
-            this.get_one(search_keys,{success:function(doc){
+            this.get_one(search_keys, attrs, {success:function(doc){
                 if (typeof(doc) === 'undefined'){
                     // The doc didn't exist in the db, so create and return it
                     thiz.create_one(attrs, {
