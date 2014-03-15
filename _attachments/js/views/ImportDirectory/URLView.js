@@ -288,45 +288,23 @@ define([
                     // The dir hasn't been created in the browser yet
                     // If the cgroup's associated directory exists in the db, get it
                     var page_url = thiz.$('#url').val()
-                    model.get_one(model.DirectoriesByURL, [page_url], {success:function(dir){
-                        // If it does not exist in the db, then create it
-                        // TODO: Why is it that this can't be refactored to just use model.get_or_create_one()?
-                        //      Is it because I didn't realize I could use model.set('url', page_url) after 
-                        //      get_or_create_one()?
-                        if (typeof(dir) === 'undefined'){
-                            // TODO: Don't create the dir if the URL is not valid.
-                            //  Maybe mark the dir's URL as invalid in the node.js script (by
-                            //  checking for a 404 response), and/or
-                            //  just delete the dir from node.js in an asynchronous cleanup task.
-                            // Provide a list of similar URLs in an autocompleter.  Get the list from
-                            //  the set of directories already found in the RCL database.
-                            console.log(new Date().getTime() + "\t saving dir 239")
-                            // We wait until later to set get_url_html = 'requested', so as not 
-                            //  to fire that request event twice
-                            model.create_one(model.Directories,
-                                     {
-                                         url:page_url
-                                     },
-                                     {success:function(dir){
-                                         // TODO: If the other form fields are empty,
-                                         //     auto-populate them with info from this
-                                         //     directory's cgroup to help the user
-                                         // TODO: Maybe only display those fields after
-                                         //     the URL is filled in
-                                         //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-                                         thiz.model = dir
-                                         get_cgroup(dir)
-                                     },error:function(){
-                                        console.error('Could not create_one')
-                                     }}
-                            )
-                        }else{
-                            // It exists in the db, so use the existing dir
-                            thiz.model = dir
-                            get_cgroup(dir)
-                        }
-                    },error:function(){
-                        console.error('Could not get_one')
+                    // TODO: Don't create the dir if the URL is not valid.
+                    //  Maybe mark the dir's URL as invalid in the node.js script (by
+                    //  checking for a 404 response), and/or
+                    //  just delete the dir from node.js in an asynchronous cleanup task.
+                    // Provide a list of similar URLs in an autocompleter.  Get the list from
+                    //  the set of directories already found in the RCL database.
+                    // We wait until later to set get_url_html = 'requested', so as not 
+                    //  to fire that request event twice
+                    model.DirectoriesByURL.get_or_create_one([page_url], {url:page_url}, {success:function(dir){
+                        thiz.model = dir
+                        get_cgroup(dir)
+                         // TODO: If the other form fields are empty,
+                         //     auto-populate them with info from this
+                         //     directory's cgroup to help the user
+                         // TODO: Maybe only display those fields after
+                         //     the URL is filled in
+                         //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
