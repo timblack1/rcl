@@ -42,9 +42,35 @@ define([
             //                  method) for results[0].address_components[x].types.short_name == 'US', then if 
             //                  the user is in one of the countries that use miles, select "miles" in the form
             //                  and save it to the cookie.
+			
+			if (navigator.geolocation){
+				// Center the map on the viewer's country by default
+				navigator.geolocation.getCurrentPosition(function(position){			
+				window.app.geocoder = new google.maps.Geocoder();
+				window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
+				//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
+					if (status == google.maps.GeocoderStatus.OK){
+						var miles_countries = _.filter(results, function(item){ 
+							debugger;
+							return item % 2 == 0; 
+						});
+					}
+					
+				}	
+					,this.handleErrors);
+			}else{
+				console.log("Geolocation is not supported by this browser.");
+				// TODO: Find a different way to locate the user, perhaps by IP address
+				this.create_map({coords:this.default_map_center})
+			}
+				
+					
             // TODO:       * Next try figuring it based on the country in which they are searching.
             // TODO:       * Next, try the browser country or language setting.
             // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
+			
+
+			
         },
 		is_distance_unit_cookie_set:function(){
 			// TODO: Get cookie here
