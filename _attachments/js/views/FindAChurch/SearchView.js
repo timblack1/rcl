@@ -26,10 +26,10 @@ define([
             // TODO:     * If the distance unit cookie is set,
 			if ( this.is_distance_unit_cookie_set() ){
 				// TODO:  set the distance units in the form based
-            	//              on what is in the cookie.
+				//              on what is in the cookie.
 				
 			}
-            // TODO:     * Else, on page load, before the person searches, 
+			// TODO:     * Else, on page load, before the person searches, 
 			else {
 				// TODO: guess what units they want based 
             	//                  on one of the following:
@@ -42,7 +42,7 @@ define([
             //                  method) for results[0].address_components[x].types.short_name == 'US', then if 
             //                  the user is in one of the countries that use miles, select "miles" in the form
             //                  and save it to the cookie.
-            // TODO:       * Next try figuring it based on the country in which they are searching.
+			// TODO:       * Next try figuring it based on the country in which they are searching.
             // TODO:       * Next, try the browser country or language setting.
             // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
         },
