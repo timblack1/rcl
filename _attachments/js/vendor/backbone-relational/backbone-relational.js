@@ -1458,8 +1458,30 @@
 			try {
 				var id = this.id,
 					newId = attributes && this.idAttribute in attributes && attributes[ this.idAttribute ];
-
+				//debugger;
+				// TODO: Note the test here indicates that the error condition is that 
+				//	two separate model instances are both attempting to have the same ID.
+				//	So where am I creating two separate model instances?
+				
 				// Check if we're not setting a duplicate id before actually calling `set`.
+				// TODO: Check manually to see if the cid already exists in the store
+				// This appears to be my problem exactly:  https://github.com/PaulUithol/Backbone-relational/pull/295
+				//	So somehow we need to know whether:
+				//		- my code wants to update an existing model (which is the case currently)
+				
+// 				console.log('cid is: ' + this.cid)
+// 				var thiz = this
+// 				_.each(Backbone.Relational.store._collections, function(coll){
+// 					console.log(_.pluck(coll.models, 'cid'))
+// 					if (coll.find(function(mod){return mod === thiz})){
+// 						console.warn('Model was found!')
+// 					}
+// 				})
+				
+				//	    - or it is attempting to assign an existing model's ID to a different model (this is
+				//			the error condition this code is intended to avoid).
+
+
 				Backbone.Relational.store.checkId( this, newId );
 
 				var result = Backbone.Model.prototype.set.apply( this, arguments );

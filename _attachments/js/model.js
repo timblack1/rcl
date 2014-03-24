@@ -102,12 +102,6 @@ define([
                 coll.db.keys = keys
                 coll.fetch({
                     success:function(col, res){
-                        // TODO: The duplicate id occurs after this, without being prevented by the conditional block above.
-                        //  When I pause the debugger here, I don't get the error.
-                        //  So I should try putting the debugger later in the options.success callbacks to see at which
-                        //  stage the error is thrown.
-                        console.warn('Start here 2014')
-                        debugger;
                         var model = col.at(0)
                         if (typeof(options.success) !== 'undefined'){
                             options.success(model)
@@ -126,6 +120,7 @@ define([
             var coll = new this
             var model = coll.create(attrs_obj, {
                 success:function(model){
+                    debugger;
                     console.log('create_one: ', model)
                     if (typeof(options.success) !== 'undefined'){
                         options.success(model)
@@ -142,10 +137,18 @@ define([
         get_or_create_one:function(search_keys, attrs, options){
             var thiz = this
             this.get_one(search_keys, attrs, {success:function(doc){
+                // TODO: The duplicate id occurs after this, without being prevented by the conditional block above.
+                //  When I pause the debugger here, I don't get the error.
+                //  So I should try putting the debugger later in the options.success callbacks to see at which
+                //  stage the error is thrown.
+                //debugger;
                 if (typeof(doc) === 'undefined'){
                     // The doc didn't exist in the db, so create and return it
                     thiz.create_one(attrs, {
                         success:function(doc){
+                            // TODO: The error appears before this line.
+                            console.warn('Start here 2014')
+                            // debugger;
                             if (typeof(options.success) !== 'undefined'){
                                 options.success(doc)
                             }
