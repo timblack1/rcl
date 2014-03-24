@@ -46,18 +46,17 @@ define([
 			if (navigator.geolocation){
 				// Center the map on the viewer's country by default
 				navigator.geolocation.getCurrentPosition(function(position){			
-				window.app.geocoder = new google.maps.Geocoder();
-				window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
-				//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
-					if (status == google.maps.GeocoderStatus.OK){
-						var miles_countries = _.filter(results, function(item){ 
-							debugger;
-							return item % 2 == 0; 
-						});
+					window.app.geocoder = new google.maps.Geocoder();
+					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
+					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
+						if (status == google.maps.GeocoderStatus.OK){
+							var miles_countries = _.filter(results, function(item){ 
+								debugger;
+								return item % 2 == 0; 
+							});
+						}
 					}
-					
-				}	
-					,this.handleErrors);
+				})
 			}else{
 				console.log("Geolocation is not supported by this browser.");
 				// TODO: Find a different way to locate the user, perhaps by IP address
