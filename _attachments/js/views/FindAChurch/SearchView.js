@@ -50,12 +50,20 @@ define([
 					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
 						if (status == google.maps.GeocoderStatus.OK){
-							var miles_countries = _.filter(results, function(item){ 
-								debugger;
-								return item % 2 == 0; 
+							var use_miles_array = _.filter(results, function(item){ 
+								var long_names = _.pluck (item.address_components, "long_name")
+								//See if it contains countries that use miles (GB, LR, MM, US)
+								var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
+								return (country_name !== "")
 							});
+							_.contains(use_miles_array, true)
+							if (_.contains(use_miles_array, true)) {
+								console.warn ("Start on Line 62")
+								// START HERE 
+								// TODO: Set the form to use miles here
+							}
 						}
-					}
+					})
 				})
 			}else{
 				console.log("Geolocation is not supported by this browser.");
