@@ -83,15 +83,23 @@ define([
     // Define base classes
     
     var CollectionBase = Backbone.Collection.extend({}, {
-        get_one:function(keys, attrs, options) {
+        get_local_models:function(attrs){
             // TODO: First use modeltype.findOrCreate() to return the model if it already exists in the local store
-            //  Problem:  I don't know the existing model's id at this point.
+            //  Problem:  Sometimes I don't know the existing model's id at this point.
+            //  Solution: Maybe I can test for an _id, then use findOrCreate() if there is an _id
             // See if the attrs exist in a model in the local store already, so as not to duplicate it.
-            var local_models = _.map(Backbone.Relational.store._collections, function(scoll){
-                return scoll.findWhere(attrs)
-            })
-            // Get rid of undefined items in the array.
-            local_models = _.reject(local_models, function(item){return typeof item == 'undefined'})
+            debugger;
+            if (typeof attrs._id !== 'undefined'){
+                return [this.model.findOrCreate(attrs)]
+            }
+            return _.chain(Backbone.Relational.store._collections)
+                .map(function(scoll){ return scoll.findWhere(attrs) })
+                // Get rid of undefined items in the array.
+                .reject(function(item){return typeof item == 'undefined'})
+                .value();
+        },
+        get_one:function(keys, attrs, options) {
+            var local_models = this.get_local_models(attrs)
             // Prevent creating the model in the database if it already exists in the local store.
             if (typeof local_models !== 'undefined' && local_models.length > 0){
                 var mod = local_models[0]
@@ -117,22 +125,29 @@ define([
             }
         },
         create_one:function(attrs_obj, options){
-            var coll = new this
-            var model = coll.create(attrs_obj, {
-                success:function(model){
-                    debugger;
-                    console.log('create_one: ', model)
-                    if (typeof(options.success) !== 'undefined'){
-                        options.success(model)
+            var local_models = this.get_local_models(attrs_obj)
+            // Prevent creating the model in the database if it already exists in the local store.
+            if (typeof local_models !== 'undefined' && local_models.length > 0){
+                var mod = local_models[0]
+                options.success(mod)
+            }else{
+                var coll = new this
+                //debugger;
+                var model = coll.create(attrs_obj, {
+                    success:function(model){
+                        //debugger;
+                        if (typeof(options.success) !== 'undefined'){
+                            options.success(model)
+                        }
+                    },
+                    error:function(){
+                        console.error('Could not create_one')
+                        if (typeof options.error !== 'undefined'){
+                            options.error()
+                        }
                     }
-                },
-                error:function(){
-                    console.error('Could not create_one')
-                    if (typeof options.error !== 'undefined'){
-                        options.error()
-                    }
-                }
-            })
+                })
+            }
         },
         get_or_create_one:function(search_keys, attrs, options){
             var thiz = this
@@ -374,7 +389,7 @@ define([
             view: 'directories_by_url'
         },
         initialize:function(){
-            // TODO: Should we proliferate collections here in the model, or create them dynamically in the client code?
+            // TODO: Should we proliferate collections here in the model, or create them dynamically in the client code (like suggested below)?
             // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
