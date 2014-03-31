@@ -43,12 +43,17 @@ define([
             //                  the user is in one of the countries that use miles, select "miles" in the form
             //                  and save it to the cookie.
 			
+		//	debugger;
+			
+			var thiz=this
+			
 			if (navigator.geolocation){
 				// Center the map on the viewer's country by default
 				navigator.geolocation.getCurrentPosition(function(position){			
 					window.app.geocoder = new google.maps.Geocoder();
 					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
+					debugger;
 						if (status == google.maps.GeocoderStatus.OK){
 							var use_miles_array = _.filter(results, function(item){ 
 								var long_names = _.pluck (item.address_components, "long_name")
@@ -56,11 +61,13 @@ define([
 								var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
 								return (country_name !== "")
 							});
-							_.contains(use_miles_array, true)
-							if (_.contains(use_miles_array, true)) {
+							if (use_miles_array.length >0) {
 								console.warn ("Start on Line 62")
 								// START HERE 
 								// TODO: Set the form to use miles here
+								thiz.$('.units').val('miles')
+							}else{
+								thiz.$('.units').val('km')
 							}
 						}
 					})
