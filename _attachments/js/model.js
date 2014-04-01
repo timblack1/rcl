@@ -88,7 +88,7 @@ define([
             //  Problem:  Sometimes I don't know the existing model's id at this point.
             //  Solution: Maybe I can test for an _id, then use findOrCreate() if there is an _id
             // See if the attrs exist in a model in the local store already, so as not to duplicate it.
-            debugger;
+            //debugger;
             if (typeof attrs._id !== 'undefined'){
                 return [this.model.findOrCreate(attrs)]
             }
@@ -132,10 +132,22 @@ define([
                 options.success(mod)
             }else{
                 var coll = new this
-                //debugger;
+                debugger;
+                // TODO: Is Backbone updating the client model twice, once before saving to
+                //  the server, and once after saving to the server?  But if so, why would
+                //  this cause backbone-relational to say we are trying to instantiate two
+                //  models with the same ID?
                 var model = coll.create(attrs_obj, {
+                    wait:true,
                     success:function(model){
-                        //debugger;
+                        // TODO: It seems the error occurs before this point, because the
+                        //  breakpoint below never gets hit.
+                        // TODO: Could the race condition be here?  Steps:
+                        //  The collection creates a new local model.
+                        //  If (wait:false){ The new model is added to the collection.}
+                        //  The collection saves the new model to the server
+                        //  If (wait:true){ The new model is added to the collection.}
+                        debugger;
                         if (typeof(options.success) !== 'undefined'){
                             options.success(model)
                         }
