@@ -298,6 +298,9 @@ define([
                     //  to fire that request event twice
                     model.DirectoriesByURL.get_or_create_one([page_url], {url:page_url}, {success:function(dir){
                         thiz.model = dir
+                        // TODO: See if the error occurs before this point.
+                        //      Conclusion:  It seems the error occurs before this breakpoint.
+                        debugger;
                         get_cgroup(dir)
                          // TODO: If the other form fields are empty,
                          //     auto-populate them with info from this

@@ -132,7 +132,7 @@ define([
                 options.success(mod)
             }else{
                 var coll = new this
-                debugger;
+                //debugger;
                 // TODO: Is Backbone updating the client model twice, once before saving to
                 //  the server, and once after saving to the server?  But if so, why would
                 //  this cause backbone-relational to say we are trying to instantiate two
@@ -147,7 +147,7 @@ define([
                         //  If (wait:false){ The new model is added to the collection.}
                         //  The collection saves the new model to the server
                         //  If (wait:true){ The new model is added to the collection.}
-                        debugger;
+                        //debugger;
                         if (typeof(options.success) !== 'undefined'){
                             options.success(model)
                         }
