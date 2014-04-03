@@ -26,7 +26,7 @@
 <body>
 <div id="sidebar">
 	<a class="toc_title" href="#">
-		Backbone-relational.js <span class="version">(0.8.7)</span>
+		Backbone-relational.js <span class="version">(0.8.8)</span>
 	</a>
 
 	<ul>
@@ -157,7 +157,7 @@
 
 		<table>
 			<tr>
-				<td><a class="punch" href="https://raw.github.com/PaulUithol/Backbone-relational/0.8.7/backbone-relational.js">Latest Release (0.8.7)</a></td>
+				<td><a class="punch" href="https://raw.github.com/PaulUithol/Backbone-relational/0.8.8/backbone-relational.js">Latest Release (0.8.8)</a></td>
 				<td class="text"><i>~66kb. Full source, uncompressed, lots of comments.</i></td>
 			</tr>
 			<tr>
@@ -575,7 +575,7 @@ Company = Backbone.RelationalModel.extend({
 				with <q>_id</q> or <q>_ids</q>. The behavior for <q>keySource</q> corresponds to the following rules:
 			</p>
 			<p>
-				When a relation is instantiated, the contents of the <q>keySource</q> are used as it's initial data. The
+				When a relation is instantiated, the contents of the <q>keySource</q> are used as its initial data. The
 				application uses the regular key attribute to interface with the relation and the models in it; the
 				<q>keySource</q> is not available as an attribute for the model. So you	may be provided with data containing
 				<q>animal_ids</q>, while you want to access this relation as <q>zoo.get('animals')</q>.
@@ -697,7 +697,7 @@ alert( JSON.stringify( farm.toJSON(), null, 4 ) );
 				Each subModel is considered to be a proper submodel of its superclass (the model type you're extending), with a
 				shared id pool. This means that when looking for an object of the supermodel's type, objects of a submodel's type
 				can be returned as well, as long as the id matches. In effect, any relations pointing to the supermodel will look
-				for instances of it's submodels as well.
+				for instances of its submodels as well.
 			</p>
 
 
@@ -917,7 +917,7 @@ chimp = Mammal.build( { id: 3, species: "chimp", type: "primate" } )
 			</p>
 			<p>
 				Search for a model instance in the <a href="#Store">Backbone.Relational.store</a>, and return the model if found.
-				If no model is found, a new model will be created if <q>options.create</q> is <q>true</q>.
+				A new model will be created if no model is found, <q>attributes</q> is an object, and <q>options.create</q> is <q>true</q>.
 			</p>
 			<p>
 				Accepted <q>options</q>:
@@ -1065,7 +1065,7 @@ alert( JSON.stringify( zoo.toJSON(), null, 4 ) );
 		</p>
 
 		<h4 class="code" id="Store-addModelScope">
-			addModelScope<code>Backbone.Relational.store.addModelScope( scope&lt;object&gt; )</code>
+			addModelScope<code>Backbone.Relational.store.addModelScope(scope&lt;object&gt;)</code>
 		</h4>
 		<p>
 			Add a namespace on which models and collections are defined. This is especially useful when working in an
@@ -1085,8 +1085,17 @@ alert( JSON.stringify( zoo.toJSON(), null, 4 ) );
 			reset<code>Backbone.Relational.store.reset()</code>
 		</h4>
 		<p>
-			Reset the <q>store</q> to it's original state. This will disable relations for all models created up to this point,
+			Reset the <q>store</q> to its original state. This will disable relations for all models created up to this point,
 			remove added model scopes, and removed all internal store collections.
+		</p>
+
+		<h4 class="code" id="Store-unregister">
+			unregister<code>Backbone.Relational.store.unregister(type&lt;Backbone.RelationalModel|Backbone.RelationalModel.constructor|Backbone.Collection&gt;)</code>
+		</h4>
+		<p>
+			Unregister a single model or a collection. Unregistering a model will remove a model from any relations it's involved in.
+			Internally, unregister is called when a model has been destroyed. It can also be called explicitly to on models
+			you don't want Backbone-relational to consider for relations anymore, for example to free up models used as (temporary) search results.
 		</p>
 	</section>
 
@@ -1225,10 +1234,40 @@ User = Backbone.RelationalModel.extend();
 		<h4>Master
 			<small>
 				<span class="date">(future)</span> &ndash;
-				<a href="https://github.com/PaulUithol/Backbone-relational/compare/0.8.7...master">diff</a> &ndash;
+				<a href="https://github.com/PaulUithol/Backbone-relational/compare/0.8.8...master">diff</a> &ndash;
 				<a href="https://raw.github.com/PaulUithol/Backbone-relational/master/backbone-relational.js">download</a>
 			</small>
 		</h4>
+
+		<h4>0.8.8
+			<small>
+				<span class="date">(1 April 2014)</span> &ndash;
+				<a href="https://github.com/PaulUithol/Backbone-relational/compare/0.8.7...0.8.8">diff</a> &ndash;
+				<a href="https://raw.github.com/PaulUithol/Backbone-relational/0.8.8/backbone-relational.js">download</a>
+			</small>
+		</h4>
+		<ul>
+			<li>
+				<a href="https://github.com/PaulUithol/Backbone-relational/issues/411"><q>#411</q></a>:
+				Don't add models without an id to the store.
+			</li>
+			<li>
+				<a href="https://github.com/PaulUithol/Backbone-relational/issues/419"><q>#419</q></a>:
+				Proper return values for single models on collection methods for Backbone 1.1.0
+			</li>
+			<li>
+				<a href="https://github.com/PaulUithol/Backbone-relational/commit/4113c69d3752fcac75f7a1959c77349dd4672afa"><q>4113c69</q></a>
+				`Backbone.Relational.store.unregister` now also accepts a collection or a model type
+			</li>
+			<li>
+				<a href="https://github.com/PaulUithol/Backbone-relational/issues/427"><q>#427</q></a>:
+				Fix firing explicit change events
+			</li>
+			<li>
+				<a href="https://github.com/PaulUithol/Backbone-relational/issues/215"><q>#215</q></a>
+				Add direct support for AMD, CommonJS, require, etc.
+			</li>
+		</ul>
 
 		<h4>0.8.7
 			<small>
@@ -1343,7 +1382,7 @@ User = Backbone.RelationalModel.extend();
 			</li>
 			<li>
 				The <q>update</q> option on <a href="#RelationalModel-findOrCreate"><q>findOrCreate</q></a> has been
-				renamed to <q>merge</q>, since it's behavior corresponds with <q>merge</q> on <q>Collection.add</q>
+				renamed to <q>merge</q>, since its behavior corresponds with <q>merge</q> on <q>Collection.add</q>
 				(and not with <q>update</q> on <q>Collection.reset</q>).
 			</li>
 			<li>
@@ -1486,8 +1525,8 @@ User = Backbone.RelationalModel.extend();
 		<p>
 			If multiple versions were allowed, inadvertently manipulating or performing a save or destroy
 			on another version of that model (which is still around on the client, and can for example still be bound
-			to one or more views in your application, either on purpose or inadvertently) would save it's state to the
-			server, killing it's relations, and the server response would set the same (incorrect) data on the 'current'
+			to one or more views in your application, either on purpose or inadvertently) would save its state to the
+			server, killing its relations, and the server response would set the same (incorrect) data on the 'current'
 			version of the model on the client. By then, you'd be in trouble.
 		</p>
 		<p>
@@ -1511,7 +1550,7 @@ User = Backbone.RelationalModel.extend();
 			The basic problem is that when manipulating relations, you only want the events to fire once ALL relations
 			have been updated; also those on models one, two, or more relations away. For example, when	you have an
 			event listener on <q>add</q>, you want to be able to use the model you receive as the first argument
-			and it's relations fully instead of getting raw JS objects:
+			and its relations fully instead of getting raw JS objects:
 		</p>
 
 <pre class="language-javascript"><code class="language-javascript runnable" data-setup="#example-job"><!--
