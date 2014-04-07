@@ -1,9 +1,10 @@
 define([
         'config',
         'mustache',
+		'jquery_cookie',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Mustache, template){
+        function(config, Mustache, jquery_cookie, template){
 
     return Backbone.View.extend({
         initialize: function(){
