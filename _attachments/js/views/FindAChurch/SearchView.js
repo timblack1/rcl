@@ -35,15 +35,10 @@ define([
             	//                  on one of the following:
 				
 			}
-            // TODO:       * First try the users' browser's geolocation information. Google for "calculate
-            //                  distance units from geolocation" to see how others have done this. You can
-            //                  geocode the location using window.app.geocoder = new google.maps.Geocoder(); 
-            //                  window.app.geocoder.geocode(..., then filter (using the Underscore.js _.filter()
-            //                  method) for results[0].address_components[x].types.short_name == 'US', then if 
+            // TODO:       * First try the users' browser's geolocation information. If 
             //                  the user is in one of the countries that use miles, select "miles" in the form
             //                  and save it to the cookie.
 			
-		//	debugger;
 			
 			var thiz=this
 			
@@ -53,7 +48,6 @@ define([
 					window.app.geocoder = new google.maps.Geocoder();
 					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
-					debugger;
 						if (status == google.maps.GeocoderStatus.OK){
 							var use_miles_array = _.filter(results, function(item){ 
 								var long_names = _.pluck (item.address_components, "long_name")
@@ -62,9 +56,7 @@ define([
 								return (country_name !== "")
 							});
 							if (use_miles_array.length >0) {
-								console.warn ("Start on Line 62")
-								// START HERE 
-								// TODO: Set the form to use miles here
+							    // Set the form to use miles here
 								thiz.$('.units').val('miles')
 							}else{
 								thiz.$('.units').val('km')
@@ -78,9 +70,9 @@ define([
 				this.create_map({coords:this.default_map_center})
 			}
 				
-					
+			
+			// TODO:       * Next, try the browser country or language setting.		
             // TODO:       * Next try figuring it based on the country in which they are searching.
-            // TODO:       * Next, try the browser country or language setting.
             // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
 			
 
