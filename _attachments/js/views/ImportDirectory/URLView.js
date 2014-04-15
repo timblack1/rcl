@@ -300,7 +300,7 @@ define([
                         thiz.model = dir
                         // TODO: See if the error occurs before this point.
                         //      Conclusion:  It seems the error occurs before this breakpoint.
-                        debugger;
+                        //debugger;
                         get_cgroup(dir)
                          // TODO: If the other form fields are empty,
                          //     auto-populate them with info from this

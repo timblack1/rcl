@@ -132,6 +132,11 @@ define([
                 options.success(mod)
             }else{
                 var coll = new this
+                // TODO: To debug further, check Backbone-relational's store and coll to see if the model
+                //  exists in either.
+                console.log(coll)
+                console.log(Backbone.Relational.store._collections)
+                console.log('Debug here')
                 //debugger;
                 // TODO: Is Backbone updating the client model twice, once before saving to
                 //  the server, and once after saving to the server?  But if so, why would
