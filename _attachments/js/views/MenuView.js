@@ -49,22 +49,12 @@ define(
         },
         delete_all_directories:function(){
             // Delete all directories
-            // Get all directories from db
-            config.db.view('rcl/directories',{
-                success:function(data){
-                    var docs = []
-                    for (var i=0;i<data.rows.length;i++){
-                        docs.push({
-                            _id:data.rows[i].id,
-                            _rev:data.rows[i].value
-                        })
-                        // Destroy using Backbone.Model.destroy() rather than CouchDB's config.db.bulkRemove().
-                        var dir = model.Directory.findOrCreate(data.rows[i].id)
-                        dir.destroy()
-                    }
-                    // config.db.bulkRemove({docs:docs}, {})
-                }
-            })
+            var dirs = new model.Directories()
+            dirs.fetch({success:function(dirs){
+                dirs.each(function(dir){
+                    dir.destroy()
+                })
+            }})
         },
         delete_all_caney_opc:function(){
             // Delete all OPC directories
