@@ -132,16 +132,30 @@ define([
                 options.success(mod)
             }else{
                 var coll = new this
-                // TODO: To debug further, check Backbone-relational's store and coll to see if the model
-                //  exists in either.
-                console.log(coll)
-                console.log(Backbone.Relational.store._collections)
-                console.log('Debug here')
-                //debugger;
                 // TODO: Is Backbone updating the client model twice, once before saving to
                 //  the server, and once after saving to the server?  But if so, why would
                 //  this cause backbone-relational to say we are trying to instantiate two
                 //  models with the same ID?
+                // TODO: if (attrs_obj.type == 'directory' && attrs_obj.url)
+                var attributes = attrs_obj;
+                // TODO: Shouldn't this be a model rather than a collection?
+                coll.findModel = function(attributes){
+                    // TODO: I may need to use http://backbonerelational.org/#RelationalModel-findModel here.
+                    // TODO: Start here.
+                    // Try to find an instance of 'this' model type in the store
+                    var model = Backbone.Relational.store.find( this, attributes );
+
+                    if ( !model && _.isObject( attributes ) ) {
+                        // TODO: Can this be simplified, since we are already in a collection?
+                        var coll = Backbone.Relational.store.getCollection( this );
+
+                        model = coll.find( function( m ) {
+                            return m.url === attributes.url;
+                        });
+                    }
+
+                    return model;
+                }
                 var model = coll.create(attrs_obj, {
                     wait:true,
                     success:function(model){
