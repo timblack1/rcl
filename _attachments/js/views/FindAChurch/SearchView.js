@@ -24,11 +24,10 @@ define([
             //  some input from the user.
             // TODO:   * Event Handler: On page load
 			
-            // TODO:     * If the distance unit cookie is set,
+            //If the distance unit cookie is set,
+			// set the distance units in the form based on what is in the cookie.
 			if ( this.is_distance_unit_cookie_set() ){
-				// TODO:  set the distance units in the form based
-            	//              on what is in the cookie.
-				
+				this.$('.units').val($.cookie('units_of_measurement'));		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -80,11 +79,17 @@ define([
 			
         },
 		is_distance_unit_cookie_set:function(){
-			// TODO: Get cookie here
-			
+			// Get cookie here
+			$.cookie('units_of_measurement')
+			if (typeof $.cookie('units_of_measurement') === 'undefined'){
+				return false;
+			}else{
+				return true
+			}
 		},
 		set_distance_unit_cookie:function(){
-			// TODO: Set cookie here
+			//  Set cookie here
+			$.cookie('units_of_measurement', this.$('.units').val());		
 			
 		},
         location_keyup:function(event){
