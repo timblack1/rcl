@@ -11,7 +11,8 @@ define([
             _.bindAll(this, 'location_keyup', 'geocode')
             window.app.geocoder = new google.maps.Geocoder();
         },
-        render: function(){
+		
+		render: function(){
             this.$el.html(Mustache.render(template))
             
             // Attach search event handler to search button and text box
@@ -49,12 +50,7 @@ define([
 					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
 						if (status == google.maps.GeocoderStatus.OK){
-							var use_miles_array = _.filter(results, function(item){ 
-								var long_names = _.pluck (item.address_components, "long_name")
-								//See if it contains countries that use miles (GB, LR, MM, US)
-								var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
-								return (country_name !== "")
-							});
+							var use_miles_array = thiz.get_use_miles_array()
 							if (use_miles_array.length >0) {
 							    // Set the form to use miles here
 								thiz.$('.units').val('miles')
@@ -97,6 +93,16 @@ define([
                 this.geocode(event)
             }
         },
+		
+		get_use_miles_array:function(){
+			return _.filter(results, function(item){ 
+				var long_names = _.pluck (item.address_components, "long_name")
+				//See if it contains countries that use miles (GB, LR, MM, US)
+				var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
+				return (country_name !== "")
+			});
+		},
+		
         geocode: function (event){
             event.preventDefault()
             // If user submitted an address, put that address into this.model
@@ -130,6 +136,16 @@ define([
                         units:units,
                         results:results
                     })
+					//START HERE  This function needs to be edited next.
+					
+					debugger;
+					if (!thiz.is_distance_unit_cookie_set()){
+						var use_miles_array = thiz.get_use_miles_array(results)
+						debugger;
+					}
+					
+					
+					
                     // TODO: Send the request to Google; if Google says the location is ambiguous, 
                     //  then use one of the location methods above (geolocation, etc.) to send Google
                     //  a hint about in which country the user is attempting to search.
