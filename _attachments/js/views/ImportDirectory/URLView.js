@@ -239,33 +239,11 @@ define([
                     // Don't do anything if the CGroup info isn't entered yet
                     if (cgroup_name !== '' && abbr !== ''){
                         // Check if cgroup already exists in db
-                        // TODO: Consider whether this pattern can be refactored into a function,
-                        //  because it seems we need to use it regularly.
-                        //  - I put it into model.get_or_create_one()
-                        // TODO: But in this case, the callback takes two arguments.  How can
-                        //  we handle different numbers of callback arguments?
-                        // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/make-getorcreateone-handle-multiple-callback-args
-                        model.get_one(model.CGroupsByAbbrOrName,
-                            [cgroup_name,abbr],
-                            {success:function(cgroup){
-                                if (typeof(cgroup) === 'undefined'){
-                                    // The cgroup didn't exist in the db, so create it
-                                    // Create CGroup
-                                    model.create_one(model.CGroups,
-                                        {
-                                            name:cgroup_name,
-                                            abbreviation:abbr
-                                        },
-                                        {success:function(cgroup){
-                                            save_cgroup_and_dir(cgroup, dir)
-                                        }}
-                                    )
-                                }else{
-                                    // The cgroup did exist in the db, so use it
-                                    save_cgroup_and_dir(cgroup, dir)
-                                }
-                            }}
-                        )
+                        var search_keys = [cgroup_name, abbr]
+                        var attrs = dir.attributes
+                        model.CGroupsByAbbrOrName.get_or_create_one(search_keys, attrs, {success:function(cgroup){
+                            save_cgroup_and_dir(cgroup, dir)
+                        }})
                     }
                 }
                 
