@@ -11,8 +11,10 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'got_url_html', 'changes_listeners', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
-                'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
+            _.bindAll(this, 'changes_listeners', 'got_url_html', 'got_batchgeo_map_html', 'got_json',
+                'get_church_dir_from_url', 'get_cgroup', 
+                'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
+                'batchgeo_parse_json')
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -49,10 +51,16 @@ define([
             // These are the main cases - different types of changes that
             //  need to be handled
             this.listenTo(this.model,{
+                'change':handle_404,
                 'change:get_url_html':got_url_html,
                 'change:get_batchgeo_map_html':got_batchgeo_map_html,
                 'change:get_json':got_json
             })
+        },
+        handle_404:function(model, value, options){
+            // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
+            //  Instead after the delay, notify the user with
+            //  "Is that URL correct?  It returns a '404 page not found' error."
         },
         got_url_html:function(model, value, options){
             // Handle directory's first page of content
@@ -79,10 +87,6 @@ define([
                     if (this.uses_batch_geo(html) === true && 
                         typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
                         typeof this.model.get('get_json') == 'undefined'){
-                        // console.log(new Date().getTime() + '\tb: get_batchgeo_map_html: ' + this.model.get('get_batchgeo_map_html'))
-                        console.log('get_batchgeo_map_html: ' + this.model.get('get_batchgeo_map_html'))
-                        console.log('get_json: ' + this.model.get('get_json'))
-                        console.log(new Date().getTime() + '\tb: getting batchgeo_map_html')
                         this.process_batch_geo(html)
                     }else{
                         // TODO: If the other form fields are empty,
@@ -112,7 +116,6 @@ define([
                     console.log('We got JSON')
                     this.model.set('pagetype', 'json')
                     // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
-                    console.log(new Date().getTime() + '\tb: parsing json')
                     this.parse_json()
                 }
                 else { // We got an error code
@@ -129,7 +132,6 @@ define([
             // Handle batchgeo map page
             if (typeof this.model.get('batchgeo_map_html') !== 'undefined' && 
                 this.model.get('get_batchgeo_map_html') == 'gotten'){
-                console.log(new Date().getTime() + '\tb: getting batchgeo_json')
                 this.get_batchgeo_json()
             }
         },
@@ -140,7 +142,6 @@ define([
                 var json = this.model.get('json')
                 // Batchgeo JSON
                 if (json.indexOf('per = {') === 0){
-                    console.log(new Date().getTime() + '\tb: parsing batchgeo_json')
                     this.batchgeo_parse_json()
                 }
             }
@@ -157,12 +158,6 @@ define([
             // Delay this to run after typing has stopped for 3 seconds, so we don't
             //  send too many requests
             this.delay(function(){
-                // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
-                //  Instead after the delay, notify the user with
-                //  "Is that URL correct?  It returns a '404 page not found' error."
-                
-                // Declare several utility functions for use further below
-                
                 
                 // --------- Main code section begins here ----------
                 
