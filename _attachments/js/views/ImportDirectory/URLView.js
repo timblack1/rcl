@@ -11,10 +11,8 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'changes_listener', 'get_church_dir_from_url',
-                'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
-//             _.bindAll(this, 'changes_listener', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
-//                 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
+            _.bindAll(this, 'got_url_html', 'changes_listeners', 'get_church_dir_from_url', 'get_cgroup', 'save_cgroup_and_dir',
+                'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 'batchgeo_parse_json')
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -47,16 +45,16 @@ define([
         events: {
             'keyup #url':'get_church_dir_from_url'
         },
-        changes_listener:function(){
-            // ----------------------------------------------------------
+        changes_listeners:function(){
             // These are the main cases - different types of changes that
             //  need to be handled
-            
-            // console.log(new Date().getTime() + '\tb: start here')
-            // TODO: Fix this order so it works right?
-            //  Why is this creating an infinite loop?
-            
-            console.log('running changes_listener() because the change event was triggered on this.model')
+            this.listenTo(this.model,{
+                'change:get_url_html':got_url_html,
+                'change:get_batchgeo_map_html':got_batchgeo_map_html,
+                'change:get_json':got_json
+            })
+        },
+        got_url_html:function(model, value, options){
             // Handle directory's first page of content
             if (this.model.get('url_html') &&
                 this.model.get('get_url_html') == 'gotten'){
@@ -124,14 +122,18 @@ define([
                 this.model.set('get_url_html', '')
                 // TODO: Is this the right place to save the dir?
                 //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                //this.model.save({_id:dir.get('_id')})
+                //this.model.save({_id:this.model.get('_id')})
             }
+        },
+        got_batchgeo_map_html:function(model, value, options){
             // Handle batchgeo map page
             if (typeof this.model.get('batchgeo_map_html') !== 'undefined' && 
                 this.model.get('get_batchgeo_map_html') == 'gotten'){
                 console.log(new Date().getTime() + '\tb: getting batchgeo_json')
                 this.get_batchgeo_json()
             }
+        },
+        got_json:function(model, value, options){
             // Handle JSON
             if (typeof this.model.get('json') !== 'undefined' && 
                 this.model.get('get_json') == 'gotten'){
@@ -142,9 +144,6 @@ define([
                     this.batchgeo_parse_json()
                 }
             }
-            
-            // ----------------------------------------------------------
-            
         },
         delay:(function(){
           var timer = 0;
@@ -163,89 +162,7 @@ define([
                 //  "Is that URL correct?  It returns a '404 page not found' error."
                 
                 // Declare several utility functions for use further below
-                function save_cgroup_and_dir(cgroup, dir){
-                    // Save the dir so if the URL has changed in the browser, it gets
-                    //  updated in the db too
-                    var iterations = 0
-                    // Note this is a recursive function!
-                    // TODO: Consider refactoring this into a separate function
-                    function save_dir(cgroup, dir){
-                        iterations++;
-                        // Make this function wait until this rev is not being saved anymore under any other event
-                        if (typeof window.app.import_directory_view.rev_currently_being_saved !== 'undefined' &&
-                            window.app.import_directory_view.rev_currently_being_saved === dir.get('_rev')){
-                            setTimeout(function(){ save_dir(cgroup, dir) }, 1000)
-                            return;
-                        }
-                        dir.fetch({success:function(dir, response, options){
-                            var get_url_html = dir.get('get_url_html')
-                            // Prevent import from running multiple times simultaneously
-                            if (get_url_html != 'getting'){
-                                get_url_html = 'requested'
-                            }
-                            // Only save this revision if it's not currently being saved already
-                            if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined' || 
-                                    window.app.import_directory_view.rev_currently_being_saved !== dir.get('_rev')){
-                                // console.log(iterations + ' 196 saving', dir.get('_rev'))
-                                // Prevent saving the same revision twice simultaneously
-                                if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
-                                    window.app.import_directory_view.rev_currently_being_saved = dir.get('_rev')
-                                }
-                                console.log(new Date().getTime() + "\t saving dir 148")
-                                dir.save({
-                                        _id:dir.get('_id'),
-                                        _rev:dir.get('_rev'),
-                                        url:$('#url').val(),
-                                        get_url_html:get_url_html
-                                    },
-                                    {
-                                        success:function(){
-                                            // Report that it's OK for other calls to save_dir to run
-                                            delete window.app.import_directory_view.rev_currently_being_saved
-                                            // Append dir to CGroup
-                                            cgroup.get('directories').add([{_id:dir.get('_id')}])
-                                            // Save cgroup to db
-                                            // TODO: Does the relation appear on the dir in the db also?
-                                            // This will trigger the Node changes listener's response
-                                            cgroup.save({_id:cgroup.get('_id'),_rev:cgroup.get('_rev')},{success:function(){
-                                                // TODO: This isn't necessary on dirtypes other than HTML
-                                                // Render DirTypeView
-                                                $('#steps').hide()
-                                                thiz.dir_type_view  = new DirTypeView({el: '#steps', model: thiz.model})
-                                                thiz.dir_type_view.render()
-                                                $('#steps').fadeIn(2000)
-                                            }})
-                                        },
-                                        error:function(model, xhr, options){
-                                            console.error('We got the 196 error '+ iterations)
-                                            save_dir(cgroup, dir)
-                                        }
-                                    }
-                                )
-                            }
-                        }})
-                    }
-                    save_dir(cgroup, dir)
-                }
-                function get_cgroup(dir){
-                    // Make the dir available globally so it can be reused if the user causes
-                    //  this function to be invoked again
-                    // TODO: Start here.  Set up changes listener on dir to handle responses from node_changes_listener.js
-                    
-                    // Reset status flag so the status messages will display
-                    dir.set('get_state_url_html', '')
-                    var cgroup_name = $('#cgroup_name').val()
-                    var abbr = $('#abbreviation').val()
-                    // Don't do anything if the CGroup info isn't entered yet
-                    if (cgroup_name !== '' && abbr !== ''){
-                        // Check if cgroup already exists in db
-                        var search_keys = [cgroup_name, abbr]
-                        var attrs = dir.attributes
-                        model.CGroupsByAbbrOrName.get_or_create_one(search_keys, attrs, {success:function(cgroup){
-                            save_cgroup_and_dir(cgroup, dir)
-                        }})
-                    }
-                }
+                
                 
                 // --------- Main code section begins here ----------
                 
@@ -276,10 +193,12 @@ define([
                     //  to fire that request event twice
                     model.DirectoriesByURL.get_or_create_one([page_url], {url:page_url}, {success:function(dir){
                         thiz.model = dir
+                        // Create changes listeners on this.model
+                        thiz.changes_listeners()
                         // TODO: See if the error occurs before this point.
                         //      Conclusion:  It seems the error occurs before this breakpoint.
                         //debugger;
-                        get_cgroup(dir)
+                        thiz.get_cgroup()
                          // TODO: If the other form fields are empty,
                          //     auto-populate them with info from this
                          //     directory's cgroup to help the user
@@ -289,7 +208,7 @@ define([
                     }})
                 }else{
                     // It already exists in the browser, so we're editing an already-created dir
-                    get_cgroup(thiz.model)
+                    thiz.get_cgroup()
                 }
                 
                 // TODO: Is this code needed anymore?
@@ -330,6 +249,90 @@ define([
                 //                    }
                 //                })
             }, 3000)
+        },
+        get_cgroup:function(){
+            // Make the dir available globally so it can be reused if the user causes
+            //  this function to be invoked again
+            // TODO: Start here.  Set up changes listener on dir to handle responses from node_changes_listener.js
+            var thiz = this
+            // Reset status flag so the status messages will display
+            this.model.set('get_state_url_html', '')
+            var cgroup_name = $('#cgroup_name').val()
+            var abbr = $('#abbreviation').val()
+            // Don't do anything if the CGroup info isn't entered yet
+            if (cgroup_name !== '' && abbr !== ''){
+                // Check if cgroup already exists in db
+                var search_keys = [cgroup_name, abbr]
+                var attrs = this.model.attributes
+                model.CGroupsByAbbrOrName.get_or_create_one(search_keys, attrs, {success:function(cgroup){
+                    thiz.cgroup = cgroup
+                    thiz.save_cgroup_and_dir()
+                }})
+            }
+        },
+        save_cgroup_and_dir:function(){
+            // Save the dir so if the URL has changed in the browser, it gets
+            //  updated in the db too
+            this.iterations = 0
+            // Note this is a recursive function!
+            this.save_dir()
+        },
+        save_dir:function(){
+            var thiz = this
+            this.iterations++;
+            // Make this function wait until this rev is not being saved anymore under any other event
+            if (typeof window.app.import_directory_view.rev_currently_being_saved !== 'undefined' &&
+                window.app.import_directory_view.rev_currently_being_saved === thiz.model.get('_rev')){
+                setTimeout(function(){ thiz.save_dir() }, 1000)
+                return;
+            }
+            this.model.fetch({success:function(model, response, options){
+                var get_url_html = thiz.model.get('get_url_html')
+                // Prevent import from running multiple times simultaneously
+                if (get_url_html != 'getting'){
+                    get_url_html = 'requested'
+                }
+                // Only save this revision if it's not currently being saved already
+                if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined' || 
+                        window.app.import_directory_view.rev_currently_being_saved !== thiz.model.get('_rev')){
+                    // console.log(iterations + ' 196 saving', dir.get('_rev'))
+                    // Prevent saving the same revision twice simultaneously
+                    if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
+                        window.app.import_directory_view.rev_currently_being_saved = thiz.model.get('_rev')
+                    }
+                    console.log(new Date().getTime() + "\t saving dir 148")
+                    thiz.model.save({
+                            _id:thiz.model.get('_id'),
+                            _rev:thiz.model.get('_rev'),
+                            url:$('#url').val(),
+                            get_url_html:get_url_html
+                        },
+                        {
+                            success:function(){
+                                // Report that it's OK for other calls to save_dir to run
+                                delete window.app.import_directory_view.rev_currently_being_saved
+                                // Append dir to CGroup
+                                thiz.cgroup.get('directories').add([{_id:thiz.model.get('_id')}])
+                                // Save cgroup to db
+                                // TODO: Does the relation appear on the dir in the db also?
+                                // This will trigger the Node changes listener's response
+                                thiz.cgroup.save({_id:thiz.cgroup.get('_id'),_rev:thiz.cgroup.get('_rev')},{success:function(){
+                                    // TODO: This isn't necessary on dirtypes other than HTML
+                                    // Render DirTypeView
+                                    $('#steps').hide()
+                                    thiz.dir_type_view  = new DirTypeView({el: '#steps', model: thiz.model})
+                                    thiz.dir_type_view.render()
+                                    $('#steps').fadeIn(2000)
+                                }})
+                            },
+                            error:function(model, xhr, options){
+                                console.error('We got the 196 error '+ iterations)
+                                thiz.save_dir()
+                            }
+                        }
+                    )
+                }
+            }})
         },
         parse_json:function(){
             var thiz = this
