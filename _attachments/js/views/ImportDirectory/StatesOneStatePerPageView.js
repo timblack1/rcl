@@ -8,34 +8,30 @@ define([
     
     return Backbone.View.extend({
         initialize:function(){
-            _.bindAll(this,'show_state_page')
+            _.bindAll(this,'sub_render','show_state_page')
+            // TODO: Start here.  Why doesn't this event fire?  Is the problem in the changes_listeners.js file?
+            this.listenTo(this.model, {
+                'change:url_html':'sub_render'
+            })
+            var thiz = this;
+            this.model.fetch({success:function(){
+                if (typeof this.model.get('url_html') !== 'undefined' && this.model.get('url_html') !== ''){
+                    thiz.sub_render()
+                }
+            }})
         },
         render: function(){
             $('#steps').html(Mustache.render(template));
             this.delegateEvents()
-
-            var thiz = this
-            function sub_render(){
-                var new_html_set = config.rewrite_urls(thiz.model.get('url'), [thiz.model.get('url_html')], 0)
-                thiz.$('#state_drop_down_selector').html(new_html_set[0]);
-                // We bind the event here because the select element didn't exist during this Backbone view's
-                //  initialization
-                thiz.$('#state_drop_down_selector select')
-                    .click({thiz2:thiz},function(event){ event.data.thiz2.show_state_page(event)})
-            }
-            // We (sometimes?) have to wait for url_html to be available
-            function fetch(){
-                if (typeof thiz.model.get('url_html') === 'undefined'){
-                    setTimeout(function(){
-                        thiz.model.fetch({success:function(model,response,options){
-                            fetch()
-                        }})
-                    },300)
-                }else{
-                    sub_render()
-                }
-            }
-            fetch()
+        },
+        sub_render:function(){
+            console.log('sub_render ran!')
+            var new_html_set = config.rewrite_urls(this.model.get('url'), [thiz.model.get('url_html')], 0)
+            thiz.$('#state_drop_down_selector').html(new_html_set[0]);
+            // We bind the event here because the select element didn't exist during this Backbone view's
+            //  initialization
+            thiz.$('#state_drop_down_selector select')
+                .click({thiz2:thiz},function(event){ event.data.thiz2.show_state_page(event)})
         },
         show_state_page:function(event){
             // Get the list of state page URLS out of its option values
