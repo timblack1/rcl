@@ -11,7 +11,7 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'changes_listeners', 'got_url_html', 'got_batchgeo_map_html', 'got_json',
+            _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_html', 'got_batchgeo_map_html', 'got_json',
                 'get_church_dir_from_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
                 'batchgeo_parse_json')
@@ -51,10 +51,10 @@ define([
             // These are the main cases - different types of changes that
             //  need to be handled
             this.listenTo(this.model,{
-                'change':handle_404,
-                'change:get_url_html':got_url_html,
-                'change:get_batchgeo_map_html':got_batchgeo_map_html,
-                'change:get_json':got_json
+                'change':this.handle_404,
+                'change:get_url_html':this.got_url_html,
+                'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
+                'change:get_json':this.got_json
             })
         },
         handle_404:function(model, value, options){
@@ -295,7 +295,6 @@ define([
                     if (typeof window.app.import_directory_view.rev_currently_being_saved === 'undefined'){
                         window.app.import_directory_view.rev_currently_being_saved = thiz.model.get('_rev')
                     }
-                    console.log(new Date().getTime() + "\t saving dir 148")
                     thiz.model.save({
                             _id:thiz.model.get('_id'),
                             _rev:thiz.model.get('_rev'),
@@ -311,13 +310,15 @@ define([
                                 // Save cgroup to db
                                 // TODO: Does the relation appear on the dir in the db also?
                                 // This will trigger the Node changes listener's response
-                                thiz.cgroup.save({_id:thiz.cgroup.get('_id'),_rev:thiz.cgroup.get('_rev')},{success:function(){
-                                    // TODO: This isn't necessary on dirtypes other than HTML
-                                    // Render DirTypeView
-                                    $('#steps').hide()
-                                    thiz.dir_type_view  = new DirTypeView({el: '#steps', model: thiz.model})
-                                    thiz.dir_type_view.render()
-                                    $('#steps').fadeIn(2000)
+                                thiz.cgroup.fetch({success:function(){
+                                    thiz.cgroup.save({_id:thiz.cgroup.get('_id'),_rev:thiz.cgroup.get('_rev')},{success:function(){
+                                        // TODO: This isn't necessary on dirtypes other than HTML
+                                        // Render DirTypeView
+                                        $('#steps').hide()
+                                        thiz.dir_type_view  = new DirTypeView({el: '#steps', model: thiz.model})
+                                        thiz.dir_type_view.render()
+                                        $('#steps').fadeIn(2000)
+                                    }})
                                 }})
                             },
                             error:function(model, xhr, options){
