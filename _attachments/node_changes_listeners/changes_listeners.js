@@ -53,6 +53,10 @@ function get_url(doc, from_url, to_html, status_flag, options){
 				// TODO: Use Backbone here instead of cradle
 				db.save(doc._id, doc._rev, doc, function(err, res){
 					// TODO: Do anything more that needs to be done here
+                    if (to_html == 'url_html'){
+                        console.log('Getting url_html...handling response end')
+                        console.log(doc)
+                    }
 					if (options && options.success){
 						options.success()
 					}
@@ -181,7 +185,7 @@ db.get('', function(err,doc){
 					if (doc.collection == 'directory' && doc.get_url_html=='requested' && doc.url){
 						// E.g., when a user enters "opc.org/locator.html" into the church directory configuration page,
 						//  then go get the contents of that URL.
-						get_url(doc, 'url', 'url_html', 'get_url_html')
+                        get_url(doc, 'url', 'url_html', 'get_url_html')
 					}
 					if (doc.collection == 'directory' && doc.get_cong_url_html=='requested' && doc.cong_url){
 						get_url(doc, 'cong_url_raw', 'cong_url_html', 'get_cong_url_html', {success:function(){
