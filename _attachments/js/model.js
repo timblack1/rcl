@@ -78,7 +78,9 @@ define([
                 window.location.reload()
             }
         }
-    }) 
+    })
+    modelStore = {}
+    Backbone.Relational.store.addModelScope(modelStore)
     
     // Define base classes
     
@@ -209,14 +211,14 @@ define([
     // Define model objects & collections for querying the database
     
     // Define link objects for many-to-many relations
-    CGroup_Cong = Backbone.RelationalModel.extend({})
-    CGroup_Person = Backbone.RelationalModel.extend({})
-    CGroup_Role = Backbone.RelationalModel.extend({})
-    Cong_Person = Backbone.RelationalModel.extend({})
-    Office_Person = Backbone.RelationalModel.extend({})
-    Person_Role = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Cong = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Person = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Role = Backbone.RelationalModel.extend({})
+    modelStore.Cong_Person = Backbone.RelationalModel.extend({})
+    modelStore.Office_Person = Backbone.RelationalModel.extend({})
+    modelStore.Person_Role = Backbone.RelationalModel.extend({})
 
-    CGroup = Backbone.RelationalModel.extend({
+    modelStore.CGroup = Backbone.RelationalModel.extend({
         collection:'CGroups',
         urlRoot:'/cgroup',
         // All defaults are commented out because they are here only for the purpose 
@@ -274,18 +276,18 @@ define([
                    }
                    ]
     })
-    CGroups = CollectionBase.extend({
-        model:CGroup,
+    modelStore.CGroups = CollectionBase.extend({
+        model:modelStore.CGroup,
         url:'/cgroups'
     })
-    CGroupsByAbbrOrName = CollectionBase.extend({
-        model:CGroup,
+    modelStore.CGroupsByAbbrOrName = CollectionBase.extend({
+        model:modelStore.CGroup,
         url:'/cgroups',
         db:{
             view: 'cgroups_by_abbreviation_or_name'
         }
     })
-    Cong = Backbone.RelationalModel.extend({
+    modelStore.Cong = Backbone.RelationalModel.extend({
       urlRoot:'/cong',
       collection:'Congs',
 //      defaults:{
@@ -358,18 +360,18 @@ define([
                  }
                  ]
     })
-    Congs = CollectionBase.extend({
-        model:Cong,
+    modelStore.Congs = CollectionBase.extend({
+        model:'Cong',
         url:'/congs'
     })
-    CongsByName = CollectionBase.extend({
-        model:Cong,
+    modelStore.CongsByName = CollectionBase.extend({
+        model:'Cong',
         url:'/congs',
         db:{
             view: 'congs_by_name'
         }
     })
-    Directory = Backbone.RelationalModel.extend({
+    modelStore.Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
         urlRoot:'/directory',
 //          defaults:{
@@ -390,7 +392,7 @@ define([
                key: 'cgroup',
                // TODO: the directory's 'cgroup' is null in the db
                relatedModel: 'CGroup', // was 'CGroup_Directory'
-               collectionType:'CGroups',
+               //collectionType:'CGroups',
                includeInJSON:'_id',
                // reverseRelation: {
                //     key: 'directories',
@@ -403,14 +405,14 @@ define([
             changes:true
         }
     })
-    Directory.setup()
-    Directories = CollectionBase.extend({
-        model:Directory,
+    modelStore.Directory.setup()
+    modelStore.Directories = CollectionBase.extend({
+        model:modelStore.Directory,
         url:'/directory'
     })
     // TODO: This is deprecated because it can be created dynamically when needed
-    DirectoriesByURL = CollectionBase.extend({
-        model:Directory,
+    modelStore.DirectoriesByURL = CollectionBase.extend({
+        model:modelStore.Directory,
         url:'/directory',
         db:{
             view: 'directories_by_url'
@@ -420,7 +422,7 @@ define([
             // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
-    Person = Backbone.RelationalModel.extend({
+    modelStore.Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
         collection:'People',
 //        defaults: {
@@ -481,11 +483,11 @@ define([
                    }
                    ]
     })
-    People = CollectionBase.extend({
-        model:Person,
+    modelStore.People = CollectionBase.extend({
+        model:'Person',
         url:'/people'
     })
-    Office = Backbone.RelationalModel.extend({
+    modelStore.Office = Backbone.RelationalModel.extend({
         collection:'Offices',
         urlRoot:'/office',
 //        defaults:{
@@ -506,11 +508,11 @@ define([
                    }
                    ]
     })
-    Offices = CollectionBase.extend({
-        model:Office,
+    modelStore.Offices = CollectionBase.extend({
+        model:'Office',
         url:'/offices'
     })
-    Role = Backbone.RelationalModel.extend({
+    modelStore.Role = Backbone.RelationalModel.extend({
         collection:'Roles',
         urlRoot:'/role',
 //        defaults:{
@@ -543,86 +545,10 @@ define([
                    }
                    ]
     })
-    Roles = CollectionBase.extend({
-        model:Role,
+    modelStore.Roles = CollectionBase.extend({
+        model:'Role',
         url:'/roles'
     })
     
-    // Define convenience functions
-    // TODO: Put these convenience functions into a base class/object that can be used as a mixin
-    //  in the objects above.
-    function get_one(collection, keys, options) {
-        var coll = new collection
-        coll.db.keys = keys
-        coll.fetch({success:function(col, res){
-            var model = col.at(0)
-            if (typeof(options.success) !== 'undefined'){
-                options.success(model)
-            }
-        }
-        })
-    }
-    function create_one(collection, attrs_obj, options){
-        var coll = new collection
-        var model = coll.create(attrs_obj, {success:function(model){
-            if (typeof(options.success) !== 'undefined'){
-                options.success(model)
-            }
-        }})
-    }
-    function get_or_create_one(coll, search_keys, attrs, options){
-        get_one(coll, 
-              search_keys,
-              {success:function(doc){
-                  if (typeof(doc) === 'undefined'){
-                      // The doc didn't exist in the db, so create it
-                      create_one(coll,
-                               attrs,
-                               {success:function(doc){
-                                   if (typeof(options.success) !== 'undefined'){
-                                       options.success(doc)
-                                   }
-                               }}
-                      )
-                  }else{
-                      // The doc did exist in the db, so use it
-                      if (typeof(options.success) !== 'undefined'){
-                          options.success(doc)
-                      }
-                  }
-              }}
-        )
-    }
-    
-    return {
-        // link object models
-        CGroup_Cong: CGroup_Cong,
-        Cong_Person: Cong_Person,
-        CGroup_Person: CGroup_Person,
-        CGroup_Role: CGroup_Role,
-        Office_Person: Office_Person,
-        Person_Role: Person_Role,
-        // regular object models
-        CGroup: CGroup,
-        Cong: Cong,
-        Directory: Directory,
-        Directories: Directories,
-        Person: Person,
-        Office: Office,
-        Role: Role,
-        // collections
-        CGroups:CGroups,
-        CGroupsByAbbrOrName:CGroupsByAbbrOrName,
-        Congs:Congs,
-        CongsByName: CongsByName,
-        Directories:Directories,
-        DirectoriesByURL:DirectoriesByURL,
-        People:People,
-        Offices:Offices,
-        Roles:Roles,
-        // Convenience functions
-        get_one:get_one,
-        create_one:create_one,
-        get_or_create_one:get_or_create_one
-    }
+    return modelStore
 })
