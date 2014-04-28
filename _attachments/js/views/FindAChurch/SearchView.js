@@ -94,7 +94,7 @@ define([
             }
         },
 		
-		get_use_miles_array:function(){
+		get_distance_units:function(){
 			return _.filter(results, function(item){ 
 				var long_names = _.pluck (item.address_components, "long_name")
 				//See if it contains countries that use miles (GB, LR, MM, US)
@@ -140,8 +140,10 @@ define([
 					
 					debugger;
 					if (!thiz.is_distance_unit_cookie_set()){
-						var use_miles_array = thiz.get_use_miles_array(results)
+						var distance_units = thiz.get_distance_units(results)
 						debugger;
+						$.cookie('units_of_measurement',distance_units)	
+					//set the cookie (miles or km), rename function, make sure it returns miles or km.
 					}
 					
 					
