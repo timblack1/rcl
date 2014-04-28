@@ -55,7 +55,7 @@ define([
 								return item % 2 == 0; 
 							});
 						}
-					}
+					})
 				})
 			}else{
 				console.log("Geolocation is not supported by this browser.");
