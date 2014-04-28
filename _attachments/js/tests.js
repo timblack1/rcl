@@ -30,6 +30,9 @@ describe("Reformed Churches Locator", function() {
             expect(content).toMatch('downloading')
         });
         function trigger_url_field(){
+            // Delete directories in database
+            $('#delete_all_directories').click()
+            // Test creating a new directory
             $('#url').val('http://opc.org/locator.html')
             // This calls URLView.js:get_church_dir_from_url()
             $('#url').focus().keyup()
@@ -63,7 +66,7 @@ describe("Reformed Churches Locator", function() {
             return $('#steps').html().indexOf('Step 4.5') != -1
         }
         function click_cong_id_yes_button(){
-            console.log($('#cong_details_url_selector #yes'))
+            // console.log($('#cong_details_url_selector #yes'))
             $('#cong_details_url_selector #yes').click()
         }
         function step_5_visible(){
