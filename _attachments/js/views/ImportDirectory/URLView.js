@@ -246,9 +246,7 @@ define([
             }, 3000)
         },
         get_cgroup:function(){
-            // Make the dir available globally so it can be reused if the user causes
-            //  this function to be invoked again
-            // TODO: Start here.  Set up changes listener on dir to handle responses from node_changes_listener.js
+            // TODO: Start here.  Set up changes listener on this.model to handle responses from node_changes_listener.js
             var thiz = this
             // Reset status flag so the status messages will display
             this.model.set('get_state_url_html', '')
@@ -322,7 +320,7 @@ define([
                                 }})
                             },
                             error:function(model, xhr, options){
-                                console.error('We got the 196 error '+ iterations)
+                                console.error('We got the 196 error '+ thiz.iterations)
                                 thiz.save_dir()
                             }
                         }
