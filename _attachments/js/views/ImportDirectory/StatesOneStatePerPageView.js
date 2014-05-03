@@ -15,7 +15,7 @@ define([
             })
             var thiz = this;
             this.model.fetch({success:function(){
-                if (typeof this.model.get('url_html') !== 'undefined' && this.model.get('url_html') !== ''){
+                if (typeof thiz.model.get('url_html') !== 'undefined' && thiz.model.get('url_html') !== ''){
                     thiz.sub_render()
                 }
             }})
