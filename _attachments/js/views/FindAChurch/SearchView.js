@@ -51,7 +51,7 @@ define([
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
 						if (status == google.maps.GeocoderStatus.OK){
 							var miles_countries = _.filter(results, function(item){ 
-								debugger;
+								//debugger;
 								return item % 2 == 0; 
 							});
 						}
