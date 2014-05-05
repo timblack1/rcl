@@ -22,7 +22,8 @@ require.config({
       "mustache": "vendor/mustache/mustache",
       "text": "vendor/requirejs-text/text",
       "typeahead": "vendor/typeahead.js/dist/typeahead",
-      "underscore": "vendor/underscore/underscore"
+      "underscore": "vendor/underscore/underscore",
+      "jquery_cookie": "vendor/jquery-cookie/jquery.cookie"
   },
   shim: {
       backbone: {
@@ -99,6 +100,7 @@ require(
             initialize : function(){
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this, 'find_a_church', 'import_directory')
+                debugger
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this

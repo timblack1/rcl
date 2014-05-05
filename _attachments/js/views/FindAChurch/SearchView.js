@@ -1,9 +1,10 @@
 define([
         'config',
         'mustache',
+		'jquery_cookie',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Mustache, template){
+        function(config, Mustache, jquery_cookie, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -23,11 +24,10 @@ define([
             //  some input from the user.
             // TODO:   * Event Handler: On page load
 			
-            // TODO:     * If the distance unit cookie is set,
+            //If the distance unit cookie is set,
+			// set the distance units in the form based on what is in the cookie.
 			if ( this.is_distance_unit_cookie_set() ){
-				// TODO:  set the distance units in the form based
-            	//              on what is in the cookie.
-				
+				this.$('.units').val($.cookie('units_of_measurement'));		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -35,13 +35,12 @@ define([
             	//                  on one of the following:
 				
 			}
-            // TODO:       * First try the users' browser's geolocation information. Google for "calculate
-            //                  distance units from geolocation" to see how others have done this. You can
-            //                  geocode the location using window.app.geocoder = new google.maps.Geocoder(); 
-            //                  window.app.geocoder.geocode(..., then filter (using the Underscore.js _.filter()
-            //                  method) for results[0].address_components[x].types.short_name == 'US', then if 
+            // TODO:       * First try the users' browser's geolocation information. If 
             //                  the user is in one of the countries that use miles, select "miles" in the form
             //                  and save it to the cookie.
+			
+			
+			var thiz=this
 			
 			if (navigator.geolocation){
 				// Center the map on the viewer's country by default
@@ -50,10 +49,13 @@ define([
 					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
 					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
 						if (status == google.maps.GeocoderStatus.OK){
-							var miles_countries = _.filter(results, function(item){ 
-								//debugger;
-								return item % 2 == 0; 
-							});
+							var use_miles_array = thiz.get_use_miles_array()
+							if (use_miles_array.length >0) {
+							    // Set the form to use miles here
+								thiz.$('.units').val('miles')
+							}else{
+								thiz.$('.units').val('km')
+							}
 						}
 					})
 				})
@@ -72,11 +74,17 @@ define([
 			
         },
 		is_distance_unit_cookie_set:function(){
-			// TODO: Get cookie here
-			
+			// Get cookie here
+			$.cookie('units_of_measurement')
+			if (typeof $.cookie('units_of_measurement') === 'undefined'){
+				return false;
+			}else{
+				return true
+			}
 		},
 		set_distance_unit_cookie:function(){
-			// TODO: Set cookie here
+			//  Set cookie here
+			$.cookie('units_of_measurement', this.$('.units').val());		
 			
 		},
         location_keyup:function(event){
@@ -84,6 +92,15 @@ define([
                 this.geocode(event)
             }
         },
+		get_distance_units:function(){
+			return _.filter(results, function(item){ 
+				var long_names = _.pluck (item.address_components, "long_name")
+				//See if it contains countries that use miles (GB, LR, MM, US)
+				var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
+				return (country_name !== "")
+			});
+		},
+		
         geocode: function (event){
             event.preventDefault()
             // If user submitted an address, put that address into this.model
@@ -117,6 +134,18 @@ define([
                         units:units,
                         results:results
                     })
+					//START HERE  This function needs to be edited next.
+					
+					debugger;
+					if (!thiz.is_distance_unit_cookie_set()){
+						var distance_units = thiz.get_distance_units(results)
+						debugger;
+						$.cookie('units_of_measurement',distance_units)	
+					//set the cookie (miles or km), rename function, make sure it returns miles or km.
+					}
+					
+					
+					
                     // TODO: Send the request to Google; if Google says the location is ambiguous, 
                     //  then use one of the location methods above (geolocation, etc.) to send Google
                     //  a hint about in which country the user is attempting to search.
