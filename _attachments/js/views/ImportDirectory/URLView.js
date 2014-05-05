@@ -246,7 +246,6 @@ define([
             }, 3000)
         },
         get_cgroup:function(){
-            // TODO: Start here.  Set up changes listener on this.model to handle responses from node_changes_listener.js
             var thiz = this
             // Reset status flag so the status messages will display
             this.model.set('get_state_url_html', '')
@@ -271,6 +270,10 @@ define([
             this.save_dir()
         },
         save_dir:function(){
+            console.log('Start here')
+            // TODO: Start here.  Set up changes listener on this.model to handle responses from node_changes_listener.js
+            //  Maybe put the changes listener up in this.get_cgroup() after refactoring this.save_dir() so it uses 
+            //  that changes listener and so this.iterations isn't needed anymore.
             var thiz = this
             this.iterations++;
             // Make this function wait until this rev is not being saved anymore under any other event
