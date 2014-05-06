@@ -114,8 +114,10 @@ define([
                 distance = radius * 1000;
             }
             
+            //  TODO: Start here.
             // TODO: Event handler: On search form submission, record the currently-selected distance unit
-            //  in a cookie, and record there whether they selected it manually or not.
+            //  in a cookie, and record there whether they selected it manually or not (NOTE: this second task
+            //  is not done yet).
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
@@ -132,8 +134,6 @@ define([
                         units:units,
                         results:results
                     })
-					//START HERE  This function needs to be edited next.
-					
 					if (!thiz.is_distance_unit_cookie_set()){
     					// Set the cookie to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
