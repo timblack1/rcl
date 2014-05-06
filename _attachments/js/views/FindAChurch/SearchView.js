@@ -8,16 +8,18 @@ define([
 
     return Backbone.View.extend({
         initialize: function(){
-            _.bindAll(this, 'location_keyup', 'geocode')
+            _.bindAll(this, 'location_keyup', 'geocode', 'set_distance_unit_cookie',
+                'is_distance_unit_cookie_set', 'get_distance_units', 'location_keyup')
             window.app.geocoder = new google.maps.Geocoder();
         },
         render: function(){
             this.$el.html(Mustache.render(template))
             
             // Attach search event handler to search button and text box
-            $('.search').click(this.geocode)
-            $('.location').keyup(this.location_keyup)
-            $('.radius').on('change', this.geocode)
+            this.listenTo(this.$('.search'), 'click', this.geocode)
+            this.listenTo(this.$('.location'), 'keyup', this.location_keyup)
+            this.listenTo(this.$('.radius'), 'change', this.geocode)
+            this.listenTo(this.$('.units'), 'change', this.set_distance_unit_cookie)
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
