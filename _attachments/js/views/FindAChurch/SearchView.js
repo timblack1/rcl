@@ -33,47 +33,36 @@ define([
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
-				// TODO: guess what units they want based 
-            	//                  on one of the following:
-				
-			}
-            // TODO:       * First try the users' browser's geolocation information. If 
-            //                  the user is in one of the countries that use miles, select "miles" in the form
-            //                  and save it to the cookie.
-			
-			
-			var thiz=this
-			
-			if (navigator.geolocation){
-				// Center the map on the viewer's country by default
-				navigator.geolocation.getCurrentPosition(function(position){			
-					window.app.geocoder = new google.maps.Geocoder();
-					window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
-					//	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
-						if (status == google.maps.GeocoderStatus.OK){
-							var use_miles_array = thiz.get_use_miles_array()
-							if (use_miles_array.length >0) {
-							    // Set the form to use miles here
-								thiz.$('.units').val('miles')
-							}else{
-								thiz.$('.units').val('km')
-							}
-						}
-					})
-				})
-			}else{
-				console.log("Geolocation is not supported by this browser.");
-				// TODO: Find a different way to locate the user, perhaps by IP address
-				this.create_map({coords:this.default_map_center})
-			}
-				
-					
-            // TODO:       * Next try figuring it based on the country in which they are searching.
-            // TODO:       * Next, try the browser country or language setting.
-            // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
-			
+				// TODO: guess what units they want based on one of the following:
+                // TODO:       * First try the users' browser's geolocation information. If 
+                //                  the user is in one of the countries that use miles, select "miles" in the form
+                //                  and save it to the cookie.
 
-			
+                var thiz=this
+
+                if (navigator.geolocation){
+                    // Center the map on the viewer's country by default
+                    navigator.geolocation.getCurrentPosition(function(position){			
+                        window.app.geocoder = new google.maps.Geocoder();
+                        window.app.geocoder.geocode( { 'address': position.coords.latitude + "," + position.coords.longitude}, function(results, status) {
+                        //	Underscore.js _.filter() method) for results[0].address_components[x].types.short_name == 'US'
+                            if (status == google.maps.GeocoderStatus.OK){
+                                // Set the user's location's country's distance units in the form
+                                thiz.$('.units').val(thiz.get_distance_units(results))
+                            }
+                        })
+                    })
+                }else{
+                    console.log("Geolocation is not supported by this browser.");
+                    // TODO: Find a different way to locate the user, perhaps by IP address
+                    this.create_map({coords:this.default_map_center})
+                }
+
+                // TODO:       * Next try figuring it based on the country in which they are searching.
+                // TODO:       * Next, try the browser country or language setting.
+                // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
+				
+			}
         },
 		is_distance_unit_cookie_set:function(){
 			// Get cookie here
