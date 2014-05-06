@@ -83,15 +83,22 @@ define([
                 this.geocode(event)
             }
         },
-		get_distance_units:function(){
-			return _.filter(results, function(item){ 
-				var long_names = _.pluck (item.address_components, "long_name")
-				//See if it contains countries that use miles (GB, LR, MM, US)
-				var country_name = _.intersection(["United Kingdom", "Liberia", "Myanmar", "United States"], long_names)[0]
-				return (country_name !== "")
+		get_distance_units:function(results){
+            var country_names_objects = _.filter(results[0].address_components, function(item){
+            	//See if it contains countries that use miles (GB, LR, MM, US)
+                return ["United Kingdom", "Liberia", "Myanmar", "United States"].indexOf(item.long_name) !== -1
 			});
+            country_names = _.chain(country_names_objects)
+                .pluck('long_name')
+                .filter(function(item){ return typeof item !== 'undefined'; })
+                .value()
+            if (country_names.length >0){
+                output = 'miles'
+            }else{
+                output = 'km'
+            }
+            return output;
 		},
-		
         geocode: function (event){
             event.preventDefault()
             // If user submitted an address, put that address into this.model
