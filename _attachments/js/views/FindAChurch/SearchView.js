@@ -134,12 +134,12 @@ define([
                     })
 					//START HERE  This function needs to be edited next.
 					
-					debugger;
 					if (!thiz.is_distance_unit_cookie_set()){
+    					// Set the cookie to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
-						debugger;
-						$.cookie('units_of_measurement',distance_units)	
-					//set the cookie (miles or km), rename function, make sure it returns miles or km.
+						$.cookie('units_of_measurement',distance_units)
+                        // Set form to display the distance units of the country in which the user searched
+                        thiz.$('.units').val(distance_units)
 					}
 					
 					
