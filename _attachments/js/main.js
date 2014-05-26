@@ -100,7 +100,6 @@ require(
             initialize : function(){
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this, 'find_a_church', 'import_directory')
-                debugger
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
