@@ -274,6 +274,13 @@ define([
             // TODO: Start here.  Set up changes listener on this.model to handle responses from node_changes_listener.js
             //  Maybe put the changes listener up in this.get_cgroup() after refactoring this.save_dir() so it uses 
             //  that changes listener and so this.iterations isn't needed anymore.
+            // Event: This function gets called when:
+            //  Stack (last at top):
+            //      save_dir
+            //      save_cgroup_and_dir
+            //      get_cgroup
+            //      get_church_dir_from_url
+            //      [URL entered]
             var thiz = this
             this.iterations++;
             // Make this function wait until this rev is not being saved anymore under any other event
