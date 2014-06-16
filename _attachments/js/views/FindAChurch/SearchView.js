@@ -1,15 +1,14 @@
 define([
         'config',
         'mustache',
-		'jquery_cookie',
-        'text!views/FindAChurch/Search.html'
+		'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Mustache, jquery_cookie, template){
+        function(config, Mustache, template){
 
     return Backbone.View.extend({
         initialize: function(){
-            _.bindAll(this, 'location_keyup', 'geocode', 'set_distance_unit_cookie',
-                'is_distance_unit_cookie_set', 'get_distance_units', 'location_keyup')
+            _.bindAll(this, 'location_keyup', 'geocode', 'set_distance_unit_preference',
+                'is_distance_unit_preference_set', 'get_distance_units', 'location_keyup')
             window.app.geocoder = new google.maps.Geocoder();
         },
         render: function(){
@@ -19,16 +18,16 @@ define([
             this.listenTo(this.$('.search'), 'click', this.geocode)
             this.listenTo(this.$('.location'), 'keyup', this.location_keyup)
             this.listenTo(this.$('.radius'), 'change', this.geocode)
-            this.listenTo(this.$('.units'), 'change', this.set_distance_unit_cookie)
+            this.listenTo(this.$('.units'), 'change', this.set_distance_unit_preference)
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
             //  some input from the user.
             // TODO:   * Event Handler: On page load
 			
-            //If the distance unit cookie is set,
-			// set the distance units in the form based on what is in the cookie.
-			if ( this.is_distance_unit_cookie_set() ){
+            //If the distance unit preference is set,
+			// set the distance units in the form based on what is in the preference.
+			if ( this.is_distance_unit_preference_set() ){
 				this.$('.units').val($.cookie('units_of_measurement'));		
 			}
             // TODO:     * Else, on page load, before the person searches, 
@@ -36,7 +35,7 @@ define([
 				// TODO: guess what units they want based on one of the following:
                 // TODO:       * First try the users' browser's geolocation information. If 
                 //                  the user is in one of the countries that use miles, select "miles" in the form
-                //                  and save it to the cookie.
+                //                  and save it to the preference.
 
                 var thiz=this
 
@@ -64,8 +63,8 @@ define([
 				
 			}
         },
-		is_distance_unit_cookie_set:function(){
-			// Get cookie here
+		is_distance_unit_preference_set:function(){
+			// Get preference here
 			$.cookie('units_of_measurement')
 			if (typeof $.cookie('units_of_measurement') === 'undefined'){
 				return false;
@@ -73,8 +72,8 @@ define([
 				return true
 			}
 		},
-		set_distance_unit_cookie:function(){
-			//  Set cookie here
+		set_distance_unit_preference:function(){
+			//  Set preference here
 			$.cookie('units_of_measurement', this.$('.units').val());		
 			
 		},
@@ -116,7 +115,7 @@ define([
             
             //  TODO: Start here.
             // TODO: Event handler: On search form submission, record the currently-selected distance unit
-            //  in a cookie, and record there whether they selected it manually or not (NOTE: this second task
+            //  in a preference, and record there whether they selected it manually or not (NOTE: this second task
             //  is not done yet).
             // Geocode location
         	var thiz=this
@@ -134,8 +133,8 @@ define([
                         units:units,
                         results:results
                     })
-					if (!thiz.is_distance_unit_cookie_set()){
-    					// Set the cookie to contain 'miles' or 'km'
+					if (!thiz.is_distance_unit_preference_set()){
+    					// Set the preference to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
 						$.cookie('units_of_measurement',distance_units)
                         // Set form to display the distance units of the country in which the user searched
@@ -150,7 +149,7 @@ define([
              		// TODO: Event handler: On search results being returned to the browser from the 
                     //  Google Maps API, Google's geocode responses state in which country the searched-for 
                     //  location is found, so after they search, you can set their distance units for them 
-                    //  (in a cookie and in the form) based on the country, unless (in a cookie you can see)
+                    //  (in a preference and in the form) based on the country, unless (in a preference you can see)
                     //  they have already selected a distance unit manually.
                 } else {
                     alert("Geocode was not successful for the following reason: " + status);
