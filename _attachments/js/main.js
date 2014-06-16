@@ -22,7 +22,8 @@ require.config({
       "mustache": "vendor/mustache/mustache",
       "text": "vendor/requirejs-text/text",
       "typeahead": "vendor/typeahead.js/dist/typeahead",
-      "underscore": "vendor/underscore/underscore"
+      "underscore": "vendor/underscore/underscore",
+      "jquery_cookie": "vendor/jquery-cookie/jquery.cookie"
   },
   shim: {
       backbone: {
@@ -114,6 +115,7 @@ require(
                 "import_directory":              "import_directory"
             },
             render:function(){
+              debugger;
                 this.menu_view = new views.MenuView({ el: $(".navbar") });
                 this.menu_view.render()
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
