@@ -28,7 +28,7 @@ define([
             //If the distance unit preference is set,
 			// set the distance units in the form based on what is in the preference.
 			if ( this.is_distance_unit_preference_set() ){
-				this.$('.units').val($.cookie('units_of_measurement'));		
+				this.$('.units').val(localStorage['units_of_measurement']);		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -65,8 +65,8 @@ define([
         },
 		is_distance_unit_preference_set:function(){
 			// Get preference here
-			$.cookie('units_of_measurement')
-			if (typeof $.cookie('units_of_measurement') === 'undefined'){
+			localStorage['units_of_measurement']
+			if (typeof localStorage['units_of_measurement'] === 'undefined'){
 				return false;
 			}else{
 				return true
@@ -74,7 +74,7 @@ define([
 		},
 		set_distance_unit_preference:function(){
 			//  Set preference here
-			$.cookie('units_of_measurement', this.$('.units').val());		
+			localStorage['units_of_measurement'] = this.$('.units').val();		
 			
 		},
         location_keyup:function(event){
@@ -136,7 +136,7 @@ define([
 					if (!thiz.is_distance_unit_preference_set()){
     					// Set the preference to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
-						$.cookie('units_of_measurement',distance_units)
+						localStorage['units_of_measurement'] = distance_units
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
 					}
