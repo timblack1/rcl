@@ -115,7 +115,6 @@ require(
                 "import_directory":              "import_directory"
             },
             render:function(){
-              debugger;
                 this.menu_view = new views.MenuView({ el: $(".navbar") });
                 this.menu_view.render()
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
