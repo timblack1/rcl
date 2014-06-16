@@ -18,6 +18,7 @@
     "respond": "latest",
     "typeahead.js": "latest",
     "typeahead.js-bootstrap.css": "git://github.com/jharding/typeahead.js-bootstrap.css.git",
-    "underscore": "latest"
+    "underscore": "latest",
+    "jquery-cookie": "~1.4.0"
   }
 }
