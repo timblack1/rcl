@@ -176,6 +176,8 @@ define([
                 // If we have not already created a directory on this page, create it; else get the existing directory
                 if (typeof(thiz.model) === 'undefined'){
                     // The dir hasn't been created in the browser yet
+                    // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
+                    //  in Hoodie's local store.
                     // If the cgroup's associated directory exists in the db, get it
                     var page_url = thiz.$('#url').val()
                     // TODO: Don't create the dir if the URL is not valid.
