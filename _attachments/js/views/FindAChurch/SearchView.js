@@ -28,7 +28,7 @@ define([
             //If the distance unit preference is set,
 			// set the distance units in the form based on what is in the preference.
 			if ( this.is_distance_unit_preference_set() ){
-				this.$('.units').val($.cookie('units_of_measurement'));		
+				this.$('.units').val(localStorage['units_of_measurement']);		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -53,8 +53,10 @@ define([
                     })
                 }else{
                     console.log("Geolocation is not supported by this browser.");
-                   
-                    
+                    // TODO:   * Next try figuring it based on the country in which they are searching.
+                    //              Look at the results Google's geocode API returns from the user's search for an address, 
+                    //              and extract the country name from those results. Then use the other code we've already
+                    //              written to determine whether that country uses miles or kilometers.
                     // TODO:   * Next, try the browser country or language setting.
                     // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
 
@@ -65,8 +67,8 @@ define([
         },
 		is_distance_unit_preference_set:function(){
 			// Get preference here
-			$.cookie('units_of_measurement')
-			if (typeof $.cookie('units_of_measurement') === 'undefined'){
+			localStorage['units_of_measurement']
+			if (typeof localStorage['units_of_measurement'] === 'undefined'){
 				return false;
 			}else{
 				return true
@@ -74,7 +76,7 @@ define([
 		},
 		set_distance_unit_preference:function(){
 			//  Set preference here
-			$.cookie('units_of_measurement', this.$('.units').val());		
+			localStorage['units_of_measurement'] = this.$('.units').val();		
 			
 		},
         location_keyup:function(event){
@@ -114,9 +116,9 @@ define([
             }
             
             //  TODO: Start here.
-            // TODO: Event handler: On search form submission,
-            //  1. record the currently-selected distance unit in a preference, and
-            //  2. record there whether they selected it manually or not (NOTE: this second task is not done yet).
+            // TODO: Event handler: On search form submission, record the currently-selected distance unit
+            //  in a preference, and record there whether they selected it manually or not (NOTE: this second task
+            //  is not done yet).
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
@@ -137,7 +139,8 @@ define([
     				    // Try figuring the user's distance_unit preference based on the country in which they are searching.
 						var distance_units = thiz.get_distance_units(results)
     					// Set the preference to contain 'miles' or 'km'
-						$.cookie('units_of_measurement',distance_units)
+						var distance_units = thiz.get_distance_units(results)
+						localStorage['units_of_measurement'] = distance_units
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
 					}
