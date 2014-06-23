@@ -54,9 +54,20 @@ define([
                 }else{
                     console.log("Geolocation is not supported by this browser.");
                     // TODO:   * Next, try the browser country or language setting.
-                    
+                    var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
+                    console.log(userLang)
+                    // TODO: Determine if userLang contains a country code after a hyphen
+                    var country_code = userLang.split('-')[1]
+                    if (country_code !== '' && typeof country_code !== 'undefined'){
+                        // TODO: Run routine here (extract a function from the code below in this.geocode())
+                        //  to test if this country code uses miles or kilometers.
+                        // TODO: Record preference accordingly
+                    }
                     // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
-
+                    // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
+                    // TODO:        Extract country code
+                    // TODO:        Test if this country code uses miles or kilometers.
+                    // TODO:        Record preference accordingly
                     this.create_map({coords:this.default_map_center})
                 }
 
