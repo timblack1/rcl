@@ -145,8 +145,6 @@ define([
                         thiz.$('.units').val(distance_units)
 					}
 					
-					
-					
                     // TODO: Send the request to Google; if Google says the location is ambiguous, 
                     //  then use one of the location methods above (geolocation, etc.) to send Google
                     //  a hint about in which country the user is attempting to search.
