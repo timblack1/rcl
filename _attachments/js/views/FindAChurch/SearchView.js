@@ -33,7 +33,7 @@ define([
             // TODO:     * Else, on page load, before the person searches, 
 			else {
 				// TODO: guess what units they want based on one of the following:
-                // TODO:       * First try the users' browser's geolocation information. If 
+                //            * First try the users' browser's geolocation information. If 
                 //                  the user is in one of the countries that use miles, select "miles" in the form
                 //                  and save it to the preference.
 
@@ -53,14 +53,16 @@ define([
                     })
                 }else{
                     console.log("Geolocation is not supported by this browser.");
-                    // TODO: Find a different way to locate the user, perhaps by IP address
+                    // TODO:   * Next try figuring it based on the country in which they are searching.
+                    //              Look at the results Google's geocode API returns from the user's search for an address, 
+                    //              and extract the country name from those results. Then use the other code we've already
+                    //              written to determine whether that country uses miles or kilometers.
+                    // TODO:   * Next, try the browser country or language setting.
+                    // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
+
                     this.create_map({coords:this.default_map_center})
                 }
 
-                // TODO:       * Next try figuring it based on the country in which they are searching.
-                // TODO:       * Next, try the browser country or language setting.
-                // TODO:       * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
-				
 			}
         },
 		is_distance_unit_preference_set:function(){
