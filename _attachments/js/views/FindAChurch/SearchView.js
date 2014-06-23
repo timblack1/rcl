@@ -53,13 +53,21 @@ define([
                     })
                 }else{
                     console.log("Geolocation is not supported by this browser.");
-                    // TODO:   * Next try figuring it based on the country in which they are searching.
-                    //              Look at the results Google's geocode API returns from the user's search for an address, 
-                    //              and extract the country name from those results. Then use the other code we've already
-                    //              written to determine whether that country uses miles or kilometers.
                     // TODO:   * Next, try the browser country or language setting.
+                    var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
+                    console.log(userLang)
+                    // TODO: Determine if userLang contains a country code after a hyphen
+                    var country_code = userLang.split('-')[1]
+                    if (country_code !== '' && typeof country_code !== 'undefined'){
+                        // TODO: Run routine here (extract a function from the code below in this.geocode())
+                        //  to test if this country code uses miles or kilometers.
+                        // TODO: Record preference accordingly
+                    }
                     // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
-
+                    // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
+                    // TODO:        Extract country code
+                    // TODO:        Test if this country code uses miles or kilometers.
+                    // TODO:        Record preference accordingly
                     this.create_map({coords:this.default_map_center})
                 }
 
@@ -136,14 +144,14 @@ define([
                         results:results
                     })
 					if (!thiz.is_distance_unit_preference_set()){
+    				    // Try figuring the user's distance_unit preference based on the country in which they are searching.
+						var distance_units = thiz.get_distance_units(results)
     					// Set the preference to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
 						localStorage['units_of_measurement'] = distance_units
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
 					}
-					
-					
 					
                     // TODO: Send the request to Google; if Google says the location is ambiguous, 
                     //  then use one of the location methods above (geolocation, etc.) to send Google
