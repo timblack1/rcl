@@ -54,6 +54,9 @@ define([
                 }else{
                     console.log("Geolocation is not supported by this browser.");
                     // TODO:   * Next try figuring it based on the country in which they are searching.
+                    //              Look at the results Google's geocode API returns from the user's search for an address, 
+                    //              and extract the country name from those results. Then use the other code we've already
+                    //              written to determine whether that country uses miles or kilometers.
                     // TODO:   * Next, try the browser country or language setting.
                     // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
 
