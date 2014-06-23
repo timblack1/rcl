@@ -53,12 +53,7 @@ define([
                     })
                 }else{
                     console.log("Geolocation is not supported by this browser.");
-                    // TODO:   * Next try figuring it based on the country in which they are searching.
-                    //              Look at the results Google's geocode API returns from the user's search for an address, 
-                    //              and extract the country name from those results.
-                    
-                    //              Then use the other code we've already
-                    //              written to determine whether that country uses miles or kilometers.
+                   
                     
                     // TODO:   * Next, try the browser country or language setting.
                     // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
@@ -119,9 +114,9 @@ define([
             }
             
             //  TODO: Start here.
-            // TODO: Event handler: On search form submission, record the currently-selected distance unit
-            //  in a preference, and record there whether they selected it manually or not (NOTE: this second task
-            //  is not done yet).
+            // TODO: Event handler: On search form submission,
+            //  1. record the currently-selected distance unit in a preference, and
+            //  2. record there whether they selected it manually or not (NOTE: this second task is not done yet).
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
@@ -139,8 +134,9 @@ define([
                         results:results
                     })
 					if (!thiz.is_distance_unit_preference_set()){
-    					// Set the preference to contain 'miles' or 'km'
+    				    // Try figuring the user's distance_unit preference based on the country in which they are searching.
 						var distance_units = thiz.get_distance_units(results)
+    					// Set the preference to contain 'miles' or 'km'
 						$.cookie('units_of_measurement',distance_units)
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
