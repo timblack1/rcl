@@ -56,14 +56,35 @@ define([
                     // TODO:   * Next, try the browser country or language setting.
                     var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
                     console.log(userLang)
-                    // TODO: Determine if userLang contains a country code after a hyphen
+                    // Determine if userLang contains a 2-character country code after a hyphen
+                    //  (e.g., userLang could equal 'en-US')
                     var country_code = userLang.split('-')[1]
+                    var language_code = userLang.split('-')[0]
                     if (country_code !== '' && typeof country_code !== 'undefined'){
-                        // TODO: Run routine here (extract a function from the code below in this.geocode())
-                        //  to test if this country code uses miles or kilometers.
-                        // TODO: Record preference accordingly
+                        // Test if this country code uses miles or kilometers.
+                        // TODO: Maybe these codes should be put into one data structure with the array used
+                        //  below (["United Kingdom", "Liberia", "Myanmar", "United States"]) so we don't 
+                        //  complicate future maintenance of the application.
+                        var country_codes = ['GB', 'LR', 'MM', 'US']
+                        // If country_code is in the list, then
+                        if (country_codes.indexOf(country_code) !== -1){
+                            // Record preference accordingly
+                            localStorage('distance_units', 'miles')
+                        }else{
+                            localStorage('distance_units', 'km')
+                        }
+                    }else{
+                        // Use the language code.  This might help:  http://download.geonames.org/export/dump/countryInfo.txt
+                        // These are the languages of the countries that use miles
+                        var languages = ['en', 'mm', 'bur', 'mya']
+                        // If the country's language is NOT in this set, then the country uses kilometers.
+                        if (languages.indexOf(language_code) === -1){
+                            localStorage('distance_units', 'km')
+                        }else{
+                            // If the country does use this language, then we don't know if it uses miles or kilometers.
+                        }
                     }
-                    // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
+                    // TODO:   * Get their preference from their IP address
                     // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
                     // TODO:        Extract country code
                     // TODO:        Test if this country code uses miles or kilometers.
