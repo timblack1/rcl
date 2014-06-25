@@ -22,7 +22,8 @@ require.config({
       "mustache": "vendor/mustache/mustache",
       "text": "vendor/requirejs-text/text",
       "typeahead": "vendor/typeahead.js/dist/typeahead",
-      "underscore": "vendor/underscore/underscore"
+      "underscore": "vendor/underscore/underscore",
+      "jquery_cookie": "vendor/jquery-cookie/jquery.cookie"
   },
   shim: {
       backbone: {
