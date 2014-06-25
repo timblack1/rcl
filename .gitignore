@@ -1,6 +1,8 @@
 *~
 *.swp
-.bzr
+node_modules
+data
+deploy.sh
 .couchapprc
 login.txt
 changes_listeners_temp.js
