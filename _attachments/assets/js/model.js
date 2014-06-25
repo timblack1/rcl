@@ -56,29 +56,24 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'backbone_couchdb'
+        'backbone_hoodie'
         ], function(config, Backbone){
     // Fill this with your database information.
 
-    // `ddoc_name` is the name of your couchapp project.
-    Backbone.couch_connector.config.db_name = config.db_name;
-    Backbone.couch_connector.config.ddoc_name = "rcl";
-    // If set to true, the connector will listen to the changes feed
-    //  and will provide your models with real time remote updates.
-    Backbone.couch_connector.config.global_changes = true;
-    // This setting enables the code/features in this pull request:
-    //  https://github.com/janmonschke/backbone-couchdb/pull/25
-    Backbone.couch_connector.config.single_feed = true;
+    Backbone.connect() // creates a new hoodie at Backbone.hoodie
+    var hoodie = Backbone.hoodie
     // Reload the page when the design doc changes
-    var db = config.db
-    changes = db.changes();
-    changes.onChange(function(data){
-        for (var i=0; i<data.results.length; i++){
-            if (data.results[i].id == '_design/rcl'){
-                window.location.reload()
-            }
-        }
-    }) 
+    // TODO: This doesn't work with Hoodie, since there isn't a design doc in the database.
+//     hoodie.store.on('change', function(eventName, data){
+//         for (var i=0; i<data.results.length; i++){
+//             if (data.results[i].id == '_design/rcl'){
+//                 window.location.reload()
+//             }
+//         }
+//     })
+    // Provide a model scope for backbone-relational to use to relate models
+    modelStore = {}
+    Backbone.Relational.store.addModelScope(modelStore)
     
     // Define base classes
     
@@ -144,14 +139,14 @@ define([
     // Define model objects & collections for querying the database
     
     // Define link objects for many-to-many relations
-    CGroup_Cong = Backbone.RelationalModel.extend({})
-    CGroup_Person = Backbone.RelationalModel.extend({})
-    CGroup_Role = Backbone.RelationalModel.extend({})
-    Cong_Person = Backbone.RelationalModel.extend({})
-    Office_Person = Backbone.RelationalModel.extend({})
-    Person_Role = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Cong = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Person = Backbone.RelationalModel.extend({})
+    modelStore.CGroup_Role = Backbone.RelationalModel.extend({})
+    modelStore.Cong_Person = Backbone.RelationalModel.extend({})
+    modelStore.Office_Person = Backbone.RelationalModel.extend({})
+    modelStore.Person_Role = Backbone.RelationalModel.extend({})
 
-    CGroup = Backbone.RelationalModel.extend({
+    modelStore.CGroup = Backbone.RelationalModel.extend({
         collection:'CGroups',
         urlRoot:'/cgroup',
         // All defaults are commented out because they are here only for the purpose 
@@ -209,18 +204,18 @@ define([
                    }
                    ]
     })
-    CGroups = CollectionBase.extend({
-        model:CGroup,
+    modelStore.CGroups = CollectionBase.extend({
+        model:modelStore.CGroup,
         url:'/cgroups'
     })
-    CGroupsByAbbrOrName = CollectionBase.extend({
-        model:CGroup,
+    modelStore.CGroupsByAbbrOrName = CollectionBase.extend({
+        model:modelStore.CGroup,
         url:'/cgroups',
         db:{
             view: 'cgroups_by_abbreviation_or_name'
         }
     })
-    Cong = Backbone.RelationalModel.extend({
+    modelStore.Cong = Backbone.RelationalModel.extend({
       urlRoot:'/cong',
       collection:'Congs',
 //      defaults:{
@@ -293,18 +288,18 @@ define([
                  }
                  ]
     })
-    Congs = CollectionBase.extend({
-        model:Cong,
+    modelStore.Congs = CollectionBase.extend({
+        model:modelStore.Cong,
         url:'/congs'
     })
-    CongsByName = CollectionBase.extend({
-        model:Cong,
+    modelStore.CongsByName = CollectionBase.extend({
+        model:modelStore.Cong,
         url:'/congs',
         db:{
             view: 'congs_by_name'
         }
     })
-    Directory = Backbone.RelationalModel.extend({
+    modelStore.Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
         urlRoot:'/directory',
 //          defaults:{
@@ -338,13 +333,13 @@ define([
             changes:true
         }
     })
-    Directories = CollectionBase.extend({
-        model:Directory,
+    modelStore.Directories = CollectionBase.extend({
+        model:modelStore.Directory,
         url:'/directory'
     })
     // TODO: This is deprecated because it can be created dynamically when needed
-    DirectoriesByURL = CollectionBase.extend({
-        model:Directory,
+    modelStore.DirectoriesByURL = CollectionBase.extend({
+        model:modelStore.Directory,
         url:'/directory',
         db:{
             view: 'directories_by_url'
@@ -354,7 +349,7 @@ define([
             // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
         }
     })
-    Person = Backbone.RelationalModel.extend({
+    modelStore.Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
         collection:'People',
 //        defaults: {
@@ -415,11 +410,11 @@ define([
                    }
                    ]
     })
-    People = CollectionBase.extend({
-        model:Person,
+    modelStore.People = CollectionBase.extend({
+        model:modelStore.Person,
         url:'/people'
     })
-    Office = Backbone.RelationalModel.extend({
+    modelStore.Office = Backbone.RelationalModel.extend({
         collection:'Offices',
         urlRoot:'/office',
 //        defaults:{
@@ -440,11 +435,11 @@ define([
                    }
                    ]
     })
-    Offices = CollectionBase.extend({
-        model:Office,
+    modelStore.Offices = CollectionBase.extend({
+        model:modelStore.Office,
         url:'/offices'
     })
-    Role = Backbone.RelationalModel.extend({
+    modelStore.Role = Backbone.RelationalModel.extend({
         collection:'Roles',
         urlRoot:'/role',
 //        defaults:{
@@ -477,8 +472,8 @@ define([
                    }
                    ]
     })
-    Roles = CollectionBase.extend({
-        model:Role,
+    modelStore.Roles = CollectionBase.extend({
+        model:modelStore.Role,
         url:'/roles'
     })
     
@@ -528,35 +523,5 @@ define([
         )
     }
     
-    return {
-        // link object models
-        CGroup_Cong: CGroup_Cong,
-        Cong_Person: Cong_Person,
-        CGroup_Person: CGroup_Person,
-        CGroup_Role: CGroup_Role,
-        Office_Person: Office_Person,
-        Person_Role: Person_Role,
-        // regular object models
-        CGroup: CGroup,
-        Cong: Cong,
-        Directory: Directory,
-        Directories: Directories,
-        Person: Person,
-        Office: Office,
-        Role: Role,
-        // collections
-        CGroups:CGroups,
-        CGroupsByAbbrOrName:CGroupsByAbbrOrName,
-        Congs:Congs,
-        CongsByName: CongsByName,
-        Directories:Directories,
-        DirectoriesByURL:DirectoriesByURL,
-        People:People,
-        Offices:Offices,
-        Roles:Roles,
-        // Convenience functions
-        get_one:get_one,
-        create_one:create_one,
-        get_or_create_one:get_or_create_one
-    }
+    return modelStore
 })

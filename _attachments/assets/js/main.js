@@ -3,20 +3,22 @@ require.config({
   paths: {
       "async": "vendor/requirejs-plugins/src/async",
       "backbone": "vendor/backbone/backbone",
-      // Note this may import the .coffee instead of the .js file
-      "backbone_couchdb": "backbone-couchdb/backbone-couchdb",
+      "backbone_hoodie": "vendor/backbone-hoodie/src/backbone-hoodie",
       "backbone_relational": "vendor/backbone-relational/backbone-relational",
       // Note this may import the .css instead of the .js file
       "backgrid":"vendor/backgrid/lib/backgrid",
       "bootstrap": "vendor/bootstrap/dist/js/bootstrap.min",
       "config": "config",
-      "jquery": "vendor/jquery/jquery.min",
-      "jquery_migrate": "vendor/jquery/jquery-migrate",
+      // "hoodie": "/_api/_files/hoodie", // needs to be made available here for backbone-hoodie to require
+      "hoodie": "hoodie", // needs to be made available here for backbone-hoodie to require
+      "jquery": "vendor/jquery/dist/jquery.min",
       // Commented out because it uses $.browser, which is deprecated
       // But this may break msie compatibility!
       //"jquery_couch": "/_utils/script/jquery.couch",
+      // TODO:  Is this still needed?
       "jquery_couch": "jquery.couch",
       "jquery_couchLogin": "vendor/jquery.couchLogin/jquery.couchLogin",
+      "jquery_migrate": "vendor/jquery-migrate/jquery-migrate",
       "jquery_xpath": "vendor/jquery.xpath/jquery.xpath",
       "model": "model",
       "mustache": "vendor/mustache/mustache",
@@ -33,17 +35,17 @@ require.config({
       backbone_relational: {
           deps: ["backbone"]
       },
-      backbone_couchdb: {
-          deps: ["backbone_relational", "jquery_couch"],
+      backbone_hoodie: {
+          deps: ["backbone_relational"],
           init: function(){
-              // TODO: Handle injecting Backbone.RelationalModel into backbone_couchdb here
+              // TODO: Handle injecting Backbone.RelationalModel into backbone_hoodie here
               // return this.
           },
           exports: 'Backbone'
       },
       // TODO: Use require-css to inject the CSS as needed
       backgrid: {
-          deps: ["jquery", "backbone_couchdb", "underscore"],
+          deps: ["jquery", "backbone_hoodie", "underscore"],
           exports: 'Backgrid'
       },
       // TODO: Use require-css to inject the CSS as needed
@@ -51,11 +53,11 @@ require.config({
           deps: ["jquery"],
           exports: "$.fn.typeahead"
       },
+      "bootstrap_modalform":{
+          deps: ["bootstrap"]
+      },
       jquery_couch: {
           deps: ["jquery", "jquery_migrate"]
-      },
-      jquery_couchLogin: {
-          deps: ["jquery", "jquery_couch"]
       },
       jquery_migrate: {
           deps: ["jquery"]
@@ -64,7 +66,7 @@ require.config({
           deps: ["jquery"]
       },
       model: {
-          deps: ["jquery", "config", "backbone", "backbone_relational", "backbone_couchdb"]
+          deps: ["jquery", "config", "backbone", "backbone_relational", "backbone_hoodie"]
       },
       mustache: {
           exports: ["Mustache"]
@@ -83,10 +85,9 @@ require(
    [
     'config',
     'model',
-    'views/view_loader',
-    'jquery_couchLogin',
+    'views/main',
     'underscore',
-    'backbone',
+    'backbone_hoodie',
     'jquery_couch'
     ], 
     function(
@@ -100,6 +101,8 @@ require(
             initialize : function(){
                 // Make it easy to reference this object in event handlers
                 _.bindAll(this, 'find_a_church', 'import_directory')
+                // This is needed to get hoodie.accountbar.bootstrap.js to work.
+                hoodie = new Hoodie()
             },
             // Set up URLs here
             // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
@@ -119,8 +122,6 @@ require(
                 this.menu_view.render()
                 this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
                 this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
-                // TODO: Login doesn't work yet
-                $("#account").couchLogin({});
                 // This renders the default view for the app
                 // TODO:  If the page loaded from a different view's URL, load that view instead
                 //    Maybe we can handle that in the router below.
