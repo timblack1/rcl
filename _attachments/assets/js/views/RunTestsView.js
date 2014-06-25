@@ -1,7 +1,7 @@
 define(
    [
     'config',
-    'backbone',
+    'backbone_hoodie',
     'mustache',
     'text!views/RunTests.html'
     ], 

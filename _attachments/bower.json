@@ -1,11 +1,31 @@
 {
   "name": "Reformed Churches Locator",
   "version": "0.0.1",
+  "authors": [
+    "Tim Black <tim@alwaysreformed.com>",
+	"Doug Huston <>"
+  ],
+  "description": "",
+  "main": "assets/js/main.js",
+  "moduleType": [
+    "amd"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "assets/js/vendor",
+    "test",
+    "tests"
+  ],
   "dependencies": {
     "backbone": "latest",
+    "backbone-hoodie": "~1.0.6",
     "backbone-relational": "latest",
     "backgrid": "latest",
     "bootstrap": "latest",
+    "bootstrap.modalform": "~1.0.0",
     "jasmine": "latest",
     "jquery": "latest",
     "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery.git",
