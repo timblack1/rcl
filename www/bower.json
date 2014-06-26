@@ -1,0 +1,45 @@
+{
+  "name": "Reformed Churches Locator",
+  "version": "0.0.1",
+  "authors": [
+    "Tim Black <tim@alwaysreformed.com>",
+	"Doug Huston <>"
+  ],
+  "description": "",
+  "main": "assets/js/main.js",
+  "moduleType": [
+    "amd"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "assets/js/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": "latest",
+    "backbone-hoodie": "~1.0.6",
+    "backbone-relational": "latest",
+    "backgrid": "latest",
+    "bootstrap": "latest",
+    "bootstrap.modalform": "~1.0.0",
+    "jasmine": "latest",
+    "jquery": "latest",
+    "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery.git",
+    "jquery.xpath": "https://github.com/ilinsky/jquery-xpath.git",
+    "jquery-migrate": "latest",
+    "modernizr": "latest",
+    "mustache": "latest",
+    "requirejs": "latest",
+    "requirejs-text": "latest",
+    "requirejs-plugins": "latest",
+    "respond": "latest",
+    "typeahead.js": "latest",
+    "typeahead.js-bootstrap.css": "git://github.com/jharding/typeahead.js-bootstrap.css.git",
+    "underscore": "latest",
+    "jquery-cookie": "~1.4.0"
+  }
+}
