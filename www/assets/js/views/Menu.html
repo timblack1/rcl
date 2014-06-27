@@ -16,11 +16,11 @@
         <li class="active"><a href="/find_a_church" id="find_a_church">Find a church</a></li>
         <li><a href="/import_directory" id="import_directory">Import a directory</a></li>
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <a href="#" data-target="#" class="dropdown-toggle" data-toggle="dropdown" id="delete_label">
                 Delete: 
                 <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu" role="menu">
+            <ul class="dropdown-menu" role="menu" aria-labelledby="delete_label">
                 <li><a href="#" id="delete_all_docs">All docs</a></li>
                 <li><a href="#" id="delete_all_opc_cgroups">OPC cgroups</a></li>
                 <li><a href="#" id="delete_all_directories">Directories</a></li>
