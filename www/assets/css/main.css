@@ -28,7 +28,10 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
   top: 10px;
   right: 10px;
 }
-
+.modal .form-group{
+    margin-bottom: 0px;
+    line-height: .8em;
+}
 .content {
   padding: 10px;
   float: left;

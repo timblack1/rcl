@@ -19,17 +19,17 @@
       html += "  <div class=\"modal-content\">";
       if (title) {
         html += "    <div class=\"modal-header\">";
-        html += "      <h3>";
+        html += "      <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>";
+        html += "      <h4>";
         html += "      "+title;
-        html += "        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">×</button>";
-        html += "      </h3>";
+        html += "      </h4>";
         html += "    <\/div>";
       }
       html += "    <div class=\"modal-body\">";
       html += "    <div class=\"form-group\">";
       while (field = fields.shift()) {
         type = /password/.test(field) ? 'password' : 'text';
-        html += "      <input class=\"col-sm-3 form-control\" type=\""+type+"\" name=\""+field+"\" placeholder=\""+field.replace(/_/g, ' ')+"\"><br \/>";
+        html += "      <input class=\"form-control\" type=\""+type+"\" name=\""+field+"\" placeholder=\""+field.replace(/_/g, ' ')+"\"><br \/>";
       }
       html += "    <\/div>";
       html += "    <\/div>";
