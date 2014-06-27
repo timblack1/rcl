@@ -164,16 +164,9 @@ require(
         window.app.config = config
        
         // Create SEF URLs and handle clicks
-        Backbone.history.start({pushState: true, root: "/" + config.db_name + "/_design/rcl/"})
+        Backbone.history.start({pushState: true, root: "/"})
         // Globally capture clicks. If they are internal and not in the pass 
         // through list, route them through Backbone's navigate method.
-        // TODO: Create vhosts entry to allow pages to load from direct access to the URL, like
-        //  to http://localhost:5984/rcl/_design/rcl/import_directory.  Currently that URL returns:
-        //  {"error":"not_found","reason":"Document is missing attachment"}
-        // TODO: When I create a vhosts entry for /rcl2 and rewrites.json, then go to 
-        //  http://localhost:5984/rcl2/find_a_church, it returns:
-        //  {"error":"not_found","reason":"Document is missing attachment"}
-        //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/example-of-vhosts-not-working-yet
         $(document).on("click", "a[href^='/']", function(event){
             var href = $(event.currentTarget).attr('href')
             // chain 'or's for other black list routes
