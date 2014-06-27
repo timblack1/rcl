@@ -7,7 +7,7 @@ require.config({
       "backbone_relational": "../vendor/backbone-relational/backbone-relational",
       // Note this may import the .css instead of the .js file
       "backgrid":"../vendor/backgrid/lib/backgrid",
-      "bootstrap": "../vendor/bootstrap/dist/js/bootstrap.min",
+      "bootstrap": "../vendor/bootstrap/dist/js/bootstrap",
       "config": "config",
       // "hoodie": "/_api/_files/hoodie", // needs to be made available here for backbone-hoodie to require
       "hoodie": "hoodie", // needs to be made available here for backbone-hoodie to require
