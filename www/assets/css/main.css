@@ -2,10 +2,6 @@
    Hoodie Sign In / Sign Up / Sign out stylings
    ========================================================================== */
 
-body {
-  background: url('../img/pattern_130.gif');
-}
-
 .container {
   position: relative;
   background: #fff;
@@ -67,7 +63,6 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
 }
 .jumbotron,
 .copy {
-  background: #EBE7DA;
   margin: 0;
   border-radius: 0;
 }
