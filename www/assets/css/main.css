@@ -25,7 +25,7 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
 
 .hoodie-accountbar {
   position: absolute;
-  top: 20px;
+  top: 10px;
   right: 10px;
 }
 
