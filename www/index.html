@@ -9,6 +9,7 @@
 
         <link rel="stylesheet" href="assets/vendor/bootstrap/dist/css/bootstrap.min.css">
         <style>
+            /* This makes the page scroll so the top of the page content lines up with the bottom of the navbar */
             body {
                 padding-top: 60px;
                 padding-bottom: 40px;
@@ -25,72 +26,69 @@
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
-    <div class="container">
-      <div class="jumbotron">
-        <h1>rcl</h1>
-        <p>
-          The ultimate directory of Reformed churches worldwide
-        </p>
-
-        <div class="hoodie-accountbar">
-
-          <div class="hoodie-account-signedout">
-            <span class="btn-group">
-              <button class="btn btn-sm btn-default" data-hoodie-action="signup">Sign Up</button>
-              <button class="btn btn-sm dropdown-toggle btn-default" data-toggle="dropdown">
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu pull-right">
-                <li><a href="#" data-hoodie-action="signin">Sign In</a></li>
-                <li><a href="#" data-hoodie-action="resetpassword">Reset Password</a></li>
-                <li><a href="#" data-hoodie-action="destroy">Clear local data</a></li>
-              </ul>
-            </span>
-          </div><!-- /.hoodie-account-signedout -->
-
-          <div class="hoodie-account-signedin">
-            Hello,
-            <span class="hoodie-username"><!-- usern name will be filled in here --></span>
-            <span class="btn-group">
-              <button class="btn btn-sm btn-default" data-hoodie-action="signout">Sign Out</button>
-              <button class="btn btn-sm dropdown-toggle btn-default" data-toggle="dropdown">
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu pull-right">
-                <li><a href="#" data-hoodie-action="changepassword">Change Password</a></li>
-                <li><a href="#" data-hoodie-action="changeusername">Change Username</a></li>
-                <li><a href="#" data-hoodie-action="destroy">Destroy Account</a></li>
-              </ul>
-            </span>
-          </div><!-- /.hoodie-account-signedin -->
-
-          <div class="hoodie-account-error">
-            Hello,
-            <span class="hoodie-username"><!-- usern name will be filled in here --></span>.
-            <span class="btn-group">
-              <button class="btn btn-sm btn-danger" data-hoodie-action="signin">Authentication error: Sign in again</button>
-              <button class="btn btn-sm dropdown-toggle btn-danger" data-toggle="dropdown">
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu pull-right">
-                <li><a href="#" data-hoodie-action="signout">Sign out</a></li>
-              </ul>
-            </span>
-          </div><!-- /.hoodie-account-error -->
-        </div><!--/hoodieAccountBar -->
-      </div> <!-- /jumbotron -->
-
-        <div class="navbar navbar-inverse navbar-fixed-top"></div>
-        <div class="content"></div>
-
-
         <div class="container">
 
-            <br /><br />
-            <p>(The Ultimate Directory of Reformed Churches Worldwide)</p>
+          <div class="navbar navbar-inverse navbar-fixed-top"></div>
+          <div class="jumbotron">
 
-            <div id="content"></div>
+            <div class="hoodie-accountbar">
 
+              <div class="hoodie-account-signedout">
+                <span class="btn-group">
+                  <button class="btn btn-sm btn-default" data-hoodie-action="signup">Sign Up</button>
+                  <button class="btn btn-sm dropdown-toggle btn-default" data-toggle="dropdown">
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu pull-right">
+                    <li><a href="#" data-hoodie-action="signin">Sign In</a></li>
+                    <li><a href="#" data-hoodie-action="resetpassword">Reset Password</a></li>
+                    <li><a href="#" data-hoodie-action="destroy">Clear local data</a></li>
+                  </ul>
+                </span>
+              </div><!-- /.hoodie-account-signedout -->
+
+              <div class="hoodie-account-signedin">
+                Hello,
+                <span class="hoodie-username"><!-- user name will be filled in here --></span>
+                <span class="btn-group">
+                  <button class="btn btn-sm btn-default" data-hoodie-action="signout">Sign Out</button>
+                  <button class="btn btn-sm dropdown-toggle btn-default" data-toggle="dropdown">
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu pull-right">
+                    <li><a href="#" data-hoodie-action="changepassword">Change Password</a></li>
+                    <li><a href="#" data-hoodie-action="changeusername">Change Username</a></li>
+                    <li><a href="#" data-hoodie-action="destroy">Destroy Account</a></li>
+                  </ul>
+                </span>
+              </div><!-- /.hoodie-account-signedin -->
+
+              <div class="hoodie-account-error">
+                Hello,
+                <span class="hoodie-username"><!-- user name will be filled in here --></span>.
+                <span class="btn-group">
+                  <button class="btn btn-sm btn-danger" data-hoodie-action="signin">Authentication error: Sign in again</button>
+                  <button class="btn btn-sm dropdown-toggle btn-danger" data-toggle="dropdown">
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu pull-right">
+                    <li><a href="#" data-hoodie-action="signout">Sign out</a></li>
+                  </ul>
+                </span>
+              </div><!-- /.hoodie-account-error -->
+
+            </div><!--/hoodieAccountBar -->
+
+            <h1>Reformed Churches Locator</h1>
+            <p>
+              The ultimate directory of Reformed churches worldwide
+            </p>
+
+          </div> <!-- /jumbotron -->
+
+          <div id="content"></div>
+          <div id="tests"></div>
+     
         </div> <!-- /container -->
         
         <!-- START HERE 
@@ -106,25 +104,21 @@
             <input type="button" id="no" value="No" />
         </script>       
 
-        <div id="tests"></div>
-     
-     
-
         <link rel="stylesheet" type="text/css" href="assets/vendor/typeahead.js-bootstrap.css/typeahead.js-bootstrap.css" media="all">
         <!-- Reformed Churches Locator JavaScript files -->
         
         <script src="assets/js/wgxpath.install.js"></script>
 
-    <script src="assets/vendor/jquery/jquery.min.js"></script>
-    <script src="assets/vendor/bootstrap/dist/js/bootstrap.js"></script>
+        <script src="assets/vendor/jquery/jquery.min.js"></script>
+        <script src="assets/vendor/bootstrap/dist/js/bootstrap.js"></script>
 
-    <!-- Load the dynamic version of hoodie.js that includes all the plugin code-->
-    <script src="assets/js/hoodie.js"></script>
-<!--     <script src="/_api/_files/hoodie.js"></script> -->
-    <script src="assets/vendor/hoodie.accountbar.bootstrap.js"></script>
-    <script src="assets/vendor/bootstrap.modalform/bootstrap.modalform.js"></script>
-    
-    <script data-main="assets/js/main" src="assets/vendor/requirejs/require.js"></script>
+        <!-- Load the dynamic version of hoodie.js that includes all the plugin code-->
+        <script src="assets/js/hoodie.js"></script>
+        <!-- <script src="/_api/_files/hoodie.js"></script> -->
+        <script src="assets/vendor/hoodie.accountbar.bootstrap.js"></script>
+        <script src="assets/vendor/bootstrap.modalform/bootstrap.modalform.js"></script>
+
+        <script data-main="assets/js/main" src="assets/vendor/requirejs/require.js"></script>
 
         <script>
             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
@@ -132,5 +126,6 @@
             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
             s.parentNode.insertBefore(g,s)}(document,'script'));
         </script>
+        
     </body>
 </html>
