@@ -22,7 +22,6 @@ define([
         render: function(){
             $('#steps').html(Mustache.render(template))
             this.delegateEvents()
-            var thiz = this
             // Render typeahead for URL textbox
             // Render typeahead
             // TODO: Consider filtering and sorting by levenshtein distance
@@ -50,16 +49,16 @@ define([
               };
             };
             // Get array of directories from model
-            var directories = new model.Directories()
-            directories.fetch()
-            thiz.$('#url').typeahead({
+            this.directories = new model.Directories()
+            this.directories.fetch()
+            this.$('#url').typeahead({
                 hint: true,
                 highlight: true,
                 minLength: 1
             },{
                 name: 'directories',
                 displayKey: 'value',
-                source: substringMatcher(directories.each(function(mod){return mod.get('url')}))
+                source: substringMatcher(this.directories.each(function(mod){return mod.get('url')}))
             })
         },
         events: {
@@ -192,13 +191,18 @@ define([
                     */
                 
                 // If we have not already created a directory on this page, create it; else get the existing directory
+                console.log('Start here for hoodie integration')
+                debugger;
                 if (typeof(thiz.model) === 'undefined'){
                     // The dir hasn't been created in the browser yet
                     // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
                     //  in Hoodie's local store.
-                    console.log('Start here for hoodie integration')
                     // If the cgroup's associated directory exists in the db, get it
                     var page_url = thiz.$('#url').val()
+                    var found_dir = thiz.directories.findWhere({url:page_url})
+                    if (typeof found_dir === 'undefined'){
+                        // TODO: Create new directory here.
+                    }
                     // TODO: Don't create the dir if the URL is not valid.
                     //  Maybe mark the dir's URL as invalid in the node.js script (by
                     //  checking for a 404 response), and/or
@@ -575,7 +579,6 @@ define([
              // "l":"9500 Medlock Bridge Road<br \/>Johns Creek, GA 30097", // mailing_address_formatted, easier to parse
              // "clr":"red"
              // }]}
--
             // Get the relevant JSON in a variable
             // This regex took forever
             // var json = this.model.get('json').replace(/.*?"mapRS":/, '{"congs":').replace(/,"dataRS":.*/, '}')
