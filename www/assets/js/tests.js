@@ -17,7 +17,7 @@ describe("Reformed Churches Locator", function() {
     describe("'Find a church' page", function() {
         it("should not display an error", function() {
             app.navigate('find_a_church', { trigger: true })
-            var content = $('#content').html()
+            var content = $('.content').html()
             expect(content).toMatch('Find a church')
         });
     });
@@ -26,7 +26,7 @@ describe("Reformed Churches Locator", function() {
     describe("'Import a directory' page", function() {
         it("should not display an error", function() {
             app.navigate('import_directory', { trigger: true })
-            var content = $('#content').html()
+            var content = $('.content').html()
             expect(content).toMatch('downloading')
         });
         function trigger_url_field(){

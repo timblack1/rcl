@@ -15,7 +15,7 @@ define([
                 this.congs = []
             },
             render: function(){
-                $('#content').html(Mustache.render(template))
+                $('.content').html(Mustache.render(template))
                 this.delegateEvents()
                 
                 // Create congs collection

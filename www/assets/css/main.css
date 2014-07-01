@@ -34,8 +34,6 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
 }
 .content {
   padding: 10px;
-  float: left;
-  width: 380px;
 }
 .code {
   margin: 0 0 0 400px;
