@@ -25,23 +25,41 @@ define([
             var thiz = this
             // Render typeahead for URL textbox
             // Render typeahead
+            // TODO: Consider filtering and sorting by levenshtein distance
+            var substringMatcher = function(strs) {
+              return function findMatches(q, cb) {
+                var matches, substringRegex;
+
+                // an array that will be populated with substring matches
+                matches = [];
+
+                // regex used to determine if a string contains the substring `q`
+                substrRegex = new RegExp(q, 'i');
+
+                // iterate through the pool of strings and for any string that
+                // contains the substring `q`, add it to the `matches` array
+                $.each(strs, function(i, str) {
+                  if (substrRegex.test(str)) {
+                    // the typeahead jQuery plugin expects suggestions to a
+                    // JavaScript object, refer to typeahead docs for more info
+                    matches.push({ value: str });
+                  }
+                });
+
+                cb(matches);
+              };
+            };
+            // Get array of directories from model
+            var directories = new model.Directories()
+            directories.fetch()
             thiz.$('#url').typeahead({
+                hint: true,
+                highlight: true,
+                minLength: 1
+            },{
                 name: 'directories',
-                remote: {
-                    url:'/' + config.db_name + '/_design/rcl/_view/directories',
-                    // The filter is needed to allow filtering for strings not found at the beginning
-                    //  of the URL, and to format CouchDB's response into an array.
-                    filter: function(parsedResponse){
-                        return _.filter(_.pluck(parsedResponse.rows, 'key'), function(val){
-                            if (val !== null){
-                                // This method of getting the query text works, but feels like a hack.
-                                // TODO: Consider filtering and sorting by levenshtein distance
-                                var patt = new RegExp($('.twitter-typeahead span').text(), 'i')
-                                return val.match(patt) !== null
-                            }
-                        })
-                    }
-                }
+                displayKey: 'value',
+                source: substringMatcher(directories.each(function(mod){return mod.get('url')}))
             })
         },
         events: {
@@ -178,6 +196,7 @@ define([
                     // The dir hasn't been created in the browser yet
                     // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
                     //  in Hoodie's local store.
+                    console.log('Start here for hoodie integration')
                     // If the cgroup's associated directory exists in the db, get it
                     var page_url = thiz.$('#url').val()
                     // TODO: Don't create the dir if the URL is not valid.
@@ -556,7 +575,7 @@ define([
              // "l":"9500 Medlock Bridge Road<br \/>Johns Creek, GA 30097", // mailing_address_formatted, easier to parse
              // "clr":"red"
              // }]}
-
+-
             // Get the relevant JSON in a variable
             // This regex took forever
             // var json = this.model.get('json').replace(/.*?"mapRS":/, '{"congs":').replace(/,"dataRS":.*/, '}')
