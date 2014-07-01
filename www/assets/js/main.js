@@ -8,9 +8,11 @@ require.config({
       // Note this may import the .css instead of the .js file
       "backgrid":"../vendor/backgrid/lib/backgrid",
       "bootstrap": "../vendor/bootstrap/dist/js/bootstrap",
+      "bootstrap_modalform": "../vendor/bootstrap.modalform/bootstrap.modalform",
       "config": "config",
       // "hoodie": "/_api/_files/hoodie", // needs to be made available here for backbone-hoodie to require
       "hoodie": "hoodie", // needs to be made available here for backbone-hoodie to require
+      "hoodie_accountbar": "../vendor/hoodie.accountbar.bootstrap",
       "jquery": "../vendor/jquery/jquery.min",
       // Commented out because it uses $.browser, which is deprecated
       // But this may break msie compatibility!
@@ -54,7 +56,13 @@ require.config({
           exports: "$.fn.typeahead"
       },
       "bootstrap_modalform":{
-          deps: ["bootstrap"]
+          deps: ["bootstrap","hoodie_accountbar"]
+      },
+      "hoodie":{
+          exports: ["Hoodie"]
+      },
+      "hoodie_accountbar":{
+          deps: ["hoodie"]
       },
       jquery_couch: {
           deps: ["jquery", "jquery_migrate"]
@@ -86,9 +94,11 @@ require(
     'config',
     'model',
     'views/main',
+    'hoodie',
     'underscore',
     'backbone_hoodie',
-    'jquery_couch'
+    'jquery_couch',
+    'bootstrap_modalform'
     ], 
     function(
              config,
