@@ -115,13 +115,6 @@ require(
                 hoodie = new Hoodie()
             },
             // Set up URLs here
-            // TODO: Set CouchDB routing for URLs it doesn't understand.  Is there a way to do this
-            //    without duplicating what is written here?
-            //    http://blog.couchbase.com/what%E2%80%99s-new-apache-couchdb-011-%E2%80%94-part-one-nice-urls-rewrite-rules-and-virtual-hosts
-            //    Maybe in this.initialize we can dynamically get ddoc.rewrites, iterate through it, 
-            //    and dynamically create this.routes in the correct data format, 
-            //    which is {'url':'function_name',...}.
-            //    (misunderstood_url)
             routes: {
                 "index.html":                    "index.html",
                 "find_a_church":                 "find_a_church",
@@ -130,12 +123,9 @@ require(
             render:function(){
                 this.menu_view = new views.MenuView({ el: $(".navbar") });
                 this.menu_view.render()
-                this.find_a_church_view = new views.FindAChurchView({ el: $("#content") });
-                this.import_directory_view = new views.ImportDirectoryView({ el: $("#content") });
+                this.find_a_church_view = new views.FindAChurchView({ el: $(".content") });
+                this.import_directory_view = new views.ImportDirectoryView({ el: $(".content") });
                 // This renders the default view for the app
-                // TODO:  If the page loaded from a different view's URL, load that view instead
-                //    Maybe we can handle that in the router below.
-                //  load-correct-view-from-url-on-first-load
                 this.default_view = this[config.default_view]
                 this.default_view.render()
                 // Run tests only if configured to do so
@@ -151,7 +141,7 @@ require(
                 }
             },
             find_a_church:function(){
-                // TODO: This destroys the old view, and renders a new view, in the #content div.
+                // TODO: This destroys the old view, and renders a new view, in the .content div.
                 //    But if the view has already been rendered, and has some state, it might 
                 //    be better to HIDE other views, and DISPLAY this one, rather than render it,
                 //    because this would preserve the rendered view's state.

@@ -26,7 +26,7 @@ define(
                 //  http://ianstormtaylor.com/rendering-views-in-backbonejs-isnt-always-simple/
                 //config.render_to_id(this, "#import_directory_template")
                 // Render Mustache template
-                $('#content').html(Mustache.render(this.template));
+                $('.content').html(Mustache.render(this.template));
                 // Render first subview
                 this.URLView = new URLView({el: '#steps'})
                 this.URLView.render()
