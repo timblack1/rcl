@@ -214,6 +214,7 @@ define([
     modelStore.CGroup = Backbone.RelationalModel.extend({
         collection:'CGroups',
         urlRoot:'/cgroup',
+        type:'cgroup',
         // All defaults are commented out because they are here only for the purpose 
         //  of documenting the schema, and we don't need all these attributes to appear 
         //  on every actual instance of a model object.
@@ -281,8 +282,9 @@ define([
         }
     })
     modelStore.Cong = Backbone.RelationalModel.extend({
-      urlRoot:'/cong',
-      collection:'Congs',
+        urlRoot:'/cong',
+        collection:'Congs',
+        type:'cong',
 //      defaults:{
 //          name : '',
 //          meeting_address1 : '',
@@ -367,6 +369,7 @@ define([
     modelStore.Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
         urlRoot:'/directory',
+        type:'directory',
 //          defaults:{
 //          url:'', // url of directory's main page
 //          url_html:'', // HTML of directory's main page
@@ -418,6 +421,7 @@ define([
     modelStore.Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
         collection:'People',
+        type:'person',
 //        defaults: {
 //                    prefix:'',
 //                    firstname:'',
@@ -483,6 +487,7 @@ define([
     modelStore.Office = Backbone.RelationalModel.extend({
         collection:'Offices',
         urlRoot:'/office',
+        type:'office',
 //        defaults:{
 //            name: ""
 //        },
@@ -508,6 +513,7 @@ define([
     modelStore.Role = Backbone.RelationalModel.extend({
         collection:'Roles',
         urlRoot:'/role',
+        type:'role',
 //        defaults:{
 //            name:''
 //        },

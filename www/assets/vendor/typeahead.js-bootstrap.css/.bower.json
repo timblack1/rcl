@@ -1,11 +1,11 @@
 {
   "name": "typeahead.js-bootstrap.css",
   "homepage": "https://github.com/jharding/typeahead.js-bootstrap.css",
-  "_release": "0fb9329a49",
+  "_release": "048ea47176",
   "_resolution": {
     "type": "branch",
     "branch": "master",
-    "commit": "0fb9329a491b763afb6fef662ca81ffd5e6be4f0"
+    "commit": "048ea47176738873f8431044ed6fea035e4115dd"
   },
   "_source": "git://github.com/jharding/typeahead.js-bootstrap.css.git",
   "_target": "*",

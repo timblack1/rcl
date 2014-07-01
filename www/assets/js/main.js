@@ -13,7 +13,7 @@ require.config({
       // "hoodie": "/_api/_files/hoodie", // needs to be made available here for backbone-hoodie to require
       "hoodie": "hoodie", // needs to be made available here for backbone-hoodie to require
       "hoodie_accountbar": "../vendor/hoodie.accountbar.bootstrap",
-      "jquery": "../vendor/jquery/jquery.min",
+      "jquery": "../vendor/jquery/dist/jquery.min",
       // Commented out because it uses $.browser, which is deprecated
       // But this may break msie compatibility!
       //"jquery_couch": "/_utils/script/jquery.couch",
@@ -25,7 +25,7 @@ require.config({
       "model": "model",
       "mustache": "../vendor/mustache/mustache",
       "text": "../vendor/requirejs-text/text",
-      "typeahead": "../vendor/typeahead.js/dist/typeahead",
+      "typeahead": "../vendor/typeahead.js/dist/typeahead.jquery",
       "underscore": "../vendor/underscore/underscore",
       "jquery_cookie": "../vendor/jquery-cookie/jquery.cookie"
   },
