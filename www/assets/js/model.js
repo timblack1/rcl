@@ -274,13 +274,6 @@ define([
         model:modelStore.CGroup,
         url:'/cgroups'
     })
-    modelStore.CGroupsByAbbrOrName = CollectionBase.extend({
-        model:modelStore.CGroup,
-        url:'/cgroups',
-        db:{
-            view: 'cgroups_by_abbreviation_or_name'
-        }
-    })
     modelStore.Cong = Backbone.RelationalModel.extend({
         urlRoot:'/cong',
         collection:'Congs',
@@ -359,13 +352,6 @@ define([
         model:modelStore.Cong,
         url:'/congs'
     })
-    modelStore.CongsByName = CollectionBase.extend({
-        model:modelStore.Cong,
-        url:'/congs',
-        db:{
-            view: 'congs_by_name'
-        }
-    })
     modelStore.Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
         urlRoot:'/directory',
@@ -396,27 +382,12 @@ define([
                //     includeInJSON:'_id'
                // }
             }
-        ],
-        db:{
-            changes:true
-        }
+        ]
     })
     modelStore.Directory.setup()
     modelStore.Directories = CollectionBase.extend({
         model:modelStore.Directory,
         url:'/directory'
-    })
-    // TODO: This is deprecated because it can be created dynamically when needed
-    modelStore.DirectoriesByURL = CollectionBase.extend({
-        model:modelStore.Directory,
-        url:'/directory',
-        db:{
-            view: 'directories_by_url'
-        },
-        initialize:function(){
-            // TODO: Should we proliferate collections here in the model, or create them dynamically in the client code (like suggested below)?
-            // console.error('DirectoriesByURL is deprecated.  Please change to use something like:\n\ndb:{\n\tview: \'directories_by_url\'\n}')
-        }
     })
     modelStore.Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
