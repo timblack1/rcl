@@ -193,43 +193,34 @@ define([
                 // If we have not already created a directory on this page, create it; else get the existing directory
                 console.log('Start here for hoodie integration')
                 debugger;
+                // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
+                //  in Hoodie's local store.
+                // If the cgroup's associated directory exists in the db, get it
+                var page_url = thiz.$('#url').val()
+                thiz.model = thiz.directories.findWhere({url:page_url})
                 if (typeof(thiz.model) === 'undefined'){
-                    // The dir hasn't been created in the browser yet
-                    // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
-                    //  in Hoodie's local store.
-                    // If the cgroup's associated directory exists in the db, get it
-                    var page_url = thiz.$('#url').val()
-                    var found_dir = thiz.directories.findWhere({url:page_url})
-                    if (typeof found_dir === 'undefined'){
-                        // TODO: Create new directory here.
-                    }
+                    // The dir hasn't been created yet, so create it
+                    thiz.model = new model.Directory({url:page_url})
                     // TODO: Don't create the dir if the URL is not valid.
                     //  Maybe mark the dir's URL as invalid in the node.js script (by
                     //  checking for a 404 response), and/or
                     //  just delete the dir from node.js in an asynchronous cleanup task.
-                    // Provide a list of similar URLs in an autocompleter.  Get the list from
-                    //  the set of directories already found in the RCL database.
                     // We wait until later to set get_url_html = 'requested', so as not 
                     //  to fire that request event twice
-                    model.DirectoriesByURL.get_or_create_one([page_url], {url:page_url}, {success:function(dir){
-                        thiz.model = dir
-                        // Create changes listeners on this.model
-                        thiz.changes_listeners()
-                        // TODO: See if the error occurs before this point.
-                        //      Conclusion:  It seems the error occurs before this breakpoint.
-                        //debugger;
-                        thiz.get_cgroup()
-                         // TODO: If the other form fields are empty,
-                         //     auto-populate them with info from this
-                         //     directory's cgroup to help the user
-                         // TODO: Maybe only display those fields after
-                         //     the URL is filled in
-                         //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-                    }})
-                }else{
-                    // It already exists in the browser, so we're editing an already-created dir
-                    thiz.get_cgroup()
                 }
+                // Create changes listeners on this.model
+                thiz.changes_listeners()
+                // TODO: See if the error occurs before this point.
+                //      Conclusion:  It seems the error occurs before this breakpoint.
+                //debugger;
+                thiz.get_cgroup()
+                 // TODO: If the other form fields are empty,
+                 //     auto-populate them with info from this
+                 //     directory's cgroup to help the user
+                 // TODO: Maybe only display those fields after
+                 //     the URL is filled in
+                 //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+
                 
                 // TODO: Is this code needed anymore?
                 // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/remove-cgroup-by-abbreviation-code
