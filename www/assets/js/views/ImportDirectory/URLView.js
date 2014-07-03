@@ -191,10 +191,6 @@ define([
                     */
                 
                 // If we have not already created a directory on this page, create it; else get the existing directory
-                console.log('Start here for hoodie integration')
-                debugger;
-                // TODO: If Hoodie works on Webfaction, then the following can be simplified by looking for the directory
-                //  in Hoodie's local store.
                 // If the cgroup's associated directory exists in the db, get it
                 var page_url = thiz.$('#url').val()
                 thiz.model = thiz.directories.findWhere({url:page_url})
@@ -210,9 +206,6 @@ define([
                 }
                 // Create changes listeners on this.model
                 thiz.changes_listeners()
-                // TODO: See if the error occurs before this point.
-                //      Conclusion:  It seems the error occurs before this breakpoint.
-                //debugger;
                 thiz.get_cgroup()
                  // TODO: If the other form fields are empty,
                  //     auto-populate them with info from this
@@ -221,47 +214,10 @@ define([
                  //     the URL is filled in
                  //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
 
-                
-                // TODO: Is this code needed anymore?
-                // https://blueprints.launchpad.net/reformedchurcheslocator/+spec/remove-cgroup-by-abbreviation-code
-                //                var cgroup = ''
-                //                // Query database by cgroup.abbreviation
-                //                // TODO: Turn this into a view in model.cgroup
-                //                // TODO: Run this when the abbreviation changes, rather than when the URL changes
-                //                //console.log(db)
-                //                db.view('rcl/cgroup-by-abbreviation', {
-                //                    keys:[$('#abbreviation').val()],
-                //                    include_docs:true,
-                //                    success:function(data){
-                //                        if (data.rows.length==1){
-                //                            // Get this cgroup from the db
-                //                            var cgroup = data.rows[0].doc
-                //                            // Populate page with this cgroup's data
-                //                            $('#cgroup_name').val(cgroup.name)
-                //                            $('#abbreviation').val(cgroup.abbreviation);
-                //                            create_dir(cgroup)
-                //                        }else if (data.rows.length > 1){
-                //                            // Report error
-                //                            console.log("Error:  More than one copy of this cgroup's settings are found in the database.")
-                //                        }else if (data.rows.length==0){
-                //                            // Otherwise, create that cgroup
-                //                            var cgroup = {
-                //                                          type:   'cgroup',
-                //                                          name:   $('#cgroup_name').val(),
-                //                                          abbreviation:   $('#abbreviation').val()
-                //                            }
-                //                            db.saveDoc(cgroup,{
-                //                                success:function(data){
-                //                                    cgroup.id = data._id
-                //                                    create_dir(cgroup)
-                //                                }
-                //                            })
-                //                        }
-                //                    }
-                //                })
             }, 3000)
         },
         get_cgroup:function(){
+            console.log('Start here for hoodie integration')
             var thiz = this
             // Reset status flag so the status messages will display
             this.model.set('get_state_url_html', '')
