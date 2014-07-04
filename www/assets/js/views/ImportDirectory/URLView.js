@@ -197,17 +197,45 @@ define([
                 if (typeof(thiz.model) === 'undefined'){
                     // The dir hasn't been created yet, so create it
                     thiz.model = new model.Directory({url:page_url})
-                    // TODO: Don't create the dir if the URL is not valid.
-                    //  Maybe mark the dir's URL as invalid in the node.js script (by
-                    //  checking for a 404 response), and/or
-                    //  just delete the dir from node.js in an asynchronous cleanup task.
-                    // We wait until later to set get_url_html = 'requested', so as not 
-                    //  to fire that request event twice
                 }
                 // Create changes listeners on this.model
                 thiz.changes_listeners()
-                thiz.get_cgroup()
-                 // TODO: If the other form fields are empty,
+//                 thiz.get_cgroup()
+                // TODO: Start here.  I can't figure out how to determine that the task has completed.
+                console.log('Start here.')
+                var task = hoodie.task.start('geturlhtml', {
+                  url: page_url
+                })
+                hoodie.task.on('geturlhtml:' + task.id + ':success', function(task, options){
+                    console.log('Task completed!', options)
+                })
+                task.done(function(task){
+                    // Add url_html to thiz.model, and save thiz.model
+                    thiz.model.set('url_html', task.html)
+                    thiz.model.save()
+                    console.log(task.html, task.status_code)
+                    console.log('Logged task to console.')
+                }).fail(function(error){
+                    console.log("Couldn't get the url_html from this URL: ", error)
+                })
+//                 hoodie.get_url_html(page_url).then(function(task){
+//                     // TODO: Add url_html to thiz.model, and save thiz.model
+//                     thiz.model.set('url_html', task.html)
+//                     thiz.model.save()
+//                     console.log(task.html, task.status_code)
+//                     console.log('Logged task to console.')
+//                 },function(error){
+//                     console.log("Couldn't get the url_html from this URL: ", error)
+//                 })
+//                 thiz.model.set('get_url_html', 'requested')
+//                 thiz.model.save()
+                // TODO: Don't create the dir if the URL is not valid.
+                //  Maybe mark the dir's URL as invalid in the node.js script (by
+                //  checking for a 404 response), and/or
+                //  just delete the dir from node.js in an asynchronous cleanup task.
+                // We wait until later to set get_url_html = 'requested', so as not 
+                //  to fire that request event twice
+                // TODO: If the other form fields are empty,
                  //     auto-populate them with info from this
                  //     directory's cgroup to help the user
                  // TODO: Maybe only display those fields after
