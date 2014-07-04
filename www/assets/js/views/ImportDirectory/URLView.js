@@ -203,11 +203,30 @@ define([
 //                 thiz.get_cgroup()
                 // TODO: Start here.  I can't figure out how to determine that the task has completed.
                 console.log('Start here.')
+                function handle_storage(e) {
+                  if (!e) { e = window.event; }
+                  console.log(e)
+                }
+                if (window.addEventListener) {
+                  window.addEventListener("storage", handle_storage, false);
+                } else {
+                  window.attachEvent("onstorage", handle_storage);
+                };
+                $(window).bind('storage', function (e) {
+                    alert('storage changed');
+                });
+                hoodie.task('geturlhtml').on('start', function(db, doc){ console.log(doc, 'start'); })
+                hoodie.task('geturlhtml').on('abort', function(db, doc){ console.log(doc, 'abort'); })
+                hoodie.task('geturlhtml').on('error', function(db, doc){ console.log(doc, 'error'); })
+                hoodie.task('geturlhtml').on('success', function(db, doc){ console.log(doc, 'success'); })
+                hoodie.task('geturlhtml').on('change', function(db, doc){ console.log(doc, 'change'); })
+                hoodie.store.on('change', function(ev, doc){ console.log(ev, doc)})
+                hoodie.task('geturlhtml').on('geturlhtml:success', function(task, options){
+                    console.log(task, options)
+                    console.log('Task completed!')
+                })
                 var task = hoodie.task.start('geturlhtml', {
                   url: page_url
-                })
-                hoodie.task.on('geturlhtml:' + task.id + ':success', function(task, options){
-                    console.log('Task completed!', options)
                 })
                 task.done(function(task){
                     // Add url_html to thiz.model, and save thiz.model
