@@ -64,7 +64,7 @@
 
       $modal.on('error', function(event, error) {
         $modal.find('.alert').remove();
-        $modal.find('.modal-body').before('<div class="alert alert-error"><strong>'+error.error+':</strong> '+error.reason+'</div>');
+        $modal.find('.modal-body').before('<div class="alert alert-danger"><strong>'+error.name+':</strong> '+error.message+'</div>');
       });
 
       $modal.on('shown', function() {
