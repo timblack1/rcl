@@ -57,17 +57,27 @@ define([
                     var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
                     console.log(userLang)
                     // TODO: Determine if userLang contains a country code after a hyphen
-                    var country_code = userLang.split('-')[1]
+                    var country_code = userLang.split('-')[1
                     if (country_code !== '' && typeof country_code !== 'undefined'){
                         // TODO: Run routine here (extract a function from the code below in this.geocode())
                         //  to test if this country code uses miles or kilometers.
                         // TODO: Record preference accordingly
                     }
-                    // TODO:   * Maybe try their IP address (but this might be hard to do from JavaScript in the browser).
-                    // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
-                    // TODO:        Extract country code
-                    // TODO:        Test if this country code uses miles or kilometers.
-                    // TODO:        Record preference accordingly
+                    // Try their IP address (but this might be hard to do from JavaScript in the browser).
+                    //        Load http://freegeoip.net/json/ via JQuery.get()
+					$.get('http://freegeoip.net/json' function (data) {
+                  	  // Extract country code
+						$( ".result").html(data.country_code);
+                      	//Test if this country code uses miles or kilometers
+						var country_codes = ['GB', 'LR', 'MM', 'US']
+						// Record preference accordingly
+						if (country_codes.indexOf(country_code) !== -1){
+							localStorage('distance_units','miles')
+						}else{
+							localStorage('distance_units','km')
+						}
+					)
+                    
                     this.create_map({coords:this.default_map_center})
                 }
 
