@@ -32,7 +32,7 @@ define([
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
-				// TODO: guess what units they want based on one of the following:
+				// Guess what units they want based on one of the following:
                 //            * First try the users' browser's geolocation information. If 
                 //                  the user is in one of the countries that use miles, select "miles" in the form
                 //                  and save it to the preference.
@@ -89,11 +89,14 @@ define([
                     // TODO:        Extract country code
                     // TODO:        Test if this country code uses miles or kilometers.
                     // TODO:        Record preference accordingly
+                    
+                    // Create the map
                     this.create_map({coords:this.default_map_center})
                 }
 
 			}
         },
+        
 		is_distance_unit_preference_set:function(){
 			// Get preference here
 			localStorage['units_of_measurement']
