@@ -205,16 +205,13 @@ define([
                 console.log('Start here.')
                 function handle_storage(e) {
                   if (!e) { e = window.event; }
-                  console.log(e)
+                  console.log('Handle storage event: ', e)
                 }
                 if (window.addEventListener) {
                   window.addEventListener("storage", handle_storage, false);
                 } else {
                   window.attachEvent("onstorage", handle_storage);
                 };
-                $(window).bind('storage', function (e) {
-                    alert('storage changed');
-                });
                 hoodie.task('geturlhtml').on('start', function(db, doc){ console.log(doc, 'start'); })
                 hoodie.task('geturlhtml').on('abort', function(db, doc){ console.log(doc, 'abort'); })
                 hoodie.task('geturlhtml').on('error', function(db, doc){ console.log(doc, 'error'); })
