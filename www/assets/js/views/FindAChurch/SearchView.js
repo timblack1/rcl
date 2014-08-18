@@ -87,8 +87,12 @@ define([
                     // TODO:   * Get their preference from their IP address
                     // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
                     // TODO:        Extract country code
-                    // TODO:        Test if this country code uses miles or kilometers.
-                    // TODO:        Record preference accordingly
+                    // Note:  This is the way Doug needs to implement this code
+                    $.get('http://freegeoip.net/json/', function(data, response){
+                        var country_code = data.country_code
+                        // TODO:        Test if this country_code uses miles or kilometers.
+                        // TODO:        Record preference accordingly
+                    })
                     
                     // Create the map
                     this.create_map({coords:this.default_map_center})
@@ -108,7 +112,8 @@ define([
 		},
 		set_distance_unit_preference:function(){
 			//  Set preference here
-			localStorage['units_of_measurement'] = this.$('.units').val();		
+            // TODO: Is this the right name for the preference, or should it be 'distance_units'?
+			localStorage['units_of_measurement'] = this.$('.units').val();
 			
 		},
         location_keyup:function(event){
