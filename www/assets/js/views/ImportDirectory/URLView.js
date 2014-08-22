@@ -201,57 +201,18 @@ define([
                 // Create changes listeners on this.model
                 thiz.changes_listeners()
 //                 thiz.get_cgroup()
-                // TODO: Start here.  I can't figure out how to be notified that the task has completed.
-                // Try looking at https://github.com/hoodiehq/hoodie.js/blob/master/README.md
-                // Here's a workaround:  https://github.com/hoodiehq/hoodie-plugins-api/issues/28#issuecomment-30588106
-                console.log('Start here.')
-                function handle_storage(e) {
-                  if (!e) { e = window.event; }
-                  console.log('Handle storage event: ', e)
-                }
-                if (window.addEventListener) {
-                  window.addEventListener("storage", handle_storage, false);
-                } else {
-                  window.attachEvent("onstorage", handle_storage);
-                };
-                // This logs an empty object
-//                 hoodie.task('geturlhtml').on('start', function(db, doc){ console.log(doc, 'start'); })
-                hoodie.task('geturlhtml').on('abort', function(db, doc){ console.log(doc, 'abort'); })
-                hoodie.task('geturlhtml').on('error', function(db, doc){ console.log(doc, 'error'); })
-                hoodie.task('geturlhtml').on('success', function(db, doc){ console.log(doc, 'success'); })
-                // This logs a non-empty object
-//                 hoodie.task('geturlhtml').on('change', function(db, doc){ console.log(doc, 'change'); })
-//                 hoodie.task('geturlhtml').on('change', function(db, doc){ console.log(doc.html, 'change: html'); })
-                // This logs "add" then the object
-//                 hoodie.store.on('change', function(ev, doc){ console.log(ev, doc)})
-                // This doesn't log anything. :(
-                hoodie.task('geturlhtml').on('geturlhtml:success', function(task, options){
-                    console.log(task, options)
-                    console.log('Task completed!')
-                })
-                var task = hoodie.task.start('geturlhtml', {
-                  url: page_url
-                })
-                task.done(function(task){
-                    // Add url_html to thiz.model, and save thiz.model
-                    thiz.model.set('url_html', task.html)
-                    thiz.model.save()
-                    console.log(task.html, task.status_code)
-                    console.log('Logged task to console.')
+                // Get HTML from URL and save it in the model
+                var task = hoodie.task.start('geturlhtml', { url: page_url }).done(function(task){
+                    if (task.status_code !== '404'){
+                        // Add url_html to thiz.model, and save thiz.model
+                        thiz.model.set('url_html', task.html)
+                        thiz.model.save()
+                    }else{
+                        // TODO: Notify the user that this URL was not valid
+                    }
                 }).fail(function(error){
                     console.log("Couldn't get the url_html from this URL: " + page_url, error)
                 })
-//                 hoodie.get_url_html(page_url).then(function(task){
-//                     // TODO: Add url_html to thiz.model, and save thiz.model
-//                     thiz.model.set('url_html', task.html)
-//                     thiz.model.save()
-//                     console.log(task.html, task.status_code)
-//                     console.log('Logged task to console.')
-//                 },function(error){
-//                     console.log("Couldn't get the url_html from this URL: ", error)
-//                 })
-//                 thiz.model.set('get_url_html', 'requested')
-//                 thiz.model.save()
                 // TODO: Don't create the dir if the URL is not valid.
                 //  Maybe mark the dir's URL as invalid in the node.js script (by
                 //  checking for a 404 response), and/or
