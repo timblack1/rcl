@@ -191,6 +191,7 @@ define([
                     */
                 
                 // If we have not already created a directory on this page, create it; else get the existing directory
+                // TODO: Does the code below perform the task in the following comment yet?
                 // If the cgroup's associated directory exists in the db, get it
                 var page_url = thiz.$('#url').val()
                 thiz.model = thiz.directories.findWhere({url:page_url})
@@ -202,16 +203,21 @@ define([
                 thiz.changes_listeners()
 //                 thiz.get_cgroup()
                 // Get HTML from URL and save it in the model
-                var task = hoodie.task.start('geturlhtml', { url: page_url }).done(function(task){
-                    if (task.status_code !== '404'){
-                        // Add url_html to thiz.model, and save thiz.model
-                        thiz.model.set('url_html', task.html)
-                        thiz.model.save()
-                    }else{
-                        // TODO: Notify the user that this URL was not valid
-                    }
+                hoodie.task.start('geturlhtml', { url: page_url }).done(function(task){
+                    // Add url_html to thiz.model, and save thiz.model
+                    thiz.model.set('url_html', task.html)
+                    thiz.model.save()
+                    thiz.$('.url-group').removeClass('has-error');
+                    thiz.$('.url-group').addClass('has-success has-feedback');
+                    thiz.$('.help-block').removeClass('text-danger');
+                    thiz.$('.help-block').text('')
                 }).fail(function(error){
+                    // TODO: Notify the user that we got a 404
                     console.log("Couldn't get the url_html from this URL: " + page_url, error)
+                    thiz.$('.url-group').removeClass('has-success');
+                    thiz.$('.url-group').addClass('has-error has-feedback');
+                    thiz.$('.help-block').addClass('text-danger');
+                    thiz.$('.help-block').text('This URL returned a 404 error.  Please enter a valid URL.')
                 })
                 // TODO: Don't create the dir if the URL is not valid.
                 //  Maybe mark the dir's URL as invalid in the node.js script (by
