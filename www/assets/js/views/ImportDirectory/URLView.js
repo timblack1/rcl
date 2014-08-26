@@ -207,13 +207,13 @@ define([
                     // Add url_html to thiz.model, and save thiz.model
                     thiz.model.set('url_html', task.html)
                     thiz.model.save()
+                    // TODO: Trigger next form elements to display
                     thiz.$('.url-group').removeClass('has-error');
                     thiz.$('.url-group').addClass('has-success has-feedback');
                     thiz.$('.help-block').removeClass('text-danger');
                     thiz.$('.help-block').text('')
                 }).fail(function(error){
                     // TODO: Notify the user that we got a 404
-                    console.log("Couldn't get the url_html from this URL: " + page_url, error)
                     thiz.$('.url-group').removeClass('has-success');
                     thiz.$('.url-group').addClass('has-error has-feedback');
                     thiz.$('.help-block').addClass('text-danger');
