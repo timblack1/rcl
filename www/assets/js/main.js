@@ -150,6 +150,7 @@ require(
                 //    So, do we want to preserve this view's state?
                 //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-hide-or-destroy-views
                 this.find_a_church_view.render()
+                // TODO: Consider using tablecloth.js for tablesorter.
             },
             import_directory:function(){
                 this.import_directory_view.render()

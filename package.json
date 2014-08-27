@@ -9,12 +9,13 @@
     "url": "https://github.com/timblack1/rcl.git"
   },
   "dependencies": {
+    "hoodie-server": "^1.2.4",
     "hoodie-plugin-appconfig": "^2.0.0",
     "hoodie-plugin-email": "^1.0.0",
-    "hoodie-plugin-global-share": "latest",
     "hoodie-plugin-users": "^1.0.0",
-    "hoodie-server": "^1.2.4",
-    "request": "2.9.201"
+    "hoodie-plugin-get-url": "latest",
+    "hoodie-plugin-global-share": "^2.0.0",
+	"request": "2.9.201"
   },
   "files": [
     "www/"
@@ -31,7 +32,7 @@
       "hoodie-plugin-email",
       "hoodie-plugin-users",
       "hoodie-plugin-global-share",
-      "hoodie-plugin-import-directory"
+      "hoodie-plugin-get-url"
     ]
   }
 }
