@@ -205,19 +205,25 @@ define([
                 // Get HTML from URL and save it in the model
                 hoodie.task.start('geturl', { url: page_url }).done(function(task){
                     // Add url_html to thiz.model, and save thiz.model
-                    thiz.model.set('url_html', task.html)
+                    thiz.model.set('url_html', task.data)
                     thiz.model.save()
+                    // TODO: Get Bootstrap styling to appear in Typeahead
                     // TODO: Trigger next form elements to display
-                    thiz.$('.url-group').removeClass('has-error');
-                    thiz.$('.url-group').addClass('has-success has-feedback');
-                    thiz.$('.help-block').removeClass('text-danger');
-                    thiz.$('.help-block').text('')
+                    thiz.$('.url-group')
+                        .removeClass('has-error')
+                        .addClass('has-success has-feedback');
+                    thiz.$('.help-block')
+                        .fadeOut(2000)
+                        .removeClass('text-danger')
                 }).fail(function(error){
-                    // TODO: Notify the user that we got a 404
-                    thiz.$('.url-group').removeClass('has-success');
-                    thiz.$('.url-group').addClass('has-error has-feedback');
-                    thiz.$('.help-block').addClass('text-danger');
-                    thiz.$('.help-block').text('This URL returned a 404 error.  Please enter a valid URL.')
+                    // Notify the user that we got a 404
+                    thiz.$('.url-group')
+                        .removeClass('has-success')
+                        .addClass('has-error has-feedback');
+                    thiz.$('.help-block')
+                        .addClass('text-danger')
+                        .text('This URL returned a 404 error.  Please enter a valid URL.')
+                        .fadeIn(2000)
                 })
                 // TODO: Don't create the dir if the URL is not valid.
                 //  Maybe mark the dir's URL as invalid in the node.js script (by
@@ -679,3 +685,4 @@ define([
         }
     });
 });
+
