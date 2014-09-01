@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "authors": [
     "Tim Black <tim@alwaysreformed.com>",
-	"Doug Huston <>"
+    "Doug Huston <>"
   ],
   "description": "",
   "main": "assets/js/main.js",
