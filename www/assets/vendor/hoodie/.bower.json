@@ -1,6 +1,6 @@
 {
   "name": "hoodie",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "main": [
     "./dist/hoodie.js"
   ],
@@ -16,11 +16,11 @@
     "node_modules"
   ],
   "homepage": "https://github.com/hoodiehq/hoodie.js",
-  "_release": "0.9.6",
+  "_release": "0.9.7",
   "_resolution": {
     "type": "version",
-    "tag": "v0.9.6",
-    "commit": "78fc7c79802affea672bd0a2d16211ad05a74143"
+    "tag": "v0.9.7",
+    "commit": "69ce92a62523595bae8ac21c5c5b89a551d13fa3"
   },
   "_source": "git://github.com/hoodiehq/hoodie.js.git",
   "_target": "*",
