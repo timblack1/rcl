@@ -50,8 +50,6 @@ define([
             };
             // Get array of directories from model
             this.directories = new model.Directories()
-            // TODO: Start here.  Why doesn't this return any directories from localStorage?
-            console.log('Start here.')
             this.directories.fetch()
             this.$('#url').typeahead({
                 hint: true,
@@ -60,7 +58,7 @@ define([
             },{
                 name: 'directories',
                 displayKey: 'value',
-                source: substringMatcher(this.directories.each(function(mod){return mod.get('url')}))
+                source: substringMatcher(this.directories.pluck('url'))
             })
         },
         events: {
