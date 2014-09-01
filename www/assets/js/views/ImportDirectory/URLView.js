@@ -11,7 +11,7 @@ define([
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_html', 'got_batchgeo_map_html', 'got_json',
+            _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
                 'get_church_dir_from_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
                 'batchgeo_parse_json')
@@ -69,7 +69,7 @@ define([
             //  need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
-                'change:get_url_html':this.got_url_html,
+                'change:url_data':this.got_url_data, // TODO: Does this duplicate the http-get task's success callback below?
                 'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
@@ -79,71 +79,59 @@ define([
             //  Instead after the delay, notify the user with
             //  "Is that URL correct?  It returns a '404 page not found' error."
         },
-        got_url_html:function(model, value, options){
+        got_url_data:function(model, value, options){
             // Handle directory's first page of content
-            if (this.model.get('url_html') &&
-                this.model.get('get_url_html') == 'gotten'){
-                var html = this.model.get('url_html')
-                
-                // Determine whether this URL's data is HTML, RSS, KML, or JSON, or a 404 page
-                
-                // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
-                //  Instead after the delay, notify the user with
-                //  "Is that URL correct?  It returns a '404 page not found' error."
-                if (this.model.get('error_code')){
-                    var msg = 'We got error code ' + this.model.get('error_code') + ' from this URL: ' + this.model.get('url')
-                    console.log(msg)
-                    // TODO: Report this to the user, including what error code we got
+            var data = this.model.get('url_data')
+
+            // Determine whether this URL's data is HTML, RSS, KML, or JSON
+
+            if (data.indexOf("</html>") > -1){
+                console.log('We got HTML')
+                this.model.set('pagetype', 'html')
+                // Determine what type of directory this is
+                // batchgeo
+                if (this.uses_batch_geo(data) === true && 
+                    typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
+                    typeof this.model.get('get_json') == 'undefined'){
+                    this.process_batch_geo(data)
+                }else{
+                    // TODO: If the other form fields are empty,
+                    //     auto-populate them with info from this
+                    //     directory's cgroup to help the user
+                    // TODO: Maybe only display those fields after
+                    //     the URL is filled in
+                    //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                 }
-                
-                if (html.indexOf("</html>") > -1){
-                    console.log('We got HTML')
-                    this.model.set('pagetype', 'html')
-                    // Determine what type of directory this is
-                    // batchgeo
-                    if (this.uses_batch_geo(html) === true && 
-                        typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
-                        typeof this.model.get('get_json') == 'undefined'){
-                        this.process_batch_geo(html)
-                    }else{
-                        // TODO: If the other form fields are empty,
-                        //     auto-populate them with info from this
-                        //     directory's cgroup to help the user
-                        // TODO: Maybe only display those fields after
-                        //     the URL is filled in
-                        //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-                    }
-                }
-                else if (html.indexOf("</rss>") > -1){
-                    console.log('We got RSS')
-                    // TODO: Display the right form controls for an RSS feed
-                    this.model.set('pagetype', 'rss')
-                }
-                else if (html.indexOf("<kml") > -1){
-                    console.log('We got KML')
-                    // TODO: Display the right form controls for a KML feed
-                    this.model.set('pagetype', 'kml')
-                }
-                else if (html.indexOf("per = {") === 0){
-                    // batchgeo format
-                    console.log('We got batchgeo JSON')
-                    this.model.set('pagetype', 'batchgeo_json')
-                }
-                else if (html.indexOf("{") === 0){
-                    console.log('We got JSON')
-                    this.model.set('pagetype', 'json')
-                    // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
-                    this.parse_json()
-                }
-                else { // We got an error code
-                    console.log('We got an error code from this URL:' + this.model.get('url'))
-                    // TODO: Report this to the user, including what error code we got
-                }
-                this.model.set('get_url_html', '')
-                // TODO: Is this the right place to save the dir?
-                //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                //this.model.save({_id:this.model.get('_id')})
             }
+            else if (data.indexOf("</rss>") > -1){
+                console.log('We got RSS')
+                // TODO: Display the right form controls for an RSS feed
+                this.model.set('pagetype', 'rss')
+            }
+            else if (data.indexOf("<kml") > -1){
+                console.log('We got KML')
+                // TODO: Display the right form controls for a KML feed
+                this.model.set('pagetype', 'kml')
+            }
+            else if (data.indexOf("per = {") === 0){
+                // batchgeo format
+                console.log('We got batchgeo JSON')
+                this.model.set('pagetype', 'batchgeo_json')
+            }
+            else if (data.indexOf("{") === 0){
+                console.log('We got JSON')
+                this.model.set('pagetype', 'json')
+                // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
+                this.parse_json()
+            }
+            else { // We got an error code
+                console.log('We got an error code from this URL:' + this.model.get('url'))
+                // TODO: Report this to the user, including what error code we got
+            }
+            this.model.set('get_url_html', '')
+            // TODO: Is this the right place to save the dir?
+            //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
+            //this.model.save({_id:this.model.get('_id')})
         },
         got_batchgeo_map_html:function(model, value, options){
             // Handle batchgeo map page
@@ -205,16 +193,17 @@ define([
                 // Get HTML from URL and save it in the model
                 hoodie.task.start('http-get', { url: page_url }).done(function(task){
                     // Add url_html to thiz.model, and save thiz.model
-                    thiz.model.set('url_html', task.data)
+                    thiz.model.set('url_data', task.data)
                     thiz.model.save()
-                    // TODO: Get Bootstrap styling to appear in Typeahead
-                    // TODO: Trigger next form elements to display
+                    // Report whether this URL is valid or not.
                     thiz.$('.url-group')
                         .removeClass('has-error')
                         .addClass('has-success has-feedback');
                     thiz.$('.help-block')
                         .fadeOut(2000)
                         .removeClass('text-danger')
+                    // Trigger next form elements to display
+                    thiz.got_url_data();
                 }).fail(function(error){
                     // Notify the user that we got a 404
                     thiz.$('.url-group')
@@ -222,7 +211,7 @@ define([
                         .addClass('has-error has-feedback');
                     thiz.$('.help-block')
                         .addClass('text-danger')
-                        .text('This URL returned a 404 error.  Please enter a valid URL.')
+                        .text('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
                         .fadeIn(2000)
                 })
                 // TODO: Don't create the dir if the URL is not valid.
@@ -238,7 +227,7 @@ define([
                  //     the URL is filled in
                  //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
 
-            }, 3000)
+            }, 500)
         },
         get_cgroup:function(){
             console.log('Start here for hoodie integration')
