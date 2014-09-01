@@ -38,7 +38,7 @@
     "requirejs-plugins": "latest",
     "respond": "latest",
     "typeahead.js": "latest",
-    "typeahead.js-bootstrap.css": "git://github.com/jharding/typeahead.js-bootstrap.css.git",
+    "typeahead.js-bootstrap.css": "git://github.com/bassjobsen/typeahead.js-bootstrap-css.git",
     "underscore": "latest",
     "jquery-cookie": "~1.4.0"
   }
