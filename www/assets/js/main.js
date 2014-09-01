@@ -14,12 +14,6 @@ require.config({
       "hoodie": "hoodie", // needs to be made available here for backbone-hoodie to require
       "hoodie_accountbar": "../vendor/hoodie.accountbar.bootstrap",
       "jquery": "../vendor/jquery/dist/jquery.min",
-      // Commented out because it uses $.browser, which is deprecated
-      // But this may break msie compatibility!
-      //"jquery_couch": "/_utils/script/jquery.couch",
-      // TODO:  Is this still needed?
-      "jquery_couch": "jquery.couch",
-      "jquery_couchLogin": "../vendor/jquery.couchLogin/jquery.couchLogin",
       "jquery_migrate": "../vendor/jquery-migrate/jquery-migrate",
       "jquery_xpath": "../vendor/jquery.xpath/jquery.xpath",
       "model": "model",
@@ -64,12 +58,6 @@ require.config({
       "hoodie_accountbar":{
           deps: ["hoodie"]
       },
-      jquery_couch: {
-          deps: ["jquery", "jquery_migrate"]
-      },
-      jquery_migrate: {
-          deps: ["jquery"]
-      },
       jquery_xpath: {
           deps: ["jquery"]
       },
@@ -97,7 +85,6 @@ require(
     'hoodie',
     'underscore',
     'backbone_hoodie',
-    'jquery_couch',
     'bootstrap_modalform'
     ], 
     function(
