@@ -358,7 +358,7 @@ define([
         type:'directory',
 //          defaults:{
 //          url:'', // url of directory's main page
-//          url_html:'', // HTML of directory's main page
+//          url_data:'', // data returned by directory's main URL
 //          get_url_html:'', // '', 'requested', 'getting', or 'gotten'
 //          pagetype:'', // html or rss
 //          state_page_urls:'', // template URL of state pages
