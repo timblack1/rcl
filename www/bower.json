@@ -28,7 +28,6 @@
     "bootstrap.modalform": "~1.0.0",
     "jasmine": "latest",
     "jquery": "latest",
-    "jquery.couchLogin": "https://github.com/couchapp/couchdb-login-jquery.git",
     "jquery.xpath": "https://github.com/ilinsky/jquery-xpath.git",
     "jquery-migrate": "latest",
     "modernizr": "latest",
