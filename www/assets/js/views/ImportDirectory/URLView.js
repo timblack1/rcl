@@ -203,7 +203,7 @@ define([
                 thiz.changes_listeners()
 //                 thiz.get_cgroup()
                 // Get HTML from URL and save it in the model
-                hoodie.task.start('geturl', { url: page_url }).done(function(task){
+                hoodie.task.start('http-get', { url: page_url }).done(function(task){
                     // Add url_html to thiz.model, and save thiz.model
                     thiz.model.set('url_html', task.data)
                     thiz.model.save()
