@@ -12,7 +12,7 @@ define([
         initialize:function(){
             // Make it easy to reference this object in event handlers
             _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
-                'get_church_dir_from_url', 'get_cgroup', 
+                'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
                 'batchgeo_parse_json')
             if (typeof window.app.geocoder == 'undefined'){
@@ -85,7 +85,7 @@ define([
 
             // Determine whether this URL's data is HTML, RSS, KML, or JSON
 
-            if (data.indexOf("</html>") > -1){
+            if (data.indexOf("</html>") > -1 || data.indexOf("</HTML>") > -1){
                 console.log('We got HTML')
                 this.model.set('pagetype', 'html')
                 // Determine what type of directory this is
@@ -125,8 +125,8 @@ define([
                 this.parse_json()
             }
             else { // We got an error code
-                console.log('We got an error code from this URL:' + this.model.get('url'))
                 // TODO: Report this to the user, including what error code we got
+                this.notify_user_of_bad_url('We got an error code from this URL:' + this.model.get('url'))
             }
             this.model.set('get_url_html', '')
             // TODO: Is this the right place to save the dir?
@@ -190,30 +190,31 @@ define([
                 // Create changes listeners on this.model
                 thiz.changes_listeners()
 //                 thiz.get_cgroup()
-                // Get HTML from URL and save it in the model
-                hoodie.task.start('http-get', { url: page_url }).done(function(task){
-                    // Add url_html to thiz.model, and save thiz.model
-                    thiz.model.set('url_data', task.data)
-                    thiz.model.save()
-                    // Report whether this URL is valid or not.
-                    thiz.$('.url-group')
-                        .removeClass('has-error')
-                        .addClass('has-success has-feedback');
-                    thiz.$('.help-block')
-                        .fadeOut(2000)
-                        .removeClass('text-danger')
-                    // Trigger next form elements to display
-                    thiz.got_url_data();
-                }).fail(function(error){
-                    // Notify the user that we got a 404
-                    thiz.$('.url-group')
-                        .removeClass('has-success')
-                        .addClass('has-error has-feedback');
-                    thiz.$('.help-block')
-                        .addClass('text-danger')
-                        .text('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
-                        .fadeIn(2000)
-                })
+                // Verify that the URL is in a correct format
+                var myRegExp =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
+                if (myRegExp.test(page_url)){
+                    // URL is valid, so
+                    // Get HTML from URL and save it in the model
+                    hoodie.task.start('http-get', { url: page_url }).done(function(task){
+                        // Add url_html to thiz.model, and save thiz.model
+                        thiz.model.set('url_data', task.data)
+                        thiz.model.save()
+                        // Report whether this URL is valid or not.
+                        thiz.$('.url-group')
+                            .removeClass('has-error')
+                            .addClass('has-success has-feedback');
+                        thiz.$('.help-block')
+                            .fadeOut(2000)
+                            .removeClass('text-danger')
+                        // Trigger next form elements to display
+                        thiz.got_url_data();
+                    }).fail(function(error){
+                        thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
+                    })
+                }else{
+                    // URL is not valid, so don't create the dir
+                    thiz.notify_user_of_bad_url('This URL is not valid')
+                }
                 // TODO: Don't create the dir if the URL is not valid.
                 //  Maybe mark the dir's URL as invalid in the node.js script (by
                 //  checking for a 404 response), and/or
@@ -228,6 +229,16 @@ define([
                  //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
 
             }, 500)
+        },
+        notify_user_of_bad_url(msg){
+            // Notify the user that we got a 404
+            this.$('.url-group')
+                .removeClass('has-success')
+                .addClass('has-error has-feedback');
+            this.$('.help-block')
+                .addClass('text-danger')
+                .text(msg)
+                .fadeIn(2000)
         },
         get_cgroup:function(){
             console.log('Start here for hoodie integration')
