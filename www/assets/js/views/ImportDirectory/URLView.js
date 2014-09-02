@@ -14,20 +14,20 @@ define([
             _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
                 'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
-                'batchgeo_parse_json')
+                'batchgeo_parse_json');
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
         },
         render: function(){
-            $('#steps').html(Mustache.render(template))
+            $('#steps').html(Mustache.render(template));
             this.delegateEvents()
             // Render typeahead for URL textbox
             // Render typeahead
             // TODO: Consider filtering and sorting by levenshtein distance
             var substringMatcher = function(strs) {
               return function findMatches(q, cb) {
-                var matches, substringRegex;
+                var matches, substrRegex;
 
                 // an array that will be populated with substring matches
                 matches = [];
@@ -69,7 +69,6 @@ define([
             //  need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
-                'change:url_data':this.got_url_data, // TODO: Does this duplicate the http-get task's success callback below?
                 'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
@@ -200,14 +199,22 @@ define([
                         thiz.model.set('url_data', task.data)
                         thiz.model.save()
                         // Report whether this URL is valid or not.
+                        thiz.$('.help-block')
+                            .text('')
+                            .fadeOut(2000)
+                            .removeClass('text-danger')
                         thiz.$('.url-group')
                             .removeClass('has-error')
                             .addClass('has-success has-feedback');
-                        thiz.$('.help-block')
-                            .fadeOut(2000)
-                            .removeClass('text-danger')
                         // Trigger next form elements to display
+                        console.log('Start here')
                         thiz.got_url_data();
+                        // TODO: If the other form fields are empty,
+                         //     auto-populate them with info from this
+                         //     directory's cgroup to help the user
+                         // TODO: Maybe only display those fields after
+                         //     the URL is filled in
+                         //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
                     }).fail(function(error){
                         thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
                     })
@@ -215,22 +222,9 @@ define([
                     // URL is not valid, so don't create the dir
                     thiz.notify_user_of_bad_url('This URL is not valid')
                 }
-                // TODO: Don't create the dir if the URL is not valid.
-                //  Maybe mark the dir's URL as invalid in the node.js script (by
-                //  checking for a 404 response), and/or
-                //  just delete the dir from node.js in an asynchronous cleanup task.
-                // We wait until later to set get_url_html = 'requested', so as not 
-                //  to fire that request event twice
-                // TODO: If the other form fields are empty,
-                 //     auto-populate them with info from this
-                 //     directory's cgroup to help the user
-                 // TODO: Maybe only display those fields after
-                 //     the URL is filled in
-                 //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-
             }, 500)
         },
-        notify_user_of_bad_url(msg){
+        notify_user_of_bad_url:function(msg){
             // Notify the user that we got a 404
             this.$('.url-group')
                 .removeClass('has-success')
