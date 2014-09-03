@@ -60,6 +60,8 @@ define([
                 displayKey: 'value',
                 source: substringMatcher(this.directories.pluck('url'))
             })
+            // On option selection event, get URL data
+            this.$('#url').on('typeahead:selected', this.get_church_dir_from_url)
         },
         events: {
             'keyup #url':'get_church_dir_from_url'
@@ -78,7 +80,7 @@ define([
             //  Instead after the delay, notify the user with
             //  "Is that URL correct?  It returns a '404 page not found' error."
         },
-        got_url_data:function(model, value, options){
+        got_url_data:function(){
             // Handle directory's first page of content
             var data = this.model.get('url_data')
 
@@ -127,7 +129,6 @@ define([
                 // TODO: Report this to the user, including what error code we got
                 this.notify_user_of_bad_url('We got an error code from this URL:' + this.model.get('url'))
             }
-            this.model.set('get_url_html', '')
             // TODO: Is this the right place to save the dir?
             //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
             //this.model.save({_id:this.model.get('_id')})
@@ -159,7 +160,7 @@ define([
         })(),
         get_church_dir_from_url:function(event){
             var thiz = this
-            // Delay this to run after typing has stopped for 3 seconds, so we don't
+            // Delay this to run after typing has stopped for a bit, so we don't
             //  send too many requests
             this.delay(function(){
                 
@@ -177,28 +178,30 @@ define([
                                 Arbitrary RSS or JSON > display field matching interface
                     */
                 
-                // If we have not already created a directory on this page, create it; else get the existing directory
-                // TODO: Does the code below perform the task in the following comment yet?
-                // If the cgroup's associated directory exists in the db, get it
                 var page_url = thiz.$('#url').val()
-                thiz.model = thiz.directories.findWhere({url:page_url})
-                if (typeof(thiz.model) === 'undefined'){
-                    // The dir hasn't been created yet, so create it
-                    thiz.model = new model.Directory({url:page_url})
-                }
-                // Create changes listeners on this.model
-                thiz.changes_listeners()
-//                 thiz.get_cgroup()
                 // Verify that the URL is in a correct format
                 var myRegExp =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
-                if (myRegExp.test(page_url)){
+                if (!myRegExp.test(page_url)){
+                    // URL is not valid, so don't create the dir
+                    thiz.notify_user_of_bad_url('This URL is not valid')
+                }else{
                     // URL is valid, so
                     // Get HTML from URL and save it in the model
                     hoodie.task.start('http-get', { url: page_url }).done(function(task){
+                        // If we have not already created a directory on this page, create it; else get the existing directory
+                        thiz.model = thiz.directories.findWhere({url:page_url})
+                        if (typeof(thiz.model) === 'undefined'){
+                            // The dir hasn't been created yet, so create it
+                            thiz.model = new model.Directory({url:page_url})
+                        }
+                        // Create changes listeners on this.model
+                        thiz.changes_listeners()
+                        // TODO: If the cgroup's associated directory exists in the db, get it
+                        thiz.get_cgroup()
                         // Add url_html to thiz.model, and save thiz.model
                         thiz.model.set('url_data', task.data)
                         thiz.model.save()
-                        // Report whether this URL is valid or not.
+                        // Report that this URL is valid
                         thiz.$('.help-block')
                             .text('')
                             .fadeOut(2000)
@@ -218,9 +221,6 @@ define([
                     }).fail(function(error){
                         thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
                     })
-                }else{
-                    // URL is not valid, so don't create the dir
-                    thiz.notify_user_of_bad_url('This URL is not valid')
                 }
             }, 500)
         },
@@ -237,8 +237,8 @@ define([
         get_cgroup:function(){
             console.log('Start here for hoodie integration')
             var thiz = this
-            // Reset status flag so the status messages will display
-            this.model.set('get_state_url_html', '')
+            this.$('.cgroup_div').show(1000)
+            this.$('.cgroup_name').focus()
             var cgroup_name = $('#cgroup_name').val()
             var abbr = $('#abbreviation').val()
             // Don't do anything if the CGroup info isn't entered yet
