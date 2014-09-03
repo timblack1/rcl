@@ -235,10 +235,10 @@ define([
                 .fadeIn(2000)
         },
         get_cgroup:function(){
-            console.log('Start here for hoodie integration')
             var thiz = this
             this.$('.cgroup_div').show(1000)
             this.$('.cgroup_name').focus()
+            console.log('Start here for hoodie integration')
             var cgroup_name = $('#cgroup_name').val()
             var abbr = $('#abbreviation').val()
             // Don't do anything if the CGroup info isn't entered yet
