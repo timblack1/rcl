@@ -330,8 +330,12 @@ define([
         },
         parse_json:function(){
             var thiz = this
-            var json = this.model.get('url_html')
+            var json = this.model.get('url_data')
             // console.log(json)
+            // If it starts with {"generated": then it's an import.io JSON file
+            if (json.indexOf('{"generated":') === 0){
+                // TODO: Parse import.io JSON here
+            }
             // TODO: This handles the RPCNA data's current format, which does not yet
             //  perfectly match the RCL format.  So put this in a conditional if(){} block 
             //  to test if this is a JSON feed that has this format: {[]} (no "docs")
