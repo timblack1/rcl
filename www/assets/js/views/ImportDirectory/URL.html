@@ -1,10 +1,18 @@
-<h2>Step 1:  Please enter the URL of the church directory page or data feed (import.io, RSS, JSON)</h2>
+<h2>Step 1:  Please enter the import.io connector GUID or URL of the church directory page or data feed (RSS, JSON)</h2>
 <form role="form">
     <div class="url-group form-group has-feedback">
-        <label for='url'>URL</label>
+        <label for='url'>GUID or URL</label>
         <input type='text' name='url' id='url' class='typeahead form-control' 
-            placeholder='Enter directory URL' />
+            placeholder="Enter directory's GUID or URL" />
         <span class="help-block" style="display:none"></span>
+    </div>
+    <div style='display:none' class='importio_auth_div form-group'>
+        <label for='user_guid'>Please enter your import.io user GUID</label>
+        <input type='text' name='user_guid' id='user_guid' class='user_guid form-control' 
+            placeholder='User GUID' />
+        <label for='api_key'>Please enter your import.io API key</label>
+        <input type='text' name='api_key' id='api_key' class='api_key form-control'
+            placeholder='API key' />
     </div>
     <div style='display:none' class='cgroup_div form-group'>
         <label for='cgroup_name'>Please enter the name of this directory's denomination or group of congregations</label>

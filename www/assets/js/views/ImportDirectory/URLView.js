@@ -14,7 +14,7 @@ define([
             _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
                 'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
-                'batchgeo_parse_json');
+                'batchgeo_parse_json', 'report_url_is_valid', 'got_importio_auth');
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -64,7 +64,9 @@ define([
             this.$('#url').on('typeahead:selected', this.get_church_dir_from_url)
         },
         events: {
-            'keyup #url':'get_church_dir_from_url'
+            'keyup #url':'get_church_dir_from_url',
+            'change .user_guid': 'got_importio_auth',
+            'change .api_key': 'got_importio_auth',
         },
         changes_listeners:function(){
             // These are the main cases - different types of changes that
@@ -79,6 +81,47 @@ define([
             // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
             //  Instead after the delay, notify the user with
             //  "Is that URL correct?  It returns a '404 page not found' error."
+        },
+        got_importio_auth:function(){
+            // Check to see if both form fields have  been filled
+            var user_guid = this.$('.user_guid').val()
+            var api_key = this.$('.api_key').val()
+            if (user_guid.length > 0 && api_key.length > 0){
+                // Configure the library
+                importio.init({
+                    "auth": {
+                        "userGuid": user_guid,
+                        "apiKey": api_key
+                    },
+                    "host": "import.io"
+                });
+                // Execute the query
+                var query = {"input":{"input":"query"},"connectorGuids":[this.$('#url').val()]};
+                importio.query(query, {
+                  "data": function(data) {
+                    //console.log("Data received", data);
+                  }
+                });
+                // TODO: Get the connector's metadata
+//                 var auth_data = {
+//                     "auth": {
+//                         "userGuid": user_guid,
+//                         "apiKey": api_key
+//                     }
+//                 }
+                var auth_data = {
+                    "userGuid": user_guid,
+                    "apiKey": api_key
+                }
+                // TODO: It seems I'd have to get the cookies right to authorize this request.
+                $.get('https://api.import.io/store/connector/' + this.$('#url').val(), auth_data, function(data){
+                    // Get the _attachment/snapshot
+                    $.get('https://api.import.io/store/connector/' + this.$('#url').val() + 
+                        '/_attachment/snapshot/' + data.snapshot, auth_data, function(data_set){
+                            console.log('data_set: ', data_set)
+                        })
+                })
+            }
         },
         got_url_data:function(){
             // Handle directory's first page of content
@@ -179,50 +222,61 @@ define([
                     */
                 
                 var page_url = thiz.$('#url').val()
-                // Verify that the URL is in a correct format
-                var myRegExp =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
-                if (!myRegExp.test(page_url)){
-                    // URL is not valid, so don't create the dir
-                    thiz.notify_user_of_bad_url('This URL is not valid')
+                // TODO: Test for whether this is an import.io connector GUID
+                if (page_url.indexOf('http') === -1 && page_url.length === 36){
+                    // This is an import.io connector GUID, so display the form elements for entering 
+                    //  login info
+                    thiz.$('.importio_auth_div').show(1000)
+                    thiz.report_url_is_valid()
                 }else{
-                    // URL is valid, so
-                    // Get HTML from URL and save it in the model
-                    hoodie.task.start('http-get', { url: page_url }).done(function(task){
-                        // If we have not already created a directory on this page, create it; else get the existing directory
-                        thiz.model = thiz.directories.findWhere({url:page_url})
-                        if (typeof(thiz.model) === 'undefined'){
-                            // The dir hasn't been created yet, so create it
-                            thiz.model = new model.Directory({url:page_url})
-                        }
-                        // Create changes listeners on this.model
-                        thiz.changes_listeners()
-                        // TODO: If the cgroup's associated directory exists in the db, get it
-                        thiz.get_cgroup()
-                        // Add url_html to thiz.model, and save thiz.model
-                        thiz.model.set('url_data', task.data)
-                        thiz.model.save()
-                        // Report that this URL is valid
-                        thiz.$('.help-block')
-                            .text('')
-                            .fadeOut(2000)
-                            .removeClass('text-danger')
-                        thiz.$('.url-group')
-                            .removeClass('has-error')
-                            .addClass('has-success has-feedback');
-                        // Trigger next form elements to display
-                        console.log('Start here')
-                        thiz.got_url_data();
-                        // TODO: If the other form fields are empty,
-                         //     auto-populate them with info from this
-                         //     directory's cgroup to help the user
-                         // TODO: Maybe only display those fields after
-                         //     the URL is filled in
-                         //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-                    }).fail(function(error){
-                        thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
-                    })
+                    // Verify that the URL is in a correct format
+                    var myRegExp =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
+                    if (!myRegExp.test(page_url)){
+                        // URL is not valid, so don't create the dir
+                        thiz.notify_user_of_bad_url('This GUID or URL is not valid')
+                    }else{
+                        // URL is valid, so
+                        // Get HTML from URL and save it in the model
+                        hoodie.task.start('http-get', { url: page_url }).done(function(task){
+                            // If we have not already created a directory on this page, create it; else get the existing directory
+                            thiz.model = thiz.directories.findWhere({url:page_url})
+                            if (typeof(thiz.model) === 'undefined'){
+                                // The dir hasn't been created yet, so create it
+                                thiz.model = new model.Directory({url:page_url})
+                            }
+                            // Create changes listeners on this.model
+                            thiz.changes_listeners()
+                            // TODO: If the cgroup's associated directory exists in the db, get it
+                            thiz.get_cgroup()
+                            // Add url_html to thiz.model, and save thiz.model
+                            thiz.model.set('url_data', task.data)
+                            thiz.model.save()
+                            thiz.report_url_is_valid()
+                            // Trigger next form elements to display
+                            console.log('Start here')
+                            thiz.got_url_data();
+                            // TODO: If the other form fields are empty,
+                             //     auto-populate them with info from this
+                             //     directory's cgroup to help the user
+                             // TODO: Maybe only display those fields after
+                             //     the URL is filled in
+                             //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+                        }).fail(function(error){
+                            thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
+                        })
+                    }                    
                 }
             }, 500)
+        },
+        report_url_is_valid:function(){
+            // Report that this URL is valid
+            this.$('.help-block')
+                .text('')
+                .fadeOut(2000)
+                .removeClass('text-danger')
+            this.$('.url-group')
+                .removeClass('has-error')
+                .addClass('has-success has-feedback');
         },
         notify_user_of_bad_url:function(msg){
             // Notify the user that we got a 404
@@ -683,4 +737,5 @@ define([
         }
     });
 });
+
 
