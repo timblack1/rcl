@@ -5,6 +5,13 @@
         <input type='text' name='url' id='url' class='typeahead form-control' 
             placeholder="Enter directory's GUID or URL" />
         <span class="help-block" style="display:none"></span>
+        <label for='file'>Upload import.io dataset JSON file here</label>
+        <br />
+        <span class="btn btn-default btn-file">
+            Browse...<input type="file" id="file" class='file'>
+        </span>
+        or
+        <span class='importio_drop_target'>Drop JSON file here</span>
     </div>
     <div style='display:none' class='importio_auth_div form-group'>
         <label for='user_guid'>Please enter your import.io user GUID</label>
