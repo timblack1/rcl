@@ -140,3 +140,41 @@ body>.container .jasmine_reporter {
 #steps label {
     margin-left:1em;
 }
+/* File input fix to give it Bootstrap styling */
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+.importio_drop_target {
+    border: 2px dotted lightgray;
+    padding: .5em;
+    border-radius: 0.5em;
+    color: lightgray;
+}
+.importio_drop_target:hover{
+    border: 2px dotted blue;
+    padding: .5em;
+    border-radius: 0.5em;
+    color: blue;
+}
+.dragover {
+    border: 2px dotted blue;
+    padding: .5em;
+    border-radius: 0.5em;
+    color: blue;
+}

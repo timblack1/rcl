@@ -14,7 +14,8 @@ define([
             _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
                 'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
-                'batchgeo_parse_json', 'report_url_is_valid', 'got_importio_auth');
+                'batchgeo_parse_json', 'report_url_is_valid', 'got_importio_auth','geocode',
+                'importio_drop_target_dragover', 'importio_drop_target_drop');
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -67,6 +68,11 @@ define([
             'keyup #url':'get_church_dir_from_url',
             'change .user_guid': 'got_importio_auth',
             'change .api_key': 'got_importio_auth',
+            'dragover .importio_drop_target': 'importio_drop_target_dragover',
+            'dragenter .importio_drop_target': 'importio_drop_target_dragover',
+            'dragleave .importio_drop_target': 'importio_drop_target_dragleave',
+            'dragexit .importio_drop_target': 'importio_drop_target_dragleave',
+            'drop .importio_drop_target': 'importio_drop_target_drop'
         },
         changes_listeners:function(){
             // These are the main cases - different types of changes that
@@ -81,6 +87,36 @@ define([
             // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
             //  Instead after the delay, notify the user with
             //  "Is that URL correct?  It returns a '404 page not found' error."
+        },
+        importio_drop_target_dragover:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            this.$('.importio_drop_target').addClass('dragover')
+        },
+        importio_drop_target_dragleave:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            this.$('.importio_drop_target').removeClass('dragover')
+        },
+        importio_drop_target_drop:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            // Get file contents here
+            var dt = event.originalEvent.dataTransfer;
+            var files = dt.files;
+            var reader = new FileReader()
+            reader.addEventListener('load', function loadEnd(){
+                json = reader.result
+                console.log(json)
+                var congs = eval(json)
+                // TODO: Convert JSON string to object
+                // Iterate through list of congregations
+                _.each(congs, function(cong){
+                    // TODO: Geocode this cong
+                    // TODO: Write this cong to a Backbone_hoodie model, and save to database
+                })
+            })
+            reader.readAsText(files[0])
         },
         got_importio_auth:function(){
             // Check to see if both form fields have  been filled
@@ -381,6 +417,60 @@ define([
                     )
                 }
             }})
+        },
+        geocode:function(address, index){
+            // TODO: Start here.  Decide whether to iterate all congs here or outside this method
+            var now = new Date().getTime()
+            if (typeof this.usecs == 'undefined'){
+                this.usecs = 100
+            }
+            if (typeof this.geocode_end_time !== 'undefined' &&
+                (now - this.geocode_end_time) > this.usecs){
+                // This line should prevent two delayed geocode requests from running simultaneously
+                this.geocode_end_time = now
+                window.app.geocoder.geocode( { 'address': address }, function(results, status) {
+                    // console.log(results, status)
+                    // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
+                    //  or status == 'ZERO_RESULTS'
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        var loc = results[0].geometry.location
+                        // TODO: Start here.  Write to the backbone-hoodie model and collection
+                        // TODO: Get congs from this.dir.congs
+                        congs[index].loc = [loc.lat(), loc.lng()]
+                        // Delay bulkSave until after asynchronous geocoding is done for all congs
+                        congs[index].geocoding = 'done'
+                        thiz.geocode_end_time = new Date().getTime()
+                        bulksave(congs)
+                    }else{
+                        // === if we were sending the requests to fast, try this one again and increase the delay
+                        if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
+                            thiz.usecs += 100;
+                            setTimeout(function(){
+                                geocode(address, congs, index)
+                            },thiz.usecs)
+                        }else{
+                            var reason  =   "Code "+status;
+                            var msg     = 'address="' + address + '" error=' +reason+ '(usecs='+thiz.usecs+'ms)';
+                            if (typeof thiz.errors == 'undefined'){
+                                thiz.errors = 1
+                            }else{
+                                thiz.errors++
+                            }
+                            console.error('Errors: ' + thiz.errors, msg)
+                        }
+                    }
+                })
+            }else{
+                // Wait to avoid Google throttling the geocode requests (for there
+                //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
+                if (typeof thiz.geocode_end_time == 'undefined'){
+                    // Set the first geocode_end_time
+                    thiz.geocode_end_time = now
+                }
+                setTimeout(function(){
+                    geocode(address, congs, index)
+                },thiz.usecs)
+            }
         },
         parse_json:function(){
             var thiz = this
