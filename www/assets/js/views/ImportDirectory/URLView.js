@@ -419,7 +419,7 @@ define([
             }})
         },
         geocode:function(address, index){
-            // TODO: Start here.  Decide whether to iterate all congs here or outside this method
+            // TODO: Start here.  Decide whether to iterate all congs HERE or OUTSIDE this method
             var now = new Date().getTime()
             if (typeof this.usecs == 'undefined'){
                 this.usecs = 100
