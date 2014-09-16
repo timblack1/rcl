@@ -107,14 +107,24 @@ define([
             var reader = new FileReader()
             reader.addEventListener('load', function loadEnd(){
                 json = reader.result
-                console.log(json)
-                var congs = eval(json)
-                // TODO: Convert JSON string to object
+                var congs = JSON.parse(json)
+                // TODO: Start here.  Create a congs collection
                 // Iterate through list of congregations
                 _.each(congs, function(cong){
-                    // TODO: Geocode this cong
+                    // TODO: The attribute which contains cong data is called ob.data
+                    // TODO: All attributes contain lists.
+                    // TODO: So if an attribute's list is longer than 1 item, join the items together with <br />
+                    // TODO: data[n]._source contains the source's GUID, which we should record somewhere
+                    // TODO: data[n]._pageUrl contains the cong's unique database id in the URL
+                    // TODO: Note the following data[n] attribute names:
+                    //  "website"
+                    //  "website/_text"
+                    //  "contact_email"
+                    //  "contact_email/_text"
+                    // TODO: Note that data[n].name is in ALLCAPS!!
                     // TODO: Write this cong to a Backbone_hoodie model, and save to database
                 })
+                // TODO: Geocode each cong.  This should be done asynchronously
             })
             reader.readAsText(files[0])
         },
