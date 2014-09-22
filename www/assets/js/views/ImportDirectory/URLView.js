@@ -160,7 +160,6 @@ define([
                     "apiKey": api_key
                 }
                 // TODO: It seems I'd have to get the cookies right to authorize this request.
-                //  Here is info on how to get it right:  http://blog.import.io/tech-blog/download-data-over-the-api
                 $.get('https://api.import.io/store/connector/' + this.$('#url').val(), auth_data, function(data){
                     // Get the _attachment/snapshot
                     $.get('https://api.import.io/store/connector/' + this.$('#url').val() + 
@@ -610,4 +609,233 @@ define([
                 }
             }
             var congs = JSON.parse(new_json).docs
-            _.each(congs, function(c
+            _.each(congs, function(cong, index, list){
+                // TODO: Record cgroup id for this directory, by appending it to the list
+                congs[index].cgroups = [thiz.model.get('cgroup')]
+                // TODO: Record the denomination abbreviation for other denominations here too
+                //  Get it from the cgroup.abbr
+                congs[index].denomination_abbr = 'RPCNA'
+                congs[index].collection = 'cong'
+                if (cong.lat === '' || cong.lng === ''){
+                    // Geocode the cong and put geocode in object for geocouch
+                    // Note this is limited to 2500 requests per day
+                    congs[index].geocoding = 'started'
+                    // TODO: Refactor this into a general function
+                    // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
+                    var address_line = ''
+                    if (cong.meeting_address1.search(/\d/) !== -1){
+                        address_line = cong.meeting_address1
+                    } else if (cong.meeting_address2.search(/\d/) !== -1){
+                        address_line = cong.meeting_address2
+                    }else{
+                        address_line = cong.meeting_address1
+                    }
+                    var address =   address_line + ', ' + 
+                                    (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ' + 
+                                    (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
+                                    (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''))
+                    // TODO:  Consider how to refactor this to geocode only one cong at a time.
+                    //  Currently the code tries all at once, then when it realizes it's getting errors,
+                    //  it throttles back, but the effect of that throttling is probably to throttle back too
+                    //  much, so the whole geocoding batch runs much slower than it has to.  So the way to refactor
+                    //  this is to keep track of which cong is being handled, then only once one cong is geocoded,
+                    //  move on to the next cong.
+                    geocode(address, congs, index)
+                } else {
+                    // Use existing geocode data
+                    congs[index].loc = [cong.lat, cong.lng]
+                }
+            })
+        },
+        // TODO: Consider moving these into a library
+        uses_batch_geo:function(html){
+            return ( html.indexOf('https://batchgeo.com/map/') !== -1 )
+        },
+        process_batch_geo:function(html){
+            // Get the batchgeo map URL out of the HTML
+            var map_url = html.match(/(https:\/\/batchgeo.com\/map\/.+?)['"]{1}/i)[1]
+            // Get the batchgeo JSON URL out of the map's HTML
+            console.log(new Date().getTime() + '\tb: ' + map_url)
+            this.model.set('pagetype', 'batchgeo')
+            this.model.set('batchgeo_map_url', map_url)
+            this.model.set('get_batchgeo_map_html', 'requested')
+            this.model.save()
+        },
+        get_batchgeo_json:function(){
+            var thiz = this
+            this.model.fetch({success:function(){
+                thiz.model.unset('get_batchgeo_map_html')
+                var html = thiz.model.get('batchgeo_map_html')
+                // console.log(html)
+                var json_url = html.match(/(https:\/\/.+?.cloudfront.net\/map\/json\/.+?)['"]{1}/i)[1]
+                console.log(new Date().getTime() + '\tb: get_json for ' + json_url)
+                // TODO: Request that the node script get this URL's contents
+                thiz.model.set('json_url', json_url)
+                thiz.model.set('get_json', 'requested')
+                thiz.model.save()
+             }})
+         },
+         batchgeo_parse_json:function(){
+            this.model.unset('get_json')
+            // The PCA has a KML file at http://batchgeo.com/map/kml/c78fa06a3fbdf2642daae48ca62bbb82
+            //  Some (all?) data is also in JSON at http://static.batchgeo.com/map/json/c78fa06a3fbdf2642daae48ca62bbb82/1357687276
+            //  The PCA directory's main HTML URL is http://www.pcaac.org/church-search/
+            //  After trimming off the non-JSON, the cong details are in the obj.mapRS array
+            //  You can pretty-print it at http://www.cerny-online.com/cerny.js/demos/json-pretty-printing
+            //  Its format is as follows:
+            //  per = {mapRS:[{
+             // "accuracy":"ROOFTOP",
+             // "postal":"30097", // mailing_zip?
+             // "a":"9500 Medlock Bridge Road", // address
+             // "c":"Johns Creek", // city
+             // "s":"GA", // state
+             // "z":"30097", // meeting_zip?
+             // "t":"Perimeter Church", // name
+             // "u":"www.Perimeter.org", // url
+             // "i":"", // ?
+             // "g":" ", // ?
+             // "e":"Perimeter@Perimeter.org", // email
+             // "lt":34.013179067701, // lat
+             // "ln":-84.191637606647, // lng
+             // "d":"<div><span class=\"l\">Church Phone:<\/span>&nbsp;678-405-2000<\/div><div><span class=\"l\">Pastor:<\/span>&nbsp;Rev. Randy Pope<\/div><div><span class=\"l\">Presbytery:<\/span>&nbsp;Metro Atlanta<\/div>", // phone, pastor_name, presbytery_name
+             // "addr":"9500 Medlock Bridge Road Johns Creek GA 30097", // mailing_address (full, needs to be parsed)
+             // "l":"9500 Medlock Bridge Road<br \/>Johns Creek, GA 30097", // mailing_address_formatted, easier to parse
+             // "clr":"red"
+             // }]}
+            // Get the relevant JSON in a variable
+            // This regex took forever
+            // var json = this.model.get('json').replace(/.*?"mapRS":/, '{"congs":').replace(/,"dataRS":.*/, '}')
+            // So although this could be unsafe, it is expedient!
+            eval(this.model.get('json'))
+            var congs = per.mapRS
+            // Convert the JSON's fieldnames to RCL fieldnames
+            var replacements = [
+                {
+                    old:'postal',
+                    new:'mailing_zip'
+                },
+                {
+                    old:'a',
+                    new:'meeting_address1'
+                },
+                {
+                    old:'c',
+                    new:'meeting_city'
+                },
+                {
+                    old:'s',
+                    new:'meeting_state'
+                },
+                {
+                    old:'z',
+                    new:'meeting_zip'
+                },
+                {
+                    old:'t',
+                    new:'name'
+                },
+                {
+                    old:'u',
+                    new:'website'
+                },
+                {
+                    old:'e',
+                    new:'email'
+                },
+                {
+                    old:'lt',
+                    new:'lat'
+                },
+                {
+                    old:'ln',
+                    new:'lng'
+                }
+            ]
+            // For each cong
+            $.each(congs, function(index, cong){
+                // For each key name
+                $.each(replacements,function(index, repl){
+                    // Replace each key name
+                    cong[repl.new] = cong[repl.old];
+                    delete cong[repl.old];
+                })
+                // Parse 'd' field into:
+                //  phone, pastor_name, presbytery_name [, others?]
+                // cong.d = <div><span class="l">Church Phone:</span>&nbsp;334-294-1226</div><div><span class="l">Pastor:</span>&nbsp;Rev. Brian DeWitt MacDonald</div><div><span class="l">Presbytery:</span>&nbsp;Southeast Alabama</div> 
+                // Ignore errors if the match fails
+                try { cong.phone = cong.d.match(/Church Phone:.*?&nbsp;(.*?)</)[1]} catch(e){}
+                try { cong.pastor_name = cong.d.match(/Pastor:.*?&nbsp;Rev. (.*?)</)[1] } catch(e){}
+                try { cong.presbytery_name = cong.d.match(/Presbytery:.*?&nbsp;(.*?)</)[1] } catch(e){}
+                // Parse 'l' field into:
+                //  mailing_address1, mailing_city, mailing_state, mailing_zip
+                // cong.l = 6600 Terry Road<br />Terry, MS 39170
+                // But note there are many other formats, particularly outside the US
+                // TODO: compact this into a recursive function that iterates through a list of regexes to try for
+                //  each field
+                try{
+                    cong.mailing_address1 = cong.l.match(/^(.*?)<br/)[1]
+                    try{
+                        cong.mailing_city = cong.l.match(/<br \/>(.*?),/)[1]
+                    }catch(e){
+                        try{
+                            cong.mailing_city = cong.l.match(/<br \/>(.*?) [0-9]+/)[1]
+                        }catch(e){
+                            try{
+                                cong.mailing_city = cong.l.match(/<br \/>[0-9]+ (.*?)/)[1]
+                            }catch(e){
+                                try{
+                                    cong.mailing_city = cong.l.match(/<br \/>(.*?)/)[1]
+                                }catch(e){
+                                    console.log(cong.l)
+                                }
+                            }
+                        }
+                    }
+                    try{
+                        cong.mailing_state = cong.l.match(/<br \/>.*?, (.*?) /)[1]
+                    }catch(e){
+                        // The only ones missed here are not states, but cities, so this is commented out
+                        // console.log(cong.l)
+                    }
+                    try{
+                        cong.mailing_zip = cong.l.match(/<br \/>.*?, .*? (.*)$/)[1]
+                    }catch(e){
+                        try{
+                            cong.mailing_zip = cong.l.match(/<br \/>.*? ([0-9- ]+)$/)[1]
+                        }catch(e){
+                            try{
+                                cong.mailing_zip = cong.l.match(/<br \/>([0-9- ]+) .*/)[1]
+                            }catch(e){
+                                try{
+                                    cong.mailing_zip = cong.l.match(/.*?[0-9]+?<br/)[1]
+                                }catch(e){
+                                    // The rest just don't have a zip, so this is commented out
+                                    // console.log(cong.l)
+                                }
+                            }
+                        }
+                    }
+                }catch(e){
+                    // If this outputs data, create a new regex to fix the errors
+                    console.log(cong.l)
+                }
+                // Convert geocode to geocouch format
+                cong.loc = [cong.lat, cong.lng]
+                // TODO: Set each model's cgroup_id.  What key name does backbone-relational use for the cgroup_id?
+                // TODO: Record other denominations' abbreviations here too
+                cong.denomination_abbr = 'PCA'
+                cong.cgroups = []
+                cong.collection = 'cong'
+                congs[index] = cong
+            })
+            // Write the JSON to the database
+            // It is easiest to bulk-save using jquery.couch.js rather than Backbone
+            config.db.bulkSave({"docs":congs},{success:function(){
+                // TODO: Notify the user
+                console.log(new Date().getTime() + '\tb: All congs are saved!')
+            }})
+        }
+    });
+});
+
+
