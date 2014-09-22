@@ -160,6 +160,7 @@ define([
                     "apiKey": api_key
                 }
                 // TODO: It seems I'd have to get the cookies right to authorize this request.
+                //  Here is info on how to get it right:  http://blog.import.io/tech-blog/download-data-over-the-api
                 $.get('https://api.import.io/store/connector/' + this.$('#url').val(), auth_data, function(data){
                     // Get the _attachment/snapshot
                     $.get('https://api.import.io/store/connector/' + this.$('#url').val() + 
