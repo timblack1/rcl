@@ -317,38 +317,38 @@ define([
             import_io_guid:'' // The GUID of the import.io source dataset
         },
         initialize: function(){
-            // Make congs save themselves immediately when their attributes change
-            //    to make Backgrid more useful
-            Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
-            this.on("change", function (model, options) {
-                if (options && options.save === false) return;
-                model.save();
-            });
+//             // Make congs save themselves immediately when their attributes change
+//             //    to make Backgrid more useful
+//             Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
+//             this.on("change", function (model, options) {
+//                 if (options && options.save === false) return;
+//                 model.save();
+//             });
         },
-      relations:[
-                 {
-                     type:'HasMany', // many-to-many
-                     key: 'cgroups',
-                     relatedModel: 'CGroup_Cong',
-                     collectionType:'CGroups',
-                     includeInJSON:true,
-                     reverseRelation: {
-                         key: 'congregation',
-                         includeInJSON:'_id'
-                     }
-                 },
-                 {
-                     type:'HasMany', // many-to-many
-                     key: 'people',
-                     relatedModel: 'Cong_Person',
-                     collectionType:'People',
-                     includeInJSON:'_id',
-                     reverseRelation: {
-                         key: 'congregation',
-                         includeInJSON:'_id'
-                     }
+        relations:[
+             {
+                 type:'HasMany', // many-to-many
+                 key: 'cgroups',
+                 relatedModel: 'CGroup_Cong',
+                 collectionType:'CGroups',
+                 includeInJSON:true,
+                 reverseRelation: {
+                     key: 'congregation',
+                     includeInJSON:'_id'
                  }
-                 ]
+             },
+             {
+                 type:'HasMany', // many-to-many
+                 key: 'people',
+                 relatedModel: 'Cong_Person',
+                 collectionType:'People',
+                 includeInJSON:'_id',
+                 reverseRelation: {
+                     key: 'congregation',
+                     includeInJSON:'_id'
+                 }
+             }
+        ]
     })
     modelStore.Congs = CollectionBase.extend({
         model:modelStore.Cong,
