@@ -140,18 +140,19 @@ define([
                             //  character of each word.
                             new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
                         }
-                        // TODO: If this cong is new or its address has changed, geocode this cong
                         // TODO: Write this cong to a Backbone_hoodie model, and save to database
                         // TODO: Find out whether this model exists in the congs collection
                         var cong_model = congs.findWhere({page_url:new_cong.page_url})
-                        if (typeof cong_model === 'undefined'){
+                        if (typeof cong_model !== 'undefined'){
+                            cong_model.save(new_cong)
+                        }else{
                             //new_cong.id = 'cong/' + hoodie.id();
                             var cong_model = congs.create(new_cong)
                         }
-                        cong_model.save()
                         // TODO: Associate this cong with its cgroup
                     })
-                    // TODO: Geocode each cong.  This should be done asynchronously
+                    // TODO: Geocode each cong if it is new or its address has changed.  This should be done
+                    //  asynchronously from importing the data file.
                 })
                 congs.fetch()
             })
