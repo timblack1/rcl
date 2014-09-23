@@ -75,7 +75,7 @@ define([
                 var north_lat = north_east.lat();
                 var south_lat = south_west.lat();
     
-                // TODO: Modify this to search congs in hoodie's local store
+                // TODO: Modify this to filter congs in hoodie's local store by the specified bounds
                 // Send AJAX call to geocouch containing bounds within which congregations are found
                 // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
                 //  order Google Maps uses
