@@ -143,16 +143,18 @@ define([
                     // TODO: Find out whether this model exists in the congs collection
                     // TODO: This seems to be creating duplicates.
                     //  This problem is because findWhere returns nothing when it should return something.
-                    var cong_model = congs.findWhere({page_url:new_cong.page_url})
-                    if (typeof cong_model !== 'undefined'){
-                        // Cong already exists in the collection, so write new attributes
-                        cong_model.save(new_cong)
-                    }else{
-                        // Cong didn't exist in the collection, so create a new one
-                        //new_cong.id = 'cong/' + hoodie.id();
-                        var cong_model = congs.create(new_cong)
-                    }
-                    // TODO: Associate this cong with its cgroup
+                    congs.fetch({success:function(){
+                        var cong_model = congs.findWhere({page_url:new_cong.page_url})
+                        if (typeof cong_model !== 'undefined'){
+                            // Cong already exists in the collection, so write new attributes
+                            cong_model.save(new_cong)
+                        }else{
+                            // Cong didn't exist in the collection, so create a new one
+                            //new_cong.id = 'cong/' + hoodie.id();
+                            var cong_model = congs.create(new_cong)
+                        }
+                        // TODO: Associate this cong with its cgroup
+                    }})
                 })
                 // TODO: Geocode each cong if it is new or its address has changed.  This should be done
                 //  asynchronously from importing the data file.
