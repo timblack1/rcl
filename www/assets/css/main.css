@@ -176,6 +176,6 @@ body>.container .jasmine_reporter {
 }
 .dropped, .importio_drop_target:hover.dropped {
     border: 2px dotted white;
-    background-color: green;
+    background-color: lightgreen;
     color: white;
 }
