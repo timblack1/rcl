@@ -278,42 +278,44 @@ define([
         urlRoot:'/cong',
         collection:'Congs',
         type:'cong',
-//      defaults:{
-//          name : '',
-//          meeting_address1 : '',
-//          meeting_address2:'',
-//          meeting_city:'',
-//          meeting_region:'',
-//          meeting_state:'',
-//          meeting_zip:'',
-//          meeting_country:'',
-//          lat:'',
-//          lng:'',
-//          mailing_address1:'',
-//          mailing_address2:'',
-//          mailing_city:'',
-//          mailing_state:'',
-//          mailing_zip:'',
-//          mailing_country:'',
-//          phone:'',
-//          fax:'',
-//          email:'',
-//          website:'',
-//          sermons_url:'',
-//          service_info:'',
-//          other_info:'',
-//          presbytery_name:'',
-//          pastor_name:'',
-//          contact_type:'',
-//          contact_name:'',
-//          date_founded:'', // date
-//          number_of_members:'', // integer
-//          range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
-//                                         //   permitted/preferred or the only available data
-//          organized:'', // boolean, defines whether this is a mission work or an organized congregation
-//          source:'', // Foreign key:  Which source this cong's data came from
-//          source_cong_id:'', // The ID of this cong in the source's database
-//      },
+        default_attributes:{
+            name : '',
+            meeting_address1 : '',
+            meeting_address2:'',
+            meeting_city:'',
+            meeting_region:'',
+            meeting_state:'',
+            meeting_zip:'',
+            meeting_country:'',
+            lat:'',
+            lng:'',
+            mailing_address1:'',
+            mailing_address2:'',
+            mailing_city:'',
+            mailing_state:'',
+            mailing_zip:'',
+            mailing_country:'',
+            phone:'',
+            fax:'',
+            contact_email:'',
+            website:'',
+            sermons_url:'',
+            service_info:'',
+            other_info:'',
+            presbytery_name:'',
+            pastor_name:'',
+            contact_type:'',
+            contact_name:'',
+            date_founded:'', // date
+            number_of_members:'', // integer
+            range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+                                        //   permitted/preferred or the only available data
+            organized:'', // boolean, defines whether this is a mission work or an organized congregation
+            source:'', // Foreign key:  Which source this cong's data came from
+            source_cong_id:'', // The ID of this cong in the source's database
+            page_url:'', // The URL in the source's site
+            import_io_guid:'' // The GUID of the import.io source dataset
+        },
         initialize: function(){
             // Make congs save themselves immediately when their attributes change
             //    to make Backgrid more useful
