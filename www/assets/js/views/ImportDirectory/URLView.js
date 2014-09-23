@@ -169,6 +169,7 @@ define([
                 }})
                 // TODO: Geocode each cong if it is new or its address has changed.  This should be done
                 //  asynchronously from importing the data file.
+                console.log('Start here')
             })
             reader.readAsText(files[0])
         },
