@@ -102,9 +102,22 @@ define([
             event.stopPropagation()
             event.preventDefault()
             // Report provisional status to user
-            this.$('.importio_drop_target').removeClass('dragover')
-            this.$('.importio_drop_target').addClass('dropped')
-            this.$('.importio_drop_target').text('Got the file!')
+            var delay = 6000
+            this.$('.importio_drop_target')
+                .removeClass('dragover')
+                .addClass('dropped', 200)
+                .text('Got the file!')
+                .fadeOut(delay)
+            var thiz = this
+            window.setTimeout(function(){
+                thiz.$('.importio_drop_target')
+                    .removeClass('dropped')
+                    .text('Drop JSON file here')
+                    .fadeIn(2000)
+                // TODO: Fire displaying next form fields here as needed
+                // TODO: Get the directory's identity from the cong URLs
+                // TODO: Display the form to edit the directory's name
+            }, delay)
             // Get file contents here
             var dt = event.originalEvent.dataTransfer;
             var files = dt.files;
@@ -114,36 +127,34 @@ define([
                 json = reader.result
                 var congs_obj = JSON.parse(json)
                 var congs = new model.Congs
-                // Iterate through list of congregations
-                // Note: The attribute which contains the list of cong data objects is called congs_obj.data
-                _.each(congs_obj.data, function(cong, index, list){
-                    // All attributes contain lists.
-                    // So if an attribute's list is longer than 1 item, join the items together with <br />
-                    var new_cong = {}
-                    var cong_template = new model.Cong
-                    // Import only the fields we want in our model
-                    _.each(cong_template.default_attributes, function handle_attribute(value, key){
-                        // Only join if it is of type = array
-                        new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
-                    })
-                    new_cong.contact_email = typeof new_cong.contact_email !== 'undefined' ? new_cong.contact_email.replace('mailto:','') : ''
-                    // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
-                    //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
-                    new_cong.page_url = cong._pageUrl
-                    // data[n]._source contains the source's GUID, which we should record somewhere
-                    new_cong.import_io_guid = cong._source[0]
-                    // Get cong's database id from OPC.org
-                    if (new_cong.page_url.indexOf('opc.org') !== -1){
-                        new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
-                        // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
-                        //  character of each word.
-                        new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-                    }
-                    // Write this cong to a Backbone_hoodie model, and save to database
-                    // TODO: Find out whether this model exists in the congs collection
-                    // TODO: This seems to be creating duplicates.
-                    //  This problem is because findWhere returns nothing when it should return something.
-                    congs.fetch({success:function(){
+                congs.fetch({success:function(){
+                    // Iterate through list of congregations
+                    // Note: The attribute which contains the list of cong data objects is called congs_obj.data
+                    _.each(congs_obj.data, function(cong, index, list){
+                        // All attributes contain lists.
+                        // So if an attribute's list is longer than 1 item, join the items together with <br />
+                        var new_cong = {}
+                        var cong_template = new model.Cong
+                        // Import only the fields we want in our model
+                        _.each(cong_template.default_attributes, function handle_attribute(value, key){
+                            // Only join if it is of type = array
+                            new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
+                        })
+                        new_cong.contact_email = typeof new_cong.contact_email !== 'undefined' ? new_cong.contact_email.replace('mailto:','') : ''
+                        // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+                        //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
+                        new_cong.page_url = cong._pageUrl
+                        // data[n]._source contains the source's GUID, which we should record somewhere
+                        new_cong.import_io_guid = cong._source[0]
+                        // Get cong's database id from OPC.org
+                        if (new_cong.page_url.indexOf('opc.org') !== -1){
+                            new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
+                            // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
+                            //  character of each word.
+                            new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                        }
+                        // Write this cong to a Backbone_hoodie model, and save to database
+                        // Find out whether this model exists in the congs collection
                         var cong_model = congs.findWhere({page_url:new_cong.page_url})
                         if (typeof cong_model !== 'undefined'){
                             // Cong already exists in the collection, so write new attributes
@@ -154,8 +165,8 @@ define([
                             var cong_model = congs.create(new_cong)
                         }
                         // TODO: Associate this cong with its cgroup
-                    }})
-                })
+                    })
+                }})
                 // TODO: Geocode each cong if it is new or its address has changed.  This should be done
                 //  asynchronously from importing the data file.
             })
