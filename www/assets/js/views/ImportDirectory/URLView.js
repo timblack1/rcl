@@ -114,47 +114,48 @@ define([
                 json = reader.result
                 var congs_obj = JSON.parse(json)
                 var congs = new model.Congs
-                thiz.listenTo(congs, 'sync', function parse_congs(){
-                    // Iterate through list of congregations
-                    // Note: The attribute which contains the list of cong data objects is called congs_obj.data
-                    _.each(congs_obj.data, function(cong){
-                        // All attributes contain lists.
-                        // So if an attribute's list is longer than 1 item, join the items together with <br />
-                        var new_cong = {}
-                        var cong_template = new model.Cong
-                        // Import only the fields we want in our model
-                        _.each(cong_template.default_attributes, function handle_attribute(value, key){
-                            // Only join if it is of type = array
-                            new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
-                        })
-                        new_cong.contact_email = typeof new_cong.contact_email !== 'undefined' ? new_cong.contact_email.replace('mailto:','') : ''
-                        // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
-                        //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
-                        new_cong.page_url = cong._pageUrl
-                        // data[n]._source contains the source's GUID, which we should record somewhere
-                        new_cong.import_io_guid = cong._source
-                        // Get cong's database id from OPC.org
-                        if (new_cong.page_url.indexOf('opc.org') !== -1){
-                            new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
-                            // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
-                            //  character of each word.
-                            new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-                        }
-                        // TODO: Write this cong to a Backbone_hoodie model, and save to database
-                        // TODO: Find out whether this model exists in the congs collection
-                        var cong_model = congs.findWhere({page_url:new_cong.page_url})
-                        if (typeof cong_model !== 'undefined'){
-                            cong_model.save(new_cong)
-                        }else{
-                            //new_cong.id = 'cong/' + hoodie.id();
-                            var cong_model = congs.create(new_cong)
-                        }
-                        // TODO: Associate this cong with its cgroup
+                // Iterate through list of congregations
+                // Note: The attribute which contains the list of cong data objects is called congs_obj.data
+                _.each(congs_obj.data, function(cong, index, list){
+                    // All attributes contain lists.
+                    // So if an attribute's list is longer than 1 item, join the items together with <br />
+                    var new_cong = {}
+                    var cong_template = new model.Cong
+                    // Import only the fields we want in our model
+                    _.each(cong_template.default_attributes, function handle_attribute(value, key){
+                        // Only join if it is of type = array
+                        new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
                     })
-                    // TODO: Geocode each cong if it is new or its address has changed.  This should be done
-                    //  asynchronously from importing the data file.
+                    new_cong.contact_email = typeof new_cong.contact_email !== 'undefined' ? new_cong.contact_email.replace('mailto:','') : ''
+                    // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+                    //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
+                    new_cong.page_url = cong._pageUrl
+                    // data[n]._source contains the source's GUID, which we should record somewhere
+                    new_cong.import_io_guid = cong._source[0]
+                    // Get cong's database id from OPC.org
+                    if (new_cong.page_url.indexOf('opc.org') !== -1){
+                        new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
+                        // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
+                        //  character of each word.
+                        new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                    }
+                    // Write this cong to a Backbone_hoodie model, and save to database
+                    // TODO: Find out whether this model exists in the congs collection
+                    // TODO: This seems to be creating duplicates.
+                    //  This problem is because findWhere returns nothing when it should return something.
+                    var cong_model = congs.findWhere({page_url:new_cong.page_url})
+                    if (typeof cong_model !== 'undefined'){
+                        // Cong already exists in the collection, so write new attributes
+                        cong_model.save(new_cong)
+                    }else{
+                        // Cong didn't exist in the collection, so create a new one
+                        //new_cong.id = 'cong/' + hoodie.id();
+                        var cong_model = congs.create(new_cong)
+                    }
+                    // TODO: Associate this cong with its cgroup
                 })
-                congs.fetch()
+                // TODO: Geocode each cong if it is new or its address has changed.  This should be done
+                //  asynchronously from importing the data file.
             })
             reader.readAsText(files[0])
         },
