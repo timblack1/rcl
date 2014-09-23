@@ -168,13 +168,14 @@ body>.container .jasmine_reporter {
 }
 .importio_drop_target:hover{
     border: 2px dotted blue;
-    padding: .5em;
-    border-radius: 0.5em;
     color: blue;
 }
 .dragover {
     border: 2px dotted blue;
-    padding: .5em;
-    border-radius: 0.5em;
     color: blue;
+}
+.dropped, .importio_drop_target:hover.dropped {
+    border: 2px dotted white;
+    background-color: green;
+    color: white;
 }
