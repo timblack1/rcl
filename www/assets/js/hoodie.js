@@ -3353,11 +3353,11 @@ Hoodie.extend(function (hoodie) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// hoodie-plugin-import-directory/hoodie.import-directory.js
+// hoodie-plugin-http/hoodie.http.js
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
- * Hoodie plugin import-directory
+ * Hoodie plugin http
  * This is where you put your frontend code (if any)
  */
 
@@ -3367,8 +3367,8 @@ Hoodie.extend(function (hoodie) {
   'use strict';
 
   // extend the hoodie.js API
-//   hoodie.get_url_html = function (url) {
-//     return hoodie.task.start('geturlhtml', {
+//   hoodie.http = function (url) {
+//     return hoodie.task.start('http-get', {
 //       url: url
 //     });
 //   };
