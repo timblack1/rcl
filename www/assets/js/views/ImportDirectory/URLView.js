@@ -76,8 +76,7 @@ define([
             'click .initial_radios': 'clicked_intial_radios'
         },
         changes_listeners:function(){
-            // These are the main cases - different types of changes that
-            //  need to be handled
+            // Different types of changes that need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
                 'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
@@ -85,7 +84,7 @@ define([
             })
         },
         clicked_intial_radios:function(){
-            // TODO: Display whichever set of form elements fit with the radio button that was clicked
+            // Display whichever set of form elements fit with the radio button that was clicked
             var checked_val = this.$('.initial_radios input[name=optionsRadios]:checked').val()
             if (checked_val == 'importio_json'){
                 this.$('.url-group').removeClass('show').addClass('hidden')
