@@ -14,9 +14,18 @@
       </label>
     </div>
     <div class="importio-group form-group has-feedback hidden">
+        <div class='cgroup_div form-group'>
+            <label for='cgroup_name'>Please enter the name of this directory's denomination or group of congregations</label>
+            <input type='text' name='cgroup_name' id='cgroup_name' class='cgroup_name form-control' 
+                placeholder='Name (e.g., Orthodox Presbyterian Church)' />
+            <label for='abbreviation'>Please enter an abbreviation for this denomination or group of congregations</label>
+            <input type='text' name='abbreviation' id='abbreviation' class='abbreviation form-control'
+                placeholder='Abbreviation (e.g., OPC)' />
+        </div>
+
         <label for='file'>Upload import.io dataset JSON file here</label>
         <br />
-        <div class="btn btn-default btn-file">
+        <div class="btn btn-primary btn-file">
             Browse...<input type="file" id="file" class='file'>
         </div>
         or
@@ -27,6 +36,14 @@
         <input type='text' name='url' id='url' class='typeahead form-control' 
             placeholder="Enter directory's GUID or URL" />
         <span class="help-block" style="display:none"></span>
+        <div style='display:none' class='cgroup_div form-group'>
+            <label for='cgroup_name'>Please enter the name of this directory's denomination or group of congregations</label>
+            <input type='text' name='cgroup_name' id='cgroup_name' class='cgroup_name form-control' 
+                placeholder='Name (e.g., Orthodox Presbyterian Church)' />
+            <label for='abbreviation'>Please enter an abbreviation for this denomination or group of congregations</label>
+            <input type='text' name='abbreviation' id='abbreviation' class='abbreviation form-control'
+                placeholder='Abbreviation (e.g., OPC)' />
+        </div>
     </div>
     <div style='display:none' class='importio_auth_div form-group'>
         <label for='user_guid'>Please enter your import.io user GUID</label>
@@ -35,14 +52,6 @@
         <label for='api_key'>Please enter your import.io API key</label>
         <input type='text' name='api_key' id='api_key' class='api_key form-control'
             placeholder='API key' />
-    </div>
-    <div style='display:none' class='cgroup_div form-group'>
-        <label for='cgroup_name'>Please enter the name of this directory's denomination or group of congregations</label>
-        <input type='text' name='cgroup_name' id='cgroup_name' class='cgroup_name form-control' 
-            placeholder='Name (e.g., Orthodox Presbyterian Church)' />
-        <label for='abbreviation'>Please enter an abbreviation for this denomination or group of congregations</label>
-        <input type='text' name='abbreviation' id='abbreviation' class='abbreviation form-control'
-            placeholder='Abbreviation (e.g., OPC)' />
     </div>
     <div id='rss_feed' style='display:none' class='form-group'>
         <h2>RSS feed - Does the data below look correct?</h2>
