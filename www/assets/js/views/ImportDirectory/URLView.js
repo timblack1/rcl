@@ -15,7 +15,7 @@ define([
                 'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
                 'batchgeo_parse_json', 'report_url_is_valid', 'got_importio_auth','geocode',
-                'importio_drop_target_dragover', 'importio_drop_target_drop');
+                'importio_drop_target_dragover', 'importio_drop_target_drop', 'clicked_intial_radios');
             if (typeof window.app.geocoder == 'undefined'){
                 window.app.geocoder = new google.maps.Geocoder();
             }
@@ -72,7 +72,8 @@ define([
             'dragenter .importio_drop_target': 'importio_drop_target_dragover',
             'dragleave .importio_drop_target': 'importio_drop_target_dragleave',
             'dragexit .importio_drop_target': 'importio_drop_target_dragleave',
-            'drop .importio_drop_target': 'importio_drop_target_drop'
+            'drop .importio_drop_target': 'importio_drop_target_drop',
+            'click .initial_radios': 'clicked_intial_radios'
         },
         changes_listeners:function(){
             // These are the main cases - different types of changes that
@@ -82,6 +83,17 @@ define([
                 'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
+        },
+        clicked_intial_radios:function(){
+            // TODO: Display whichever set of form elements fit with the radio button that was clicked
+            var checked_val = this.$('.initial_radios input[name=optionsRadios]:checked').val()
+            if (checked_val == 'importio_json'){
+                this.$('.url-group').removeClass('show').addClass('hidden')
+                this.$('.importio-group').removeClass('hidden').addClass('show')
+            }else if (checked_val == 'url_or_guid'){
+                this.$('.importio-group').removeClass('show').addClass('hidden')
+                this.$('.url-group').removeClass('hidden').addClass('show')
+            }
         },
         handle_404:function(model, value, options){
             // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
@@ -117,6 +129,12 @@ define([
                 // TODO: Fire displaying next form fields here as needed
                 // TODO: Get the directory's identity from the cong URLs
                 // TODO: Display the form to edit the directory's name
+                // TODO: Display a stats view to notify the user of the following stats:
+                //  running total: X congs have been imported successfully
+                //  event: All congs' data have been imported
+                //  running total: X congs have been geocoded successfully
+                //  event: All congs' data have been geocoded successfully
+                //  event: X congs failed geocoding (offer link to view the details)
             }, delay)
             // Get file contents here
             var dt = event.originalEvent.dataTransfer;
@@ -153,6 +171,7 @@ define([
                             //  character of each word.
                             new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
                         }
+                        // TODO: Associate this cong with its cgroup
                         // Write this cong to a Backbone_hoodie model, and save to database
                         // Find out whether this model exists in the congs collection
                         var cong_model = congs.findWhere({page_url:new_cong.page_url})
@@ -164,7 +183,6 @@ define([
                             //new_cong.id = 'cong/' + hoodie.id();
                             var cong_model = congs.create(new_cong)
                         }
-                        // TODO: Associate this cong with its cgroup
                     })
                 }})
                 // TODO: Geocode each cong if it is new or its address has changed.  This should be done

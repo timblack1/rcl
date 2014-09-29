@@ -1,6 +1,19 @@
-<h2>Step 1:  Please enter the import.io connector GUID or URL of the church directory page or data feed (RSS, JSON)</h2>
+<h2>Step 1:  Please tell us what kind of data you have to import</h2>
 <form role="form">
-    <div class="url-group form-group has-feedback">
+    <p>I've got:</p>
+    <div class="radio initial_radios">
+      <label>
+        <input type="radio" name="optionsRadios" id="optionsRadios1" value="importio_json">
+        An import.io JSON file
+      </label>
+    </div>
+    <div class="radio initial_radios">
+      <label>
+        <input type="radio" name="optionsRadios" id="optionsRadios2" value="url_or_guid">
+        A URL for a church directory page, RSS or JSON feed, or an import.io connector GUID
+      </label>
+    </div>
+    <div class="importio-group form-group has-feedback hidden">
         <label for='file'>Upload import.io dataset JSON file here</label>
         <br />
         <div class="btn btn-default btn-file">
@@ -8,7 +21,8 @@
         </div>
         or
         <span class='importio_drop_target'>Drop JSON file here</span>
-        <br />
+    </div>
+    <div class="url-group form-group has-feedback hidden">
         <label for='url'>GUID or URL</label>
         <input type='text' name='url' id='url' class='typeahead form-control' 
             placeholder="Enter directory's GUID or URL" />
