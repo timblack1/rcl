@@ -72,6 +72,15 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
 }
 /* End Hoodie CSS */
 
+/* Jasmine HTMLReporter */
+body>.container .jasmine_reporter {
+    position:relative;
+    top:50px;
+}
+.symbolSummary li {
+    display:inline;
+}
+
 /* Search page */
 
 .radius {
@@ -86,6 +95,10 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
     border: 1px solid grey;
     float: right;   
 }
+
+/* Import a directory page */
+
+/* Initial buttons */
 
 /* For download congs page */
 .content_frame {
@@ -121,15 +134,6 @@ html[data-hoodie-account-status=signedout] .hoodie-account-signedout {
 }
 .regex_section {
     margin-top: 1em;
-}
-
-/* Jasmine HTMLReporter */
-body>.container .jasmine_reporter {
-    position:relative;
-    top:50px;
-}
-.symbolSummary li {
-    display:inline;
 }
 
 /* Radio button fix */
@@ -179,3 +183,4 @@ body>.container .jasmine_reporter {
     background-color: lightgreen;
     color: white;
 }
+
