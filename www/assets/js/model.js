@@ -56,8 +56,12 @@
 // Standard AMD RequireJS define
 define([
         'config',
-        'backbone_hoodie'
+        'backbone_hoodie',
+        'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], function(config, Backbone){
+
+    geocoder = new google.maps.Geocoder();
+
     // Fill this with your database information.
 
     Backbone.connect() // creates a new hoodie at Backbone.hoodie
@@ -218,11 +222,11 @@ define([
         // All defaults are commented out because they are here only for the purpose 
         //  of documenting the schema, and we don't need all these attributes to appear 
         //  on every actual instance of a model object.
-//        defaults:{
-//            name: '',
-//            abbreviaton: '',
-//            website: ''
-//        },
+       default_attributes:{
+           name: '',
+           abbreviaton: '',
+           website: ''
+       },
         relations:[
                    {
                        type:'HasMany', // many-to-many
@@ -287,8 +291,10 @@ define([
             meeting_state:'',
             meeting_zip:'',
             meeting_country:'',
-            lat:'',
-            lng:'',
+            geocode: {
+                lat:'',
+                lng:''
+            },
             mailing_address1:'',
             mailing_address2:'',
             mailing_city:'',
@@ -314,7 +320,6 @@ define([
             source:'', // Foreign key:  Which source this cong's data came from
             source_cong_id:'', // The ID of this cong in the source's database
             page_url:'', // The URL in the source's site
-            import_io_guid:'' // The GUID of the import.io source dataset
         },
         initialize: function(){
 //             // Make congs save themselves immediately when their attributes change
@@ -348,7 +353,61 @@ define([
                      includeInJSON:'_id'
                  }
              }
-        ]
+        ],
+        events: {
+            'change': 'geocode',
+        },
+        geocode:function(event){
+            
+            var thiz = this
+            if (!this.hasOwnProperty('usecs')){
+                this.usecs = 100
+            }
+
+            // Format the address to geocode
+            // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
+            var address_line = ''
+            if (cong.meeting_address1.search(/\d/) !== -1){
+                address_line = cong.meeting_address1
+            } else if (cong.meeting_address2.search(/\d/) !== -1){
+                address_line = cong.meeting_address2
+            }else{
+                address_line = cong.meeting_address1
+            }
+            var address =   address_line + ', ' + 
+                            (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ' + 
+                            (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
+                            (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''))
+
+            geocoder.geocode( { 'address': address }, function(results, status) {
+                // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
+                //  or status == 'ZERO_RESULTS'
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var loc = results[0].geometry.location
+                    // TODO: Start here.  Write to the backbone-hoodie model and collection
+                    thiz.save({
+                        geocode:{
+                            'lat': loc.lat(),
+                            'lng': loc.lng()
+                        }
+                    })
+                }else{
+                    // === if we were sending the requests to fast, try this one again and increase the delay
+                    // Wait to avoid Google throttling the geocode requests (for there
+                    //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
+                    if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
+                        thiz.usecs += 100;
+                        setTimeout(function(){
+                            thiz.geocode()
+                        },thiz.usecs)
+                    }else{
+                        var reason  =   "Code "+status;
+                        var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.usecs+'ms)';
+                        console.error('Error: ' + msg)
+                    }
+                }
+            })
+        }
     })
     modelStore.Congs = CollectionBase.extend({
         model:modelStore.Cong,
@@ -358,29 +417,31 @@ define([
         collection:'Directories',
         urlRoot:'/directory',
         type:'directory',
-//          defaults:{
-//          url:'', // url of directory's main page
-//          url_data:'', // data returned by directory's main URL
-//          pagetype:'', // html or rss
-//          state_page_urls:'', // template URL of state pages
-//          state_url_html:'', // HTML of state page
-//          state_url_method:'', // 'get' or 'post', tells Node script which to use
-//          state_page_values:[], // list of select box options for this directory's states
-//          select_element_xpath:'' // xpath of the select element containing state IDs
-//        },
+        default_attributes:{
+            url:'', // url of directory's main page
+            url_data:'', // data returned by directory's main URL
+            pagetype:'', // html or rss
+            state_page_urls:'', // template URL of state pages
+            state_url_html:'', // HTML of state page
+            state_url_method:'', // 'get' or 'post', tells Node script which to use
+            state_page_values:[], // list of select box options for this directory's states
+            select_element_xpath:'', // xpath of the select element containing state IDs
+            importio_guid: ''   // found in json.data[0]._source[0]; should be the same 
+                                //   for every cong from one import.io data source
+        },
         relations:[
             {
-               type:'HasOne', // many-to-one
-               key: 'cgroup',
-               // TODO: the directory's 'cgroup' is null in the db
-               relatedModel: 'CGroup', // was 'CGroup_Directory'
-               collectionType:'CGroups',
-               includeInJSON:'_id',
-               // reverseRelation: {
-               //     key: 'directories',
-               //     // TODO: Is this needed?
-               //     includeInJSON:'_id'
-               // }
+                type:'HasOne', // many-to-one
+                key: 'cgroup',
+                // TODO: the directory's 'cgroup' is null in the db
+                relatedModel: 'CGroup', // was 'CGroup_Directory'
+                collectionType:'CGroups',
+                includeInJSON:'_id',
+                // reverseRelation: {
+                //     key: 'directories',
+                //     // TODO: Is this needed?
+                //     includeInJSON:'_id'
+                // }
             }
         ]
     })
