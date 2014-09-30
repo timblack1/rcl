@@ -12,6 +12,9 @@ define([
             // Make it easy to reference this object in event handlers
             _.bindAll(this, 'update', 'save');
             this.listenTo(this.model, "change", this.update);
+            // Get array of cgroups from model
+            this.cgroups = new model.CGroups
+            this.cgroups.fetch()
         },
         render: function(){
             this.$el.html(Mustache.render(template));
@@ -19,8 +22,7 @@ define([
             // Populate form fields with initial values found in the model, so user can edit them
             this.$('.cgroup_name').val(this.model.get('name'))
             this.$('.abbreviation').val(this.model.get('abbreviation'))
-            // Render typeahead for URL textbox
-            // Render typeahead
+            // Render typeaheads for CGroup name, abbreviation textboxes
             // TODO: Consider filtering and sorting by levenshtein distance
             var substringMatcher = function(strs) {
               return function findMatches(q, cb) {
@@ -45,17 +47,25 @@ define([
                 cb(matches);
               };
             };
-            // Get array of directories from model
-            this.directories = new model.CGroups()
-            this.cgroups.fetch()
-            this.$('#url').typeahead({
+            // CGroup name
+            this.$('.cgroup_name').typeahead({
                 hint: true,
                 highlight: true,
                 minLength: 1
             },{
                 name: 'cgroups',
                 displayKey: 'value',
-                source: substringMatcher(this.cgroups.pluck('url'))
+                source: substringMatcher(this.cgroups.pluck('name'))
+            })
+            // CGroup abbreviation
+            this.$('.abbreviation').typeahead({
+                hint: true,
+                highlight: true,
+                minLength: 1
+            },{
+                name: 'cgroups',
+                displayKey: 'value',
+                source: substringMatcher(this.cgroups.pluck('abbreviation'))
             })
             // On option selection event, __________________
             //this.$('.cgroup_name').on('typeahead:selected', this.get_church_dir_from_url)
@@ -76,5 +86,6 @@ define([
         }
     });
 });
+
 
 
