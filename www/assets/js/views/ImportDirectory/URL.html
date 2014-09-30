@@ -16,10 +16,12 @@
     <div class="importio-group form-group has-feedback hidden">
         <label for='file'>Upload import.io dataset JSON file here</label>
         <br />
-        <div class="btn btn-primary btn-file">
-            Browse...<input type="file" id="file" class='file'>
+        <div class='hidden'>
+            <div class="btn btn-primary btn-file">
+                Browse...<input type="file" id="file" class='file'>
+            </div>
+            or
         </div>
-        or
         <span class='importio_drop_target'>Drop JSON file here</span>
     </div>
     <div class="url-group form-group has-feedback hidden">
@@ -28,14 +30,7 @@
             placeholder="Enter directory's GUID or URL" />
         <span class="help-block" style="display:none"></span>
     </div>
-    <div class='cgroup_div form-group hidden'>
-        <label for='cgroup_name'>Please enter the name of this directory's denomination or group of congregations</label>
-        <input type='text' name='cgroup_name' id='cgroup_name' class='cgroup_name form-control' 
-            placeholder='Name (e.g., Orthodox Presbyterian Church)' />
-        <label for='abbreviation'>Please enter an abbreviation for this denomination or group of congregations</label>
-        <input type='text' name='abbreviation' id='abbreviation' class='abbreviation form-control'
-            placeholder='Abbreviation (e.g., OPC)' />
-    </div>
+    <div class='cgroup_div form-group'></div>
     <div style='display:none' class='importio_auth_div form-group'>
         <label for='user_guid'>Please enter your import.io user GUID</label>
         <input type='text' name='user_guid' id='user_guid' class='user_guid form-control' 
