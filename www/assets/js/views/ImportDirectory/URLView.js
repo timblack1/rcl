@@ -178,7 +178,7 @@ define([
                     })
                     // Display the associated cgroup for the user to edit
                     thiz.cgroup_view.render()
-                    thiz.cgroup_view.hide().show(2000)
+                    thiz.cgroup_view.$el.hide().show(2000)
                     // Fetch congs to compare them with the new cong data
                     thiz.congs.fetch({success:function(){
                         // Iterate through list of new cong data
@@ -205,8 +205,6 @@ define([
                                 //  character of each word.
                                 new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
                             }
-                            // Associate this cong with its cgroup
-                            new_cong.cgroup = thiz.cgroup
                             // Write this cong to a Backbone_hoodie model, and save to database
                             // Find out whether this model exists in the congs collection
                             var cong_model = thiz.congs.findWhere({page_url:new_cong.page_url})
@@ -217,6 +215,9 @@ define([
                                 // Cong didn't exist in the collection, so create a new one
                                 var cong_model = thiz.congs.create(new_cong)
                             }
+                            // Associate this cong with its cgroup
+                            cong_model.get('cgroups').add(thiz.cgroup)
+                            cong_model.save()
                         })
                     }})                    
                 })

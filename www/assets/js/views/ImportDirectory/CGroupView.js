@@ -20,8 +20,8 @@ define([
             this.$el.html(Mustache.render(template));
             this.delegateEvents()
             // Populate form fields with initial values found in the model, so user can edit them
-            this.$('.cgroup_name').val(this.model.get('name'))
-            this.$('.abbreviation').val(this.model.get('abbreviation'))
+            this.$('#cgroup_name').val(this.model.get('name'))
+            this.$('#abbreviation').val(this.model.get('abbreviation'))
             // Render typeaheads for CGroup name, abbreviation textboxes
             // TODO: Consider filtering and sorting by levenshtein distance
             var substringMatcher = function(strs) {
@@ -67,21 +67,22 @@ define([
                 displayKey: 'value',
                 source: substringMatcher(this.cgroups.pluck('abbreviation'))
             })
-            // On option selection event, __________________
-            //this.$('.cgroup_name').on('typeahead:selected', this.get_church_dir_from_url)
+            // On option selection event, save the model
+            this.$('#cgroup_name').on('typeahead:selected', this.save)
+            this.$('#abbreviation').on('typeahead:selected', this.save)
         },
         events: {
-            'change .cgroup_name': 'save',
-            'change .abbreviation': 'save'
+            'change #cgroup_name': 'save',
+            'change #abbreviation': 'save'
         },
         update:function(){
-            this.$('.cgroup_name').val(this.model.get('name'))
-            this.$('.abbreviation').val(this.model.get('abbreviation'))
+            this.$('#cgroup_name').val(this.model.get('name'))
+            this.$('#abbreviation').val(this.model.get('abbreviation'))
         },
         save:function(){
             this.model.save({
-                'name': this.$('.cgroup_name').val(),
-                'abbreviation': this.$('.abbreviation').val()
+                'name': this.$('#cgroup_name').val(),
+                'abbreviation': this.$('#abbreviation').val()
             })
         }
     });
