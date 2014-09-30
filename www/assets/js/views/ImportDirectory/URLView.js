@@ -89,9 +89,11 @@ define([
             if (checked_val == 'importio_json'){
                 this.$('.url-group').removeClass('show').addClass('hidden')
                 this.$('.importio-group').removeClass('hidden').addClass('show')
+                this.$('.cgroup_div').hide(1000)
             }else if (checked_val == 'url_or_guid'){
                 this.$('.importio-group').removeClass('show').addClass('hidden')
                 this.$('.url-group').removeClass('hidden').addClass('show')
+                this.$('.cgroup_div').hide(1000)
             }
         },
         handle_404:function(model, value, options){
@@ -119,6 +121,7 @@ define([
                 .addClass('dropped', 200)
                 .text('Got the file!')
                 .fadeOut(delay)
+            this.$('.cgroup_div').removeClass('hidden').hide().show(2000)
             var thiz = this
             window.setTimeout(function(){
                 thiz.$('.importio_drop_target')
@@ -399,7 +402,7 @@ define([
         },
         get_cgroup:function(){
             var thiz = this
-            this.$('.cgroup_div').show(1000)
+            this.$('.cgroup_div').removeClass('hidden').hide().show(2000)
             this.$('.cgroup_name').focus()
             console.log('Start here for hoodie integration')
             var cgroup_name = $('#cgroup_name').val()
