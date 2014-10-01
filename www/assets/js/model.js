@@ -60,11 +60,6 @@ define([
         'async!https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ'
         ], function(config, Backbone){
 
-    var geocoder = new google.maps.Geocoder();
-    var currently_geocoding = [];
-    var usecs = 100;
-    var geocode_end_time = 0;
-
     // Fill this with your database information.
 
     Backbone.connect() // creates a new hoodie at Backbone.hoodie
@@ -338,6 +333,7 @@ define([
             this.on('change:meeting_city', this.geocode)
             this.on('change:meeting_state', this.geocode)
             this.on('change:meeting_zip', this.geocode)
+            this.stats = modelStore.geocode_stats
         },
         relations:[
              {
@@ -366,31 +362,24 @@ define([
         test_address_for_numbers:function(addr){
             return typeof addr !== 'undefined' && addr.search(/\d/) !== -1;
         },
-        geocode:function(this_model, usecs, geocode_end_time){
-            
-            if (typeof geocode_end_time !== 'number'){
-                geocode_end_time = 0
-            }
-            if (typeof usecs !== 'number'){
-                usecs = 100
-            }
-            // The trickery below is necessary because setTimeout makes 'this' refer to the Window object
+        geocode:function(){
+            var now;
             var thiz = this
-            if (this === Window){
-                thiz = this_model
-            }
             // Don't permit geocoding this model multiple times simultaneously
-            if (_.contains(currently_geocoding, thiz)){
+            if (_.contains(this.stats.get('currently_geocoding'), thiz)){
                 return;
             }
-            currently_geocoding.push(thiz)
-            console.log(thiz.get('name'))
             
-            var now = new Date().getTime()
-            if ((now - geocode_end_time) > usecs){
-                // This line should prevent two delayed geocode requests from running simultaneously
-                geocode_end_time = now
-
+            // Check to see if we are within the rate limit, and if we are free to geocode
+            now = new Date().getTime()
+            //console.log(now)
+            if ((now - this.stats.get('geocode_end_time')) > this.stats.get('usecs') &&
+                this.stats.get('flag') == 'idle'){
+                // console.log(thiz.get('name'))
+                // Set the flag which prevents other congs from being geocoded right now
+                this.stats.set('flag', 'running')
+                this.stats.get('currently_geocoding').push(thiz)
+                this.stats.set('number_to_geocode', this.stats.get('number_to_geocode') + 1)
                 // Format the address to geocode
                 // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
                 var address_line = ''
@@ -416,8 +405,8 @@ define([
                                 (thiz.get('meeting_state') ? thiz.get('meeting_state') : (thiz.get('mailing_state') ? thiz.get('mailing_state') : '')) + ' ' + 
                                 (thiz.get('meeting_zip') ? thiz.get('meeting_zip') : (thiz.get('mailing_zip') ? thiz.get('mailing_zip') : ''))
 
-                console.log('Geocoding ' + address)
-                geocoder.geocode( { 'address': address }, function(results, status) {
+                // console.log('Geocoding ' + address)
+                this.stats.get('geocoder').geocode( { 'address': address }, function(results, status) {
                     // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
                     //  or status == 'ZERO_RESULTS'
                     if (status == google.maps.GeocoderStatus.OK) {
@@ -429,43 +418,79 @@ define([
                                 'lng': loc.lng()
                             }
                         })
-                        console.log('Geocoded address ' + address + ' at ' + loc.lat(), loc.lng())
+                        // console.log('Geocoded address ' + address + ' at ' + loc.lat(), loc.lng())
+                        thiz.stats.set('number_geocoded', thiz.stats.get('number_geocoded') + 1)
                         // Remove this cong from the list of those currently being geocoded
-                        currently_geocoding.splice(currently_geocoding.indexOf(thiz), 1)
+                        var cg = thiz.stats.get('currently_geocoding')
+                        cg.splice(cg.indexOf(thiz), 1)
+                        // This line should prevent two delayed geocode requests from running simultaneously
+                        thiz.stats.set('geocode_end_time', now)
+                        // Set flag to indicate that it's ok to start geocoding another cong
+                        thiz.stats.set('flag', 'idle')
                     }else{
                         // === if we were sending the requests to fast, try this one again and increase the delay
                         // Wait to avoid Google throttling the geocode requests (for there
                         //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
                         if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
-                            console.log('Over query limit, usecs='+usecs)
-                            usecs += 100;
+                            // console.error('Over query limit, usecs='+thiz.stats.get('usecs'))
+                            thiz.stats.set('usecs', thiz.stats.get('usecs') + 100);
                             setTimeout(function(){
-                                thiz.geocode(thiz, usecs, geocode_end_time)
-                            },usecs)
+                                thiz.geocode()
+                            },thiz.stats.get('usecs'))
                         }else{
                             var reason  =   "Code "+status;
-                            var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+usecs+'ms)';
-                            console.error('Error: ' + msg)
+                            var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.stats.get('usecs')+'ms)';
+                            console.log('Error: ' + msg)
+                            if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
+                                thiz.get('mailing_city') != ''){
+                                // TODO: Try geocoding replacing the meeting_city with the mailing_city
+                            }
                         }
                     }
                 })
-
             }else{
                 // Wait to avoid Google throttling the geocode requests (for there
                 //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
-                if (typeof geocode_end_time == 'undefined'){
-                    // Set the first geocode_end_time
-                    geocode_end_time = now
-                }
                 setTimeout(function(){
-                    thiz.geocode(thiz, usecs, geocode_end_time)
-                },usecs)
+                    thiz.geocode()
+                },this.stats.get('usecs'))
             }
         }
     })
     modelStore.Congs = CollectionBase.extend({
         model:modelStore.Cong,
-        url:'/congs'
+        url:'/congs',
+        initialize:function(){
+            // Listen to model change, add events
+            this.on('add', this.handle_changes)
+            this.on('change:meeting_address1', this.handle_changes)
+            this.on('change:meeting_address2', this.handle_changes)
+            this.on('change:meeting_city', this.handle_changes)
+            this.on('change:meeting_state', this.handle_changes)
+            this.on('change:meeting_zip', this.handle_changes)
+            this.on('change:mailing_address1', this.handle_changes)
+            this.on('change:mailing_address2', this.handle_changes)
+            this.on('change:mailing_city', this.handle_changes)
+            this.on('change:mailing_state', this.handle_changes)
+            this.on('change:mailing_zip', this.handle_changes)
+        },
+        handle_changes:function(model, options){
+            // TODO: Get the arguments above correct from http://backbonejs.org/#Events-catalog for the different events
+            //      we need to handle.
+            // TODO: Start here
+            console.log('Start here')
+            // TODO: Add changed cong to this.to_geocode collection
+            
+            // TODO: Call function to pick one cong out of the to_geocode collection
+        },
+        pick_one:function(){
+            this.geocode(this.to_geocode.first())
+        },
+        geocode:function(cong){
+            // TODO: Geocode cong here
+            // TODO: Remove cong from this.to_geocode
+            this.pick_one()
+        }
     })
     modelStore.Directory = Backbone.RelationalModel.extend({
         collection:'Directories',
@@ -504,6 +529,22 @@ define([
         model:modelStore.Directory,
         url:'/directory'
     })
+    modelStore.GeocodeStats = Backbone.RelationalModel.extend({
+        urlRoot:'/geocodestats',
+        type:'geocodestats',
+        defaults: {
+            currently_geocoding:[],
+            usecs:120, // Google's rate limits are 10/s, 2500/day
+            geocode_end_time:0,
+            number_to_geocode:0,
+            number_geocoded:0,
+            geocoder: new google.maps.Geocoder(),
+            flag:'idle' // 'idle' means it's ok to geocode a cong; 'running' means one geocode request is running
+        },
+        get_end_time_human:function(){ return new Date(this.get('geocode_end_time')).toLocaleString() },
+        currently_geocoding_length: function(){ return this.get('currently_geocoding').length }
+    })
+    modelStore.geocode_stats = new modelStore.GeocodeStats
     modelStore.Person = Backbone.RelationalModel.extend({
         urlRoot:'/person',
         collection:'People',
