@@ -5,9 +5,10 @@ define([
         'text!views/ImportDirectory/URL.html',
         './DirTypeView',
         './CGroupView',
+        './GeocodeStatsView',
         'typeahead'
         ], 
-        function(config, model, Mustache, template, DirTypeView, CGroupView){
+        function(config, model, Mustache, template, DirTypeView, CGroupView, GeocodeStatsView){
 
     return Backbone.View.extend({
         initialize:function(){
@@ -144,6 +145,14 @@ define([
             this.directories.fetch()
             this.congs = new model.Congs
             this.congs.fetch()
+            // TODO: Render stats view here
+            this.geocode_stats_view = new GeocodeStatsView({
+                model:model.geocode_stats,
+                collection:this.congs,
+                el:this.$('.geocode_stats')
+            })
+            this.geocode_stats_view.render()
+            this.geocode_stats_view.$el.removeClass('hidden').hide().show(1000)
             // Get file contents here
             var dt = event.originalEvent.dataTransfer;
             var files = dt.files;
