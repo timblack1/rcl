@@ -328,12 +328,12 @@ define([
 //                 if (options && options.save === false) return;
 //                 model.save();
 //             });
-            this.on('change:meeting_address1', this.geocode)
-            this.on('change:meeting_address2', this.geocode)
-            this.on('change:meeting_city', this.geocode)
-            this.on('change:meeting_state', this.geocode)
-            this.on('change:meeting_zip', this.geocode)
-            this.stats = modelStore.geocode_stats
+//             this.on('change:meeting_address1', this.geocode)
+//             this.on('change:meeting_address2', this.geocode)
+//             this.on('change:meeting_city', this.geocode)
+//             this.on('change:meeting_state', this.geocode)
+//             this.on('change:meeting_zip', this.geocode)
+//             this.stats = modelStore.geocode_stats
         },
         relations:[
              {
@@ -461,6 +461,7 @@ define([
         model:modelStore.Cong,
         url:'/congs',
         initialize:function(){
+            _.bindAll(this, 'handle_changes', 'geocode', 'test_address_for_numbers')
             // Listen to model change, add events
             this.on('add', this.handle_changes)
             this.on('change:meeting_address1', this.handle_changes)
@@ -473,23 +474,107 @@ define([
             this.on('change:mailing_city', this.handle_changes)
             this.on('change:mailing_state', this.handle_changes)
             this.on('change:mailing_zip', this.handle_changes)
-        },
-        handle_changes:function(model, options){
-            // TODO: Get the arguments above correct from http://backbonejs.org/#Events-catalog for the different events
-            //      we need to handle.
-            // TODO: Start here
+            // Create collection to serve as a queue of the congs which need to be geocoded
+            this.geocoder = new google.maps.Geocoder()
+            // TODO: Start here.  There appears to be an infinite loop causing a memory leak.
             console.log('Start here')
-            // TODO: Add changed cong to this.to_geocode collection
-            
-            // TODO: Call function to pick one cong out of the to_geocode collection
+            this.geocode_stats = modelStore.geocode_stats
+            this.listenTo(this.geocode_stats.get('to_geocode'), 'add', this.geocode)
         },
-        pick_one:function(){
-            this.geocode(this.to_geocode.first())
+        test_address_for_numbers:function(addr){
+            return typeof addr !== 'undefined' && addr.search(/\d/) !== -1;
         },
-        geocode:function(cong){
-            // TODO: Geocode cong here
-            // TODO: Remove cong from this.to_geocode
-            this.pick_one()
+        handle_changes:function(model, value, options){
+            // When this collection changes, geocode or re-geocode any congs that need it
+            if (value instanceof Backbone.Collection){
+                // This is an add event, and probably originated from a call to congs.fetch() to get all congs
+                //  from the local hoodie store
+                var collection = value
+                if (typeof model.get('geocode') === 'undefined' ||
+                    model.get('geocode').lat == '' ||
+                    model.get('geocode').lng == '' ){
+                    // Add new cong to this.to_geocode collection
+                    this.geocode_stats.get('to_geocode').add(model)
+                }
+            }else{
+                // This is a change event
+                // Add changed cong to this.to_geocode collection
+                this.geocode_stats.get('to_geocode').add(model)
+            }
+        },
+        geocode:function(){
+            var thiz = this
+            // Pick one cong out of the to_geocode collection
+            if (this.geocode_stats.get('to_geocode').length > 0){
+                var cong = this.geocode_stats.get('to_geocode').at(0)
+            }
+            // Format the address to geocode
+            // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
+            var address_line = ''
+            if (this.test_address_for_numbers(cong.get('meeting_address1'))){
+                address_line = cong.get('meeting_address1')
+            } else if (this.test_address_for_numbers(cong.get('meeting_address2'))){
+                address_line = cong.get('meeting_address2')
+            }else{
+                address_line = cong.get('meeting_address1')
+            }
+            // Do the same using mailing_adderss[1|2] if the meeting_address wasn't sufficient
+            if (address_line == '' || typeof address_line === 'undefined'){
+                if (this.test_address_for_numbers(cong.get('mailing_address1'))){
+                    address_line = cong.get('mailing_address1')
+                } else if (this.test_address_for_numbers(cong.get('mailing_address2'))){
+                    address_line = cong.get('mailing_address2')
+                }else{
+                    address_line = cong.get('mailing_address1')
+                }
+            }
+            var address =   address_line + ', ' + 
+                            (cong.get('meeting_city') ? cong.get('meeting_city') : (cong.get('mailing_city') ? cong.get('mailing_city') : '')) + ', ' + 
+                            (cong.get('meeting_state') ? cong.get('meeting_state') : (cong.get('mailing_state') ? cong.get('mailing_state') : '')) + ' ' + 
+                            (cong.get('meeting_zip') ? cong.get('meeting_zip') : (cong.get('mailing_zip') ? cong.get('mailing_zip') : ''))
+
+            // console.log('Geocoding ' + address)
+            this.geocoder.geocode( { 'address': address }, function(results, status) {
+                // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
+                //  or status == 'ZERO_RESULTS'
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var loc = results[0].geometry.location
+                    // Save the model
+                    cong.save({
+                        geocode:{
+                            'lat': loc.lat(),
+                            'lng': loc.lng()
+                        }
+                    })
+                    thiz.geocode_stats.get('to_geocode').remove(cong)
+                    // console.log('Geocoded address ' + address + ' at ' + loc.lat(), loc.lng())
+                    thiz.geocode_stats.set('number_geocoded', thiz.geocode_stats.get('number_geocoded') + 1)
+                    // Wait a certain number of milleseconds, then geocode another cong
+                    // NOTE that this calls this function recursively until there are no more congs to geocode
+                    setTimeout(function(){
+                        thiz.geocode()
+                    },thiz.geocode_stats.get('usecs'))
+                }else{
+                    // === if we were sending the requests too fast, try this one again and increase the delay
+                    // Wait to avoid Google throttling the geocode requests (for there
+                    //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
+                    if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
+                        // console.error('Over query limit, usecs='+thiz.stats.get('usecs'))
+                        thiz.geocode_stats.set('usecs', thiz.geocode_stats.get('usecs') + 10)
+                        setTimeout(function(){
+                            thiz.geocode()
+                        },thiz.geocode_stats.get('usecs'))
+                    }else{
+                        var reason  =   "Code "+status;
+                        var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.geocode_stats.get('usecs') +'ms)';
+                        console.log('Error: ' + msg)
+                        if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
+                            cong.get('mailing_city') != ''){
+                            // TODO: Try geocoding replacing the meeting_city with the mailing_city
+                        }
+                    }
+                }
+            })
         }
     })
     modelStore.Directory = Backbone.RelationalModel.extend({
@@ -533,16 +618,11 @@ define([
         urlRoot:'/geocodestats',
         type:'geocodestats',
         defaults: {
-            currently_geocoding:[],
-            usecs:120, // Google's rate limits are 10/s, 2500/day
-            geocode_end_time:0,
-            number_to_geocode:0,
-            number_geocoded:0,
-            geocoder: new google.maps.Geocoder(),
-            flag:'idle' // 'idle' means it's ok to geocode a cong; 'running' means one geocode request is running
-        },
-        get_end_time_human:function(){ return new Date(this.get('geocode_end_time')).toLocaleString() },
-        currently_geocoding_length: function(){ return this.get('currently_geocoding').length }
+            usecs:100, // Google's rate limits are 10/s, 2500/day
+            to_geocode: new Backbone.Collection,
+            number_to_geocode: function(){ return this.to_geocode.length },
+            number_geocoded:0
+        }
     })
     modelStore.geocode_stats = new modelStore.GeocodeStats
     modelStore.Person = Backbone.RelationalModel.extend({
