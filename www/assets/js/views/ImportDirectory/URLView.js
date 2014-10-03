@@ -147,7 +147,6 @@ define([
             this.congs.fetch()
             // TODO: Render stats view here
             this.geocode_stats_view = new GeocodeStatsView({
-                model:model.geocode_stats,
                 collection:this.congs,
                 el:this.$('.geocode_stats')
             })
