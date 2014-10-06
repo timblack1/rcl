@@ -503,6 +503,10 @@ define([
             }
         },
         geocode:function(){
+            // This pauses calls to this.geocode() while geocoding one cong. Note that this.geocode()
+            //  calls itself recursively, so its recursive calls will continue geocoding the
+            //   remaining congs.
+            this.stopListening(this.geocode_stats.get('to_geocode'), 'add', this.geocode)
             var thiz = this
             // Pick one cong out of the to_geocode collection
             if (this.geocode_stats.get('to_geocode').length > 0){
@@ -552,7 +556,14 @@ define([
                     // Wait a certain number of milleseconds, then geocode another cong
                     // NOTE that this calls this function recursively until there are no more congs to geocode
                     setTimeout(function(){
-                        thiz.geocode()
+                        if (thiz.geocode_stats.get('to_geocode').length == 0){
+                            // If there are no more congds to geocode, then start listening for more
+                            //  to be added in the future (note the call to stopListening() above)
+                            thiz.listenTo(thiz.geocode_stats.get('to_geocode'), 'add', thiz.geocode)
+                        }else{
+                            // Otherwise, continue geocoding the remaining congs
+                            thiz.geocode()
+                        }
                     },thiz.geocode_stats.get('usecs'))
                 }else{
                     // === if we were sending the requests too fast, try this one again and increase the delay
