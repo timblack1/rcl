@@ -461,25 +461,21 @@ define([
         model:modelStore.Cong,
         url:'/congs',
         initialize:function(){
-            _.bindAll(this, 'handle_changes', 'geocode', 'test_address_for_numbers')
+            _.bindAll(this, 'handle_changes', 'geocode', 'test_address_for_numbers', 'delay_next_geocode')
             // Listen to model change, add events
             this.on('add', this.handle_changes)
-            this.on('change:meeting_address1', this.handle_changes)
-            this.on('change:meeting_address2', this.handle_changes)
-            this.on('change:meeting_city', this.handle_changes)
-            this.on('change:meeting_state', this.handle_changes)
-            this.on('change:meeting_zip', this.handle_changes)
-            this.on('change:mailing_address1', this.handle_changes)
-            this.on('change:mailing_address2', this.handle_changes)
-            this.on('change:mailing_city', this.handle_changes)
-            this.on('change:mailing_state', this.handle_changes)
-            this.on('change:mailing_zip', this.handle_changes)
+            this.event_str = [
+                'change:meeting_address1 change:meeting_address2 change:meeting_city',
+                'change:meeting_state change:meeting_zip change:mailing_address1',
+                'change:mailing_address2 change:mailing_city change:mailing_state change:mailing_zip'
+            ].join(' ')
+            this.listenTo(this, this.event_str, this.handle_changes)
             // Create collection to serve as a queue of the congs which need to be geocoded
             this.geocoder = new google.maps.Geocoder()
-            // TODO: Start here.  There appears to be an infinite loop causing a memory leak.
-            console.log('Start here')
             this.geocode_stats = modelStore.geocode_stats
             this.listenTo(this.geocode_stats.get('to_geocode'), 'add', this.geocode)
+            // Set integer to report how many congs we are currently geocoding
+            this.currently_geocoding = 0
         },
         test_address_for_numbers:function(addr){
             return typeof addr !== 'undefined' && addr.search(/\d/) !== -1;
@@ -488,7 +484,8 @@ define([
             // When this collection changes, geocode or re-geocode any congs that need it
             if (value instanceof Backbone.Collection){
                 // This is an add event, and probably originated from a call to congs.fetch() to get all congs
-                //  from the local hoodie store
+                //  from the local hoodie store.
+                // So add only those congs which haven't been geocoded yet.
                 var collection = value
                 if (typeof model.get('geocode') === 'undefined' ||
                     model.get('geocode').lat == '' ||
@@ -498,20 +495,32 @@ define([
                 }
             }else{
                 // This is a change event
-                // Add changed cong to this.to_geocode collection
+                // So add changed cong to this.to_geocode collection
                 this.geocode_stats.get('to_geocode').add(model)
             }
         },
+        delay_next_geocode:function(){
+            var thiz = this
+            setTimeout(function(){
+                thiz.geocode()
+            },thiz.geocode_stats.get('usecs'))
+        },
         geocode:function(){
-            // TODO: Why does this stop geocoding before all congs are done being geocoded?
-            // This pauses calls to this.geocode() while geocoding one cong. Note that this.geocode()
-            //  calls itself recursively, so its recursive calls will continue geocoding the
-            //   remaining congs.
-            this.stopListening(this.geocode_stats.get('to_geocode'), 'add', this.geocode)
+            if (this.currently_geocoding > 0){
+                return;
+            }
+            this.currently_geocoding++;
+            console.log(this.currently_geocoding)
+            // This stops calls to this.geocode() until all congs in to_geocode are geocoded.
+            //  Note that this.geocode() calls itself recursively, so its recursive calls 
+            //  will continue geocoding the remaining congs.
+            this.stopListening(null, null, this.geocode)
             var thiz = this
             // Pick one cong out of the to_geocode collection
             if (this.geocode_stats.get('to_geocode').length > 0){
                 var cong = this.geocode_stats.get('to_geocode').at(0)
+            }else{
+                return;
             }
             // Format the address to geocode
             // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
@@ -537,11 +546,12 @@ define([
                             (cong.get('meeting_city') ? cong.get('meeting_city') : (cong.get('mailing_city') ? cong.get('mailing_city') : '')) + ', ' + 
                             (cong.get('meeting_state') ? cong.get('meeting_state') : (cong.get('mailing_state') ? cong.get('mailing_state') : '')) + ' ' + 
                             (cong.get('meeting_zip') ? cong.get('meeting_zip') : (cong.get('mailing_zip') ? cong.get('mailing_zip') : ''))
-
-            // console.log('Geocoding ' + address)
+            if (typeof cong.get('address') !== 'undefined' && cong.get('address') != ''){
+                address = cong.get('address')
+            }
+            
             this.geocoder.geocode( { 'address': address }, function(results, status) {
-                // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
-                //  or status == 'ZERO_RESULTS'
+                // TODO: Handle when Google returns multiple possible address matches (results.length > 1)
                 if (status == google.maps.GeocoderStatus.OK) {
                     var loc = results[0].geometry.location
                     // Save the model
@@ -552,56 +562,48 @@ define([
                         }
                     })
                     thiz.geocode_stats.get('to_geocode').remove(cong)
-                    // console.log('Geocoded address ' + address + ' at ' + loc.lat(), loc.lng())
                     thiz.geocode_stats.set('number_geocoded', thiz.geocode_stats.get('number_geocoded') + 1)
-                    // Wait a certain number of milleseconds, then geocode another cong
-                    // NOTE that this calls this function recursively until there are no more congs to geocode
-                    setTimeout(function(){
-                        if (thiz.geocode_stats.get('to_geocode').length == 0){
-                            // If there are no more congds to geocode, then start listening for more
-                            //  to be added in the future (note the call to stopListening() above)
-                            thiz.listenTo(thiz.geocode_stats.get('to_geocode'), 'add', thiz.geocode)
-                        }else{
-                            // Otherwise, continue geocoding the remaining congs
-                            thiz.geocode()
-                        }
-                    },thiz.geocode_stats.get('usecs'))
+                    thiz.currently_geocoding--;
+                    if (thiz.geocode_stats.get('to_geocode').length == 0){
+                        // If there are no more congs to geocode, then start listening for more
+                        //  to be added in the future.  Note the call to stopListening() above.
+                        thiz.listenTo(thiz.geocode_stats.get('to_geocode'), 'add', thiz.geocode)
+                    }else{
+                        // Otherwise, continue geocoding the remaining congs.
+                        // Wait a certain number of milliseconds, then geocode another cong.
+                        // NOTE that this calls this function recursively until there are no more congs to geocode.
+                        thiz.delay_next_geocode()
+                    }
                 }else{
-                    // === if we were sending the requests too fast, try this one again and increase the delay
-                    // Wait to avoid Google throttling the geocode requests (for there
-                    //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
                     if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
-                        // console.error('Over query limit, usecs='+thiz.stats.get('usecs'))
+                        // We were sending the requests too fast, so increase the delay and try again.
+                        // Wait to avoid Google throttling the geocode requests (for there being too many
+                        //  per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
                         thiz.geocode_stats.set('usecs', thiz.geocode_stats.get('usecs') + 10)
-                        setTimeout(function(){
-                            thiz.geocode()
-                        },thiz.geocode_stats.get('usecs'))
+                        thiz.currently_geocoding--;
+                        thiz.delay_next_geocode()
                     }else{
                         var reason  =   "Code "+status;
                         var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.geocode_stats.get('usecs') +'ms)';
                         console.log('Error: ' + msg)
-                        debugger;
-                        if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
-                            cong.get('mailing_city') != '' &&
-                            cong.get('mailing_state') !== 'PR'){
-                            // TODO: Try geocoding replacing the meeting_city with the mailing_city
-                        }else if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
-                            cong.get('mailing_state') == 'PR'){
-                            // TODO: Interestingly, the code attempts to geocode the original address
-                            //  multiple times with 'PR' located BEFORE the zip code.  I think that is
-                            //  because more than one of the event listeners above fires for this same
-                            //  cong.  So somehow we have to filter for that case and geocode this cong
-                            //  only once.
-                            debugger; 
-                            // TODO: We've got a Puerto Rico congregation, so need to put 'PR' after the zip
-                            //  for Google to geocode it correctly
-                            address = address.replace(' PR ', ' ') + ', PR'
-                            cong.set('address', address)
-                            cong.save({success:function(){
-                                setTimeout(function(){
-                                    thiz.geocode()
-                                },thiz.geocode_stats.get('usecs'))
-                            }})
+                        if (status == google.maps.GeocoderStatus.ZERO_RESULTS){
+                            if (cong.get('mailing_state') == 'PR'){
+                                // We've got a Puerto Rico congregation, so need to put 'PR' after the zip
+                                //  for Google to geocode it correctly
+                                address = address.replace(' PR ', ' ') + ' Puerto Rico'
+                                // And we need to correct one incorrectly written street number
+                                address = address.replace('7NE', '7 NE')
+                                // cong.save({success:thiz.delay_next_geocode})
+                                thiz.currently_geocoding--;
+                                cong.save({address:address}, {success:thiz.delay_next_geocode})
+                            }else if (cong.get('mailing_city') == 'Airdrie'){
+                                // TODO: Note this replacement is probably only correct for the OPC in Airdrie, AB,
+                                //  so we should filter for that particular congregation
+                                thiz.currently_geocoding--;
+                                cong.save({address:address.replace('Airdrie', 'Calgary')}, {success:thiz.delay_next_geocode})
+                            }else if (cong.get('mailing_city') != ''){
+                                // TODO: Try geocoding replacing the meeting_city with the mailing_city
+                            }
                         }
                     }
                 }
