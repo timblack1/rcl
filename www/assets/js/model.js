@@ -320,7 +320,6 @@ define([
             page_url:'', // The URL in the source's site
         },
         initialize: function(){
-            _.bindAll(this, 'geocode')
 //             // Make congs save themselves immediately when their attributes change
 //             //    to make Backgrid more useful
 //             Backbone.RelationalModel.prototype.initialize.apply(this, arguments);
@@ -328,12 +327,6 @@ define([
 //                 if (options && options.save === false) return;
 //                 model.save();
 //             });
-//             this.on('change:meeting_address1', this.geocode)
-//             this.on('change:meeting_address2', this.geocode)
-//             this.on('change:meeting_city', this.geocode)
-//             this.on('change:meeting_state', this.geocode)
-//             this.on('change:meeting_zip', this.geocode)
-//             this.stats = modelStore.geocode_stats
         },
         relations:[
              {
@@ -358,104 +351,7 @@ define([
                      includeInJSON:'_id'
                  }
              }
-        ],
-        test_address_for_numbers:function(addr){
-            return typeof addr !== 'undefined' && addr.search(/\d/) !== -1;
-        },
-        geocode:function(){
-            var now;
-            var thiz = this
-            // Don't permit geocoding this model multiple times simultaneously
-            if (_.contains(this.stats.get('currently_geocoding'), thiz)){
-                return;
-            }
-            
-            // Check to see if we are within the rate limit, and if we are free to geocode
-            now = new Date().getTime()
-            //console.log(now)
-            if ((now - this.stats.get('geocode_end_time')) > this.stats.get('usecs') &&
-                this.stats.get('flag') == 'idle'){
-                // console.log(thiz.get('name'))
-                // Set the flag which prevents other congs from being geocoded right now
-                this.stats.set('flag', 'running')
-                this.stats.get('currently_geocoding').push(thiz)
-                this.stats.set('number_to_geocode', this.stats.get('number_to_geocode') + 1)
-                // Format the address to geocode
-                // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
-                var address_line = ''
-                if (thiz.test_address_for_numbers(thiz.get('meeting_address1'))){
-                    address_line = thiz.get('meeting_address1')
-                } else if (thiz.test_address_for_numbers(thiz.get('meeting_address2'))){
-                    address_line = thiz.get('meeting_address2')
-                }else{
-                    address_line = thiz.get('meeting_address1')
-                }
-                // Do the same using mailing_adderss[1|2] if the meeting_address wasn't sufficient
-                if (address_line == '' || typeof address_line === 'undefined'){
-                    if (thiz.test_address_for_numbers(thiz.get('mailing_address1'))){
-                        address_line = thiz.get('mailing_address1')
-                    } else if (thiz.test_address_for_numbers(thiz.get('mailing_address2'))){
-                        address_line = thiz.get('mailing_address2')
-                    }else{
-                        address_line = thiz.get('mailing_address1')
-                    }
-                }
-                var address =   address_line + ', ' + 
-                                (thiz.get('meeting_city') ? thiz.get('meeting_city') : (thiz.get('mailing_city') ? thiz.get('mailing_city') : '')) + ', ' + 
-                                (thiz.get('meeting_state') ? thiz.get('meeting_state') : (thiz.get('mailing_state') ? thiz.get('mailing_state') : '')) + ' ' + 
-                                (thiz.get('meeting_zip') ? thiz.get('meeting_zip') : (thiz.get('mailing_zip') ? thiz.get('mailing_zip') : ''))
-
-                // console.log('Geocoding ' + address)
-                this.stats.get('geocoder').geocode( { 'address': address }, function(results, status) {
-                    // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
-                    //  or status == 'ZERO_RESULTS'
-                    if (status == google.maps.GeocoderStatus.OK) {
-                        var loc = results[0].geometry.location
-                        // Save the model
-                        thiz.save({
-                            geocode:{
-                                'lat': loc.lat(),
-                                'lng': loc.lng()
-                            }
-                        })
-                        // console.log('Geocoded address ' + address + ' at ' + loc.lat(), loc.lng())
-                        thiz.stats.set('number_geocoded', thiz.stats.get('number_geocoded') + 1)
-                        // Remove this cong from the list of those currently being geocoded
-                        var cg = thiz.stats.get('currently_geocoding')
-                        cg.splice(cg.indexOf(thiz), 1)
-                        // This line should prevent two delayed geocode requests from running simultaneously
-                        thiz.stats.set('geocode_end_time', now)
-                        // Set flag to indicate that it's ok to start geocoding another cong
-                        thiz.stats.set('flag', 'idle')
-                    }else{
-                        // === if we were sending the requests to fast, try this one again and increase the delay
-                        // Wait to avoid Google throttling the geocode requests (for there
-                        //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
-                        if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
-                            // console.error('Over query limit, usecs='+thiz.stats.get('usecs'))
-                            thiz.stats.set('usecs', thiz.stats.get('usecs') + 100);
-                            setTimeout(function(){
-                                thiz.geocode()
-                            },thiz.stats.get('usecs'))
-                        }else{
-                            var reason  =   "Code "+status;
-                            var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.stats.get('usecs')+'ms)';
-                            console.log('Error: ' + msg)
-                            if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
-                                thiz.get('mailing_city') != ''){
-                                // TODO: Try geocoding replacing the meeting_city with the mailing_city
-                            }
-                        }
-                    }
-                })
-            }else{
-                // Wait to avoid Google throttling the geocode requests (for there
-                //  being too many per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
-                setTimeout(function(){
-                    thiz.geocode()
-                },this.stats.get('usecs'))
-            }
-        }
+        ]
     })
     modelStore.Congs = CollectionBase.extend({
         model:modelStore.Cong,
@@ -476,6 +372,7 @@ define([
             this.listenTo(this.geocode_stats.get('to_geocode'), 'add', this.geocode)
             // Set integer to report how many congs we are currently geocoding
             this.currently_geocoding = 0
+            this.last_geocode_attempt = new Date()
         },
         test_address_for_numbers:function(addr){
             return typeof addr !== 'undefined' && addr.search(/\d/) !== -1;
@@ -491,12 +388,13 @@ define([
                     model.get('geocode').lat == '' ||
                     model.get('geocode').lng == '' ){
                     // Add new cong to this.to_geocode collection
-                    this.geocode_stats.get('to_geocode').add(model)
+                    this.geocode_stats.get('to_geocode').add(model, {merge: true})
                 }
             }else{
                 // This is a change event
-                // So add changed cong to this.to_geocode collection
-                this.geocode_stats.get('to_geocode').add(model)
+                // So add changed cong to this.to_geocode collection, merging the changed attributes if
+                //  the cong is already in the collection.
+                this.geocode_stats.get('to_geocode').add(model, {merge:true})
             }
         },
         delay_next_geocode:function(){
@@ -506,15 +404,11 @@ define([
             },thiz.geocode_stats.get('usecs'))
         },
         geocode:function(){
+            // This prevents two calls to this.geocode() from running at the same time.
             if (this.currently_geocoding > 0){
                 return;
             }
             this.currently_geocoding++;
-            console.log(this.currently_geocoding)
-            // This stops calls to this.geocode() until all congs in to_geocode are geocoded.
-            //  Note that this.geocode() calls itself recursively, so its recursive calls 
-            //  will continue geocoding the remaining congs.
-            this.stopListening(null, null, this.geocode)
             var thiz = this
             // Pick one cong out of the to_geocode collection
             if (this.geocode_stats.get('to_geocode').length > 0){
@@ -550,7 +444,15 @@ define([
                 address = cong.get('address')
             }
             
+            var now = new Date()
+            var time_difference = now.getTime() - this.last_geocode_attempt.getTime()
+            // This prevents running successive calls to geocode() closer than Google's API allows.
+            if (time_difference < this.geocode_stats.get('usecs')){
+                return;
+            }
             this.geocoder.geocode( { 'address': address }, function(results, status) {
+                var now = new Date()
+                thiz.last_geocode_attempt = now
                 // TODO: Handle when Google returns multiple possible address matches (results.length > 1)
                 if (status == google.maps.GeocoderStatus.OK) {
                     var loc = results[0].geometry.location
@@ -564,12 +466,8 @@ define([
                     thiz.geocode_stats.get('to_geocode').remove(cong)
                     thiz.geocode_stats.set('number_geocoded', thiz.geocode_stats.get('number_geocoded') + 1)
                     thiz.currently_geocoding--;
-                    if (thiz.geocode_stats.get('to_geocode').length == 0){
-                        // If there are no more congs to geocode, then start listening for more
-                        //  to be added in the future.  Note the call to stopListening() above.
-                        thiz.listenTo(thiz.geocode_stats.get('to_geocode'), 'add', thiz.geocode)
-                    }else{
-                        // Otherwise, continue geocoding the remaining congs.
+                    if (thiz.geocode_stats.get('to_geocode').length > 0){
+                        // Continue geocoding the remaining congs.
                         // Wait a certain number of milliseconds, then geocode another cong.
                         // NOTE that this calls this function recursively until there are no more congs to geocode.
                         thiz.delay_next_geocode()
@@ -579,7 +477,7 @@ define([
                         // We were sending the requests too fast, so increase the delay and try again.
                         // Wait to avoid Google throttling the geocode requests (for there being too many
                         //  per second, as indicated by the 'OVER_QUERY_LIMIT' error code)
-                        thiz.geocode_stats.set('usecs', thiz.geocode_stats.get('usecs') + 10)
+                        thiz.geocode_stats.set('usecs', thiz.geocode_stats.get('usecs') + 50)
                         thiz.currently_geocoding--;
                         thiz.delay_next_geocode()
                     }else{
@@ -593,7 +491,6 @@ define([
                                 address = address.replace(' PR ', ' ') + ' Puerto Rico'
                                 // And we need to correct one incorrectly written street number
                                 address = address.replace('7NE', '7 NE')
-                                // cong.save({success:thiz.delay_next_geocode})
                                 thiz.currently_geocoding--;
                                 cong.save({address:address}, {success:thiz.delay_next_geocode})
                             }else if (cong.get('mailing_city') == 'Airdrie'){
