@@ -75,30 +75,16 @@ define([
                 var north_lat = north_east.lat();
                 var south_lat = south_west.lat();
     
-                // TODO: Modify this to filter congs in hoodie's local store by the specified bounds
-                // Send AJAX call to geocouch containing bounds within which congregations are found
-                // Geocouch uses GeoJSON coordinates, which are lower left, then upper right, which is the same
-                //  order Google Maps uses
-                $.get('http://'+config.domain+':'+config.port+'/'+config.db_name+'/_design/rcl/_spatial/points?bbox='+
-                        south_lat+','+west_lng+','+north_lat+','+east_lng,
-                    function(data, textStatus, jqXHR){
-                        if (data !== ''){
-                            var congs = eval('('+data+')')['rows'];
-                            if (typeof congs !== 'undefined' && congs.length > 0){
-                                var ids = _.pluck(congs,'id')
-                                thiz.collection.db = {}
-                                thiz.collection.db.keys = ids
-                                // Switch view to get arbitrary ids
-                                thiz.collection.db.view = 'by_id'
-                                // Fetch the congs, triggering the views to display that collection
-                                thiz.collection.fetch({
-                                    include_docs:true,
-                                    reset:true
-                                })
-                            }
-                        }
-                    }
-                )            
+                // Filter congs in hoodie's local store by the specified bounds
+                var congs_in_bounds = thiz.collection.filter(function(cong){
+                    var g = cong.get('geocode')
+                    return (typeof g !== 'undefined' && 
+                            g.lat <= north_lat && 
+                            g.lat >= south_lat && 
+                            g.lng >= west_lng && 
+                            g.lng <= east_lng)
+                })
+                thiz.collection.reset(congs_in_bounds)
             },
             update_map:function(){
                 // When the map is panned or otherwise moved,
@@ -114,7 +100,7 @@ define([
                 
                 var thiz = this
                 // Remove markers that are not in the new set of congs returned
-                _.each(_.difference(_.pluck(thiz.markers, 'couch_id'), thiz.collection.pluck('_id')), function(id){
+                _.each(_.difference(_.pluck(thiz.markers, 'couch_id'), thiz.collection.pluck('id')), function(id){
                     var marker = _.findWhere(thiz.markers, {couch_id:id})
                     // Remove marker from the list of markers
                     thiz.markers = _.without(thiz.markers, marker)
@@ -122,10 +108,10 @@ define([
                     marker.setMap(null)
                 })
                 // Add new congs to map
-                _.each(_.difference(thiz.collection.pluck('_id'), _.pluck(thiz.markers, 'couch_id')), function(id){
+                _.each(_.difference(thiz.collection.pluck('id'), _.pluck(thiz.markers, 'couch_id')), function(id){
                     var cong = thiz.collection.get(id)
                     // Get cong's latlng
-                    var coords = cong.get('loc')
+                    var coords = cong.get('geocode')
                     // This is the case we want to handle.
                     var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
                     // Here is where we actually plot the congs on the map
@@ -177,7 +163,7 @@ define([
                             // console.log("Geolocation is not supported by this browser.");
                         }
                     });
-                    marker.couch_id = cong.get('_id')
+                    marker.couch_id = cong.get('id')
                     // TODO: Make it so the city entered has a different color than results 
                     //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
                     
