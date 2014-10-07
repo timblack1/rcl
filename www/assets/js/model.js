@@ -503,6 +503,7 @@ define([
             }
         },
         geocode:function(){
+            // TODO: Why does this stop geocoding before all congs are done being geocoded?
             // This pauses calls to this.geocode() while geocoding one cong. Note that this.geocode()
             //  calls itself recursively, so its recursive calls will continue geocoding the
             //   remaining congs.
@@ -579,9 +580,28 @@ define([
                         var reason  =   "Code "+status;
                         var msg     = 'address="' + address + '"; error="' +reason+ '"; (usecs='+thiz.geocode_stats.get('usecs') +'ms)';
                         console.log('Error: ' + msg)
+                        debugger;
                         if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
-                            cong.get('mailing_city') != ''){
+                            cong.get('mailing_city') != '' &&
+                            cong.get('mailing_state') !== 'PR'){
                             // TODO: Try geocoding replacing the meeting_city with the mailing_city
+                        }else if (status == google.maps.GeocoderStatus.ZERO_RESULTS &&
+                            cong.get('mailing_state') == 'PR'){
+                            // TODO: Interestingly, the code attempts to geocode the original address
+                            //  multiple times with 'PR' located BEFORE the zip code.  I think that is
+                            //  because more than one of the event listeners above fires for this same
+                            //  cong.  So somehow we have to filter for that case and geocode this cong
+                            //  only once.
+                            debugger; 
+                            // TODO: We've got a Puerto Rico congregation, so need to put 'PR' after the zip
+                            //  for Google to geocode it correctly
+                            address = address.replace(' PR ', ' ') + ', PR'
+                            cong.set('address', address)
+                            cong.save({success:function(){
+                                setTimeout(function(){
+                                    thiz.geocode()
+                                },thiz.geocode_stats.get('usecs'))
+                            }})
                         }
                     }
                 }
