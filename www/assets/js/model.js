@@ -498,6 +498,11 @@ define([
                                 //  so we should filter for that particular congregation
                                 thiz.currently_geocoding--;
                                 cong.save({address:address.replace('Airdrie', 'Calgary')}, {success:thiz.delay_next_geocode})
+                            }else if (cong.get('mailing_city') == 'Sterling' && cong.get('mailing_state') == 'VA'){
+                                // TODO: Note this replacement is probably only correct for the OPC in Sterling, VA,
+                                //  so we should filter for that particular congregation
+                                thiz.currently_geocoding--;
+                                cong.save({address:address.replace('Algonkian Pkwy', 'State Route 1582')}, {success:thiz.delay_next_geocode})
                             }else if (cong.get('mailing_city') != ''){
                                 // TODO: Try geocoding replacing the meeting_city with the mailing_city
                             }
