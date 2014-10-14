@@ -145,7 +145,7 @@ define([
             this.directories.fetch()
             this.congs = new model.Congs
             this.congs.fetch()
-            // TODO: Render stats view here
+            // Render stats view here
             this.geocode_stats_view = new GeocodeStatsView({
                 collection:this.congs,
                 el:this.$('.geocode_stats')
@@ -201,7 +201,7 @@ define([
                                 // Only join if it is of type = array
                                 new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
                             })
-                            new_cong.contact_email = !new_cong.hasOwnProperty('contact_email') ?
+                            new_cong.contact_email = (new_cong.hasOwnProperty('contact_email') && typeof new_cong.contact_email !== 'undefined') ?
                                 new_cong.contact_email.replace('mailto:','') : ''
                             // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
                             //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
