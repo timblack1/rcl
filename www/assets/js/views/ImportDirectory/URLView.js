@@ -286,9 +286,7 @@ define([
                 this.model.set('pagetype', 'html')
                 // Determine what type of directory this is
                 // batchgeo
-                if (this.uses_batch_geo(data) === true && 
-                    typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
-                    typeof this.model.get('get_json') == 'undefined'){
+                if (this.uses_batch_geo(data) === true){
                     this.process_batch_geo(data)
                 }else{
                     // TODO: If the other form fields are empty,
@@ -389,6 +387,8 @@ define([
                     }else{
                         // URL is valid, so
                         // Get HTML from URL and save it in the model
+                        // TODO: This doesn't fire for http://www.pcaac.org/church-search/
+                        console.log('Start here')
                         hoodie.task.start('http-get', { url: page_url }).done(function(task){
                             // If we have not already created a directory on this page, create it; else get the existing directory
                             thiz.model = thiz.directories.findWhere({url:page_url})
