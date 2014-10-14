@@ -225,6 +225,7 @@ define([
                             }
                             // Associate this cong with its cgroup
                             cong_model.get('cgroups').add(thiz.cgroup)
+                            cong_model.set('denomination_abbr', thiz.cgroup.get('abbreviation'))
                             cong_model.save()
                         })
                     }})                    
