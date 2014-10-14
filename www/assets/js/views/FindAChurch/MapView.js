@@ -84,7 +84,7 @@ define([
                 var south_lat = south_west.lat();
     
                 // Filter congs in hoodie's local store by the specified bounds
-                var congs_in_bounds = thiz.collection.filter(function(cong){
+                var congs_in_bounds = thiz.collection.filter(function get_congs_in_bounds(cong){
                     var g = cong.get('geocode')
                     return (typeof g !== 'undefined' && 
                             g.lat <= north_lat && 
