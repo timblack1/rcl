@@ -390,6 +390,7 @@ define([
                         // TODO: This doesn't fire for http://www.pcaac.org/church-search/
                         console.log('Start here')
                         hoodie.task.start('http-get', { url: page_url }).done(function(task){
+                            console.log("Hey, maybe it's working now!")
                             // If we have not already created a directory on this page, create it; else get the existing directory
                             thiz.model = thiz.directories.findWhere({url:page_url})
                             if (!thiz.hasOwnProperty('model')){
