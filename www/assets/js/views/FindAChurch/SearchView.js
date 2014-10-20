@@ -1,9 +1,10 @@
 define([
         'config',
+        'backbone',
         'mustache',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Mustache, template){
+        function(config, Backbone, Mustache, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -113,10 +114,11 @@ define([
 			}else{
 				return true
 			}
-},		
+		},
 		set_distance_unit_preference:function(){
 			//  Set preference here
-			localStorage['units_of_measurement'] = this.$('.units').val();		
+            // TODO: Is this the right name for the preference, or should it be 'distance_units'?
+			localStorage['units_of_measurement'] = this.$('.units').val();
 			
 		},
         location_keyup:function(event){

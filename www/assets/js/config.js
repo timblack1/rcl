@@ -1,29 +1,18 @@
 define(
    [
     'underscore',
-    'jquery',
-    'jquery_couch'
+    'jquery'
     ],
     function(_, $){
-       // Dynamically get the database name
-       // TODO: This won't work anymore if we use vhosts
        // TODO: Run unit tests on test copy of the database
-       var db_name = window.location.pathname.split('/')[1],
-           db = $.couch.db(db_name),
-           run_jasmine_tests = false,
+       var run_jasmine_tests = false,
            // Select view to load at root URL
            //default_view = 'find_a_church_view',
            default_view = 'import_directory_view',
            // After running tests,
            //   Display this in the address bar: (to facilitate manually refreshing the page by
            //   hitting F5)
-           test_home_address = 'index.html',
-           // Run locally
-           port = '5984',
-           domain = 'localhost';
-           // Or run remotely
-//            port = '80',
-//            domain = 'arwd.iriscouch.com';
+           test_home_address = 'index.html';
 
         // TODO: Move these functions into a library
        function render_to_id(obj, id){
@@ -119,10 +108,6 @@ define(
         
 
        return {
-           db_name:db_name,
-           db:db,
-           port:port,
-           domain:domain,
            render_to_id:render_to_id,
            run_jasmine_tests:run_jasmine_tests,
            test_home_address:test_home_address,
