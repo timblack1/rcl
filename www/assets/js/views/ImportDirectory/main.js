@@ -10,12 +10,8 @@ define(
 
         return Backbone.View.extend({
             initialize : function(){
-                db = config.db
                 window.wgxpath.install()
                 
-                // Set up browser changes listener to watch for and handle Node changes
-                //  listener's response
-                var changes = db.changes();
                 this.template = template;
                 // Register necessary subviews
                 this.URLView = URLView;

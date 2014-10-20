@@ -20,6 +20,7 @@ define([
                 
                 // Create congs collection
                 this.congs_coll = new model.Congs()
+                this.congs_coll.fetch();
                 // Create search_params model
                 var SearchParams = Backbone.Model.extend()
                 var search_params = new SearchParams()

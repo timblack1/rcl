@@ -4,30 +4,30 @@ define([
         'mustache',
         'text!views/ImportDirectory/URL.html',
         './DirTypeView',
+        './CGroupView',
+        './GeocodeStatsView',
         'typeahead'
         ], 
-        function(config, model, Mustache, template, DirTypeView){
+        function(config, model, Mustache, template, DirTypeView, CGroupView, GeocodeStatsView){
 
     return Backbone.View.extend({
         initialize:function(){
             // Make it easy to reference this object in event handlers
-            _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_html', 'got_batchgeo_map_html', 'got_json',
-                'get_church_dir_from_url', 'get_cgroup', 
+            _.bindAll(this, 'changes_listeners', 'handle_404', 'got_url_data', 'got_batchgeo_map_html', 'got_json',
+                'get_church_dir_from_url', 'notify_user_of_bad_url', 'get_cgroup', 
                 'save_cgroup_and_dir', 'save_dir', 'parse_json', 'process_batch_geo', 'get_batchgeo_json', 
-                'batchgeo_parse_json')
-            if (typeof window.app.geocoder == 'undefined'){
-                window.app.geocoder = new google.maps.Geocoder();
-            }
+                'batchgeo_parse_json', 'report_url_is_valid', 'got_importio_auth',
+                'importio_drop_target_dragover', 'importio_drop_target_drop', 'clicked_intial_radios');
         },
         render: function(){
-            $('#steps').html(Mustache.render(template))
+            $('#steps').html(Mustache.render(template));
             this.delegateEvents()
             // Render typeahead for URL textbox
             // Render typeahead
             // TODO: Consider filtering and sorting by levenshtein distance
             var substringMatcher = function(strs) {
               return function findMatches(q, cb) {
-                var matches, substringRegex;
+                var matches, substrRegex;
 
                 // an array that will be populated with substring matches
                 matches = [];
@@ -58,92 +58,275 @@ define([
             },{
                 name: 'directories',
                 displayKey: 'value',
-                source: substringMatcher(this.directories.each(function(mod){return mod.get('url')}))
+                source: substringMatcher(this.directories.pluck('url'))
             })
+            // On option selection event, get URL data
+            this.$('#url').on('typeahead:selected', this.get_church_dir_from_url)
         },
         events: {
-            'keyup #url':'get_church_dir_from_url'
+            'keyup #url':'get_church_dir_from_url',
+            'change .user_guid': 'got_importio_auth',
+            'change .api_key': 'got_importio_auth',
+            'dragover .importio_drop_target': 'importio_drop_target_dragover',
+            'dragenter .importio_drop_target': 'importio_drop_target_dragover',
+            'dragleave .importio_drop_target': 'importio_drop_target_dragleave',
+            'dragexit .importio_drop_target': 'importio_drop_target_dragleave',
+            'drop .importio_drop_target': 'importio_drop_target_drop',
+            'click .initial_radios': 'clicked_intial_radios',
+            'change .cgroup_name': 'associate_cgroup',
+            'keyup .cgroup_name': 'associate_cgroup'
         },
         changes_listeners:function(){
-            // These are the main cases - different types of changes that
-            //  need to be handled
+            // Different types of changes that need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
-                'change:get_url_html':this.got_url_html,
                 'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
+        },
+        clicked_intial_radios:function(){
+            // Display whichever set of form elements fit with the radio button that was clicked
+            var checked_val = this.$('.initial_radios input[name=optionsRadios]:checked').val()
+            if (checked_val == 'importio_json'){
+                this.$('.url-group').removeClass('show').addClass('hidden')
+                this.$('.importio-group').removeClass('hidden').addClass('show')
+                this.$('.cgroup_div').hide(1000)
+            }else if (checked_val == 'url_or_guid'){
+                this.$('.importio-group').removeClass('show').addClass('hidden')
+                this.$('.url-group').removeClass('hidden').addClass('show')
+                this.$('.cgroup_div').hide(1000)
+            }
         },
         handle_404:function(model, value, options){
             // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
             //  Instead after the delay, notify the user with
             //  "Is that URL correct?  It returns a '404 page not found' error."
         },
-        got_url_html:function(model, value, options){
-            // Handle directory's first page of content
-            if (this.model.get('url_html') &&
-                this.model.get('get_url_html') == 'gotten'){
-                var html = this.model.get('url_html')
-                
-                // Determine whether this URL's data is HTML, RSS, KML, or JSON, or a 404 page
-                
-                // TODO: Don't load the new view yet if the status code returned from the URL is a 404;
-                //  Instead after the delay, notify the user with
-                //  "Is that URL correct?  It returns a '404 page not found' error."
-                if (this.model.get('error_code')){
-                    var msg = 'We got error code ' + this.model.get('error_code') + ' from this URL: ' + this.model.get('url')
-                    console.log(msg)
-                    // TODO: Report this to the user, including what error code we got
+        importio_drop_target_dragover:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            this.$('.importio_drop_target').addClass('dragover')
+        },
+        importio_drop_target_dragleave:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            this.$('.importio_drop_target').removeClass('dragover')
+        },
+        importio_drop_target_drop:function(event){
+            event.stopPropagation()
+            event.preventDefault()
+            // Report provisional status to user
+            var delay = 6000
+            this.$('.importio_drop_target')
+                .removeClass('dragover')
+                .addClass('dropped', 200)
+                .text('Got the file!')
+                .fadeOut(delay)
+            var thiz = this
+            window.setTimeout(function(){
+                thiz.$('.importio_drop_target')
+                    .removeClass('dropped')
+                    .text('Drop JSON file here')
+                    .fadeIn(2000)
+                // TODO: Fire displaying next form fields here as needed
+                // TODO: Get the directory's identity from the cong URLs
+                // TODO: Display the form to edit the directory's name
+                // TODO: Display a stats view to notify the user of the following stats:
+                //  running total: X congs have been imported successfully
+                //  event: All congs' data have been imported
+                //  running total: X congs have been geocoded successfully
+                //  event: All congs' data have been geocoded successfully
+                //  event: X congs failed geocoding (offer link to view the details)
+            }, delay)
+            // Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
+            this.cgroups = new model.CGroups
+            this.cgroups.fetch()
+            this.directories = new model.Directories
+            this.directories.fetch()
+            this.congs = new model.Congs
+            this.congs.fetch()
+            // Render stats view here
+            this.geocode_stats_view = new GeocodeStatsView({
+                collection:this.congs,
+                el:this.$('.geocode_stats')
+            })
+            this.geocode_stats_view.render()
+            this.geocode_stats_view.$el.removeClass('hidden').hide().show(1000)
+            // Get file contents here
+            var dt = event.originalEvent.dataTransfer;
+            var files = dt.files;
+            var reader = new FileReader()
+            reader.addEventListener('load', function loadEnd(){
+                json = reader.result
+                var congs_obj = JSON.parse(json)
+                // Determine if this import.io data source is already in a directory in the database
+                var importio_guid = congs_obj.data[0]._source[0]
+                thiz.dir = thiz.directories.where({importio_guid:importio_guid})[0]
+                if (!thiz.hasOwnProperty('dir')){
+                    // Create new dir
+                    thiz.dir = thiz.directories.create({
+                        importio_guid:importio_guid
+                    })
                 }
-                
-                if (html.indexOf("</html>") > -1){
-                    console.log('We got HTML')
-                    this.model.set('pagetype', 'html')
-                    // Determine what type of directory this is
-                    // batchgeo
-                    if (this.uses_batch_geo(html) === true && 
-                        typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
-                        typeof this.model.get('get_json') == 'undefined'){
-                        this.process_batch_geo(html)
-                    }else{
-                        // TODO: If the other form fields are empty,
-                        //     auto-populate them with info from this
-                        //     directory's cgroup to help the user
-                        // TODO: Maybe only display those fields after
-                        //     the URL is filled in
-                        //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+                // TODO: Does this fetch the related cgroup correctly?  Or do I need to call 
+                //  thiz.dir.get('cgroup').fetch() as someone recommended on StackOverflow?
+                $.when(thiz.dir.fetchRelated('cgroup')).done(function done_fetching_cgroup(){
+                    // Handle case where this cgroup doesn't exist yet
+                    thiz.cgroup = thiz.dir.get('cgroup');
+                    if (!thiz.hasOwnProperty('cgroup') || thiz.cgroup == null){
+                        thiz.cgroup = thiz.cgroups.create({})
+                        // Associate this cgroup with this directory
+                        thiz.dir.set('cgroup', thiz.cgroup)
+                        thiz.dir.save()
                     }
+                    // Create the CGroupView
+                    thiz.cgroup_view = new CGroupView({
+                        model:thiz.cgroup,
+                        el:thiz.$('.cgroup_div')
+                    })
+                    // Display the associated cgroup for the user to edit
+                    thiz.cgroup_view.render()
+                    thiz.cgroup_view.$el.hide().show(2000)
+                    // Fetch congs to compare them with the new cong data
+                    thiz.congs.fetch({success:function(){
+                        // Iterate through list of new cong data
+                        // Note: The attribute which contains the list of cong data objects is called congs_obj.data
+                        _.each(congs_obj.data, function(cong, index, list){
+                            // Note: Most attributes contain lists.
+                            // So if an attribute is a list is longer than 1 item, join the items together with <br />
+                            var new_cong = {}
+                            var cong_template = new model.Cong
+                            // Import only the fields we want in our model
+                            _.each(cong_template.default_attributes, function handle_attribute(value, key){
+                                // Only join if it is of type = array
+                                new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
+                            })
+                            new_cong.contact_email = (new_cong.hasOwnProperty('contact_email') && typeof new_cong.contact_email !== 'undefined') ?
+                                new_cong.contact_email.replace('mailto:','') : ''
+                            // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+                            //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
+                            new_cong.page_url = cong._pageUrl
+                            // Get cong's database id from OPC.org
+                            if (new_cong.page_url.indexOf('opc.org') !== -1){
+                                new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
+                                // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
+                                //  character of each word.
+                                new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+                            }
+                            // Write this cong to a Backbone_hoodie model, and save to database
+                            // Find out whether this model exists in the congs collection
+                            var cong_model = thiz.congs.findWhere({page_url:new_cong.page_url})
+                            if (typeof cong_model !== 'undefined'){
+                                // Cong already exists in the collection, so write new attributes
+                                cong_model.save(new_cong)
+                            }else{
+                                // Cong didn't exist in the collection, so create a new one
+                                var cong_model = thiz.congs.create(new_cong)
+                            }
+                            // Associate this cong with its cgroup
+                            cong_model.get('cgroups').add(thiz.cgroup)
+                            cong_model.set('denomination_abbr', thiz.cgroup.get('abbreviation'))
+                            cong_model.save()
+                        })
+                    }})                    
+                })
+            })
+            reader.readAsText(files[0])
+        },
+        got_importio_auth:function(){
+            // Check to see if both form fields have  been filled
+            var user_guid = this.$('.user_guid').val()
+            var api_key = this.$('.api_key').val()
+            if (user_guid.length > 0 && api_key.length > 0){
+                // Configure the library
+                importio.init({
+                    "auth": {
+                        "userGuid": user_guid,
+                        "apiKey": api_key
+                    },
+                    "host": "import.io"
+                });
+                // Execute the query
+                var query = {"input":{"input":"query"},"connectorGuids":[this.$('#url').val()]};
+                importio.query(query, {
+                  "data": function(data) {
+                    //console.log("Data received", data);
+                  }
+                });
+                // TODO: Get the connector's metadata
+//                 var auth_data = {
+//                     "auth": {
+//                         "userGuid": user_guid,
+//                         "apiKey": api_key
+//                     }
+//                 }
+                var auth_data = {
+                    "userGuid": user_guid,
+                    "apiKey": api_key
                 }
-                else if (html.indexOf("</rss>") > -1){
-                    console.log('We got RSS')
-                    // TODO: Display the right form controls for an RSS feed
-                    this.model.set('pagetype', 'rss')
-                }
-                else if (html.indexOf("<kml") > -1){
-                    console.log('We got KML')
-                    // TODO: Display the right form controls for a KML feed
-                    this.model.set('pagetype', 'kml')
-                }
-                else if (html.indexOf("per = {") === 0){
-                    // batchgeo format
-                    console.log('We got batchgeo JSON')
-                    this.model.set('pagetype', 'batchgeo_json')
-                }
-                else if (html.indexOf("{") === 0){
-                    console.log('We got JSON')
-                    this.model.set('pagetype', 'json')
-                    // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
-                    this.parse_json()
-                }
-                else { // We got an error code
-                    console.log('We got an error code from this URL:' + this.model.get('url'))
-                    // TODO: Report this to the user, including what error code we got
-                }
-                this.model.set('get_url_html', '')
-                // TODO: Is this the right place to save the dir?
-                //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
-                //this.model.save({_id:this.model.get('_id')})
+                // TODO: It seems I'd have to get the cookies right to authorize this request.
+                //  Here is info on how to get it right:  http://blog.import.io/tech-blog/download-data-over-the-api
+                $.get('https://api.import.io/store/connector/' + this.$('#url').val(), auth_data, function(data){
+                    // Get the _attachment/snapshot
+                    $.get('https://api.import.io/store/connector/' + this.$('#url').val() + 
+                        '/_attachment/snapshot/' + data.snapshot, auth_data, function(data_set){
+                            console.log('data_set: ', data_set)
+                        })
+                })
             }
+        },
+        got_url_data:function(){
+            // Handle directory's first page of content
+            var data = this.model.get('url_data')
+
+            // Determine whether this URL's data is HTML, RSS, KML, or JSON
+
+            if (data.indexOf("</html>") > -1 || data.indexOf("</HTML>") > -1){
+                console.log('We got HTML')
+                this.model.set('pagetype', 'html')
+                // Determine what type of directory this is
+                // batchgeo
+                if (this.uses_batch_geo(data) === true && 
+                    typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
+                    typeof this.model.get('get_json') == 'undefined'){
+                    this.process_batch_geo(data)
+                }else{
+                    // TODO: If the other form fields are empty,
+                    //     auto-populate them with info from this
+                    //     directory's cgroup to help the user
+                    // TODO: Maybe only display those fields after
+                    //     the URL is filled in
+                    //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+                }
+            }
+            else if (data.indexOf("</rss>") > -1){
+                console.log('We got RSS')
+                // TODO: Display the right form controls for an RSS feed
+                this.model.set('pagetype', 'rss')
+            }
+            else if (data.indexOf("<kml") > -1){
+                console.log('We got KML')
+                // TODO: Display the right form controls for a KML feed
+                this.model.set('pagetype', 'kml')
+            }
+            else if (data.indexOf("per = {") === 0){
+                // batchgeo format
+                console.log('We got batchgeo JSON')
+                this.model.set('pagetype', 'batchgeo_json')
+            }
+            else if (data.indexOf("{") === 0){
+                console.log('We got JSON')
+                this.model.set('pagetype', 'json')
+                // TODO: The RPCNA's data is in a JSON file in RCL format already at http://reformedpresbyterian.org/congregations/json
+                this.parse_json()
+            }
+            else { // We got an error code
+                // TODO: Report this to the user, including what error code we got
+                this.notify_user_of_bad_url('We got an error code from this URL:' + this.model.get('url'))
+            }
+            // TODO: Is this the right place to save the dir?
+            //    https://blueprints.launchpad.net/reformedchurcheslocator/+spec/decide-whether-to-save-dir
+            //this.model.save({_id:this.model.get('_id')})
         },
         got_batchgeo_map_html:function(model, value, options){
             // Handle batchgeo map page
@@ -172,7 +355,7 @@ define([
         })(),
         get_church_dir_from_url:function(event){
             var thiz = this
-            // Delay this to run after typing has stopped for 3 seconds, so we don't
+            // Delay this to run after typing has stopped for a bit, so we don't
             //  send too many requests
             this.delay(function(){
                 
@@ -190,84 +373,78 @@ define([
                                 Arbitrary RSS or JSON > display field matching interface
                     */
                 
-                // If we have not already created a directory on this page, create it; else get the existing directory
-                // If the cgroup's associated directory exists in the db, get it
                 var page_url = thiz.$('#url').val()
-                thiz.model = thiz.directories.findWhere({url:page_url})
-                if (typeof(thiz.model) === 'undefined'){
-                    // The dir hasn't been created yet, so create it
-                    thiz.model = new model.Directory({url:page_url})
+                // TODO: Test for whether this is an import.io connector GUID
+                if (page_url.indexOf('http') === -1 && page_url.length === 36){
+                    // This is an import.io connector GUID, so display the form elements for entering 
+                    //  login info
+                    thiz.$('.importio_auth_div').show(1000)
+                    thiz.report_url_is_valid()
+                }else{
+                    // Verify that the URL is in a correct format
+                    var myRegExp =/^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]+-?)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:\/[^\s]*)?$/i;
+                    if (!myRegExp.test(page_url)){
+                        // URL is not valid, so don't create the dir
+                        thiz.notify_user_of_bad_url('This GUID or URL is not valid')
+                    }else{
+                        // URL is valid, so
+                        // Get HTML from URL and save it in the model
+                        hoodie.task.start('http-get', { url: page_url }).done(function(task){
+                            // If we have not already created a directory on this page, create it; else get the existing directory
+                            thiz.model = thiz.directories.findWhere({url:page_url})
+                            if (!thiz.hasOwnProperty('model')){
+                                // The dir hasn't been created yet, so create it
+                                thiz.model = new model.Directory({url:page_url})
+                            }
+                            // Create changes listeners on this.model
+                            thiz.changes_listeners()
+                            // TODO: If the cgroup's associated directory exists in the db, get it
+                            thiz.get_cgroup()
+                            // Add url_html to thiz.model, and save thiz.model
+                            thiz.model.set('url_data', task.data)
+                            thiz.model.save()
+                            thiz.report_url_is_valid()
+                            // Trigger next form elements to display
+                            console.log('Start here')
+                            thiz.got_url_data();
+                            // TODO: If the other form fields are empty,
+                             //     auto-populate them with info from this
+                             //     directory's cgroup to help the user
+                             // TODO: Maybe only display those fields after
+                             //     the URL is filled in
+                             //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
+                        }).fail(function(error){
+                            thiz.notify_user_of_bad_url('Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.')
+                        })
+                    }                    
                 }
-                // Create changes listeners on this.model
-                thiz.changes_listeners()
-//                 thiz.get_cgroup()
-                // TODO: Start here.  I can't figure out how to determine that the task has completed.
-                console.log('Start here.')
-                function handle_storage(e) {
-                  if (!e) { e = window.event; }
-                  console.log(e)
-                }
-                if (window.addEventListener) {
-                  window.addEventListener("storage", handle_storage, false);
-                } else {
-                  window.attachEvent("onstorage", handle_storage);
-                };
-                $(window).bind('storage', function (e) {
-                    alert('storage changed');
-                });
-                hoodie.task('geturlhtml').on('start', function(db, doc){ console.log(doc, 'start'); })
-                hoodie.task('geturlhtml').on('abort', function(db, doc){ console.log(doc, 'abort'); })
-                hoodie.task('geturlhtml').on('error', function(db, doc){ console.log(doc, 'error'); })
-                hoodie.task('geturlhtml').on('success', function(db, doc){ console.log(doc, 'success'); })
-                hoodie.task('geturlhtml').on('change', function(db, doc){ console.log(doc, 'change'); })
-                hoodie.store.on('change', function(ev, doc){ console.log(ev, doc)})
-                hoodie.task('geturlhtml').on('geturlhtml:success', function(task, options){
-                    console.log(task, options)
-                    console.log('Task completed!')
-                })
-                var task = hoodie.task.start('geturlhtml', {
-                  url: page_url
-                })
-                task.done(function(task){
-                    // Add url_html to thiz.model, and save thiz.model
-                    thiz.model.set('url_html', task.html)
-                    thiz.model.save()
-                    console.log(task.html, task.status_code)
-                    console.log('Logged task to console.')
-                }).fail(function(error){
-                    console.log("Couldn't get the url_html from this URL: ", error)
-                })
-//                 hoodie.get_url_html(page_url).then(function(task){
-//                     // TODO: Add url_html to thiz.model, and save thiz.model
-//                     thiz.model.set('url_html', task.html)
-//                     thiz.model.save()
-//                     console.log(task.html, task.status_code)
-//                     console.log('Logged task to console.')
-//                 },function(error){
-//                     console.log("Couldn't get the url_html from this URL: ", error)
-//                 })
-//                 thiz.model.set('get_url_html', 'requested')
-//                 thiz.model.save()
-                // TODO: Don't create the dir if the URL is not valid.
-                //  Maybe mark the dir's URL as invalid in the node.js script (by
-                //  checking for a 404 response), and/or
-                //  just delete the dir from node.js in an asynchronous cleanup task.
-                // We wait until later to set get_url_html = 'requested', so as not 
-                //  to fire that request event twice
-                // TODO: If the other form fields are empty,
-                 //     auto-populate them with info from this
-                 //     directory's cgroup to help the user
-                 // TODO: Maybe only display those fields after
-                 //     the URL is filled in
-                 //     https://blueprints.launchpad.net/reformedchurcheslocator/+spec/display-cgroup-name-and-abbr-fields
-
-            }, 3000)
+            }, 500)
+        },
+        report_url_is_valid:function(){
+            // Report that this URL is valid
+            this.$('.help-block')
+                .text('')
+                .fadeOut(2000)
+                .removeClass('text-danger')
+            this.$('.url-group')
+                .removeClass('has-error')
+                .addClass('has-success has-feedback');
+        },
+        notify_user_of_bad_url:function(msg){
+            // Notify the user that we got a 404
+            this.$('.url-group')
+                .removeClass('has-success')
+                .addClass('has-error has-feedback');
+            this.$('.help-block')
+                .addClass('text-danger')
+                .text(msg)
+                .fadeIn(2000)
         },
         get_cgroup:function(){
-            console.log('Start here for hoodie integration')
             var thiz = this
-            // Reset status flag so the status messages will display
-            this.model.set('get_state_url_html', '')
+            this.$('.cgroup_div').removeClass('hidden').hide().show(2000)
+            this.$('.cgroup_name').focus()
+            console.log('Start here for hoodie integration')
             var cgroup_name = $('#cgroup_name').val()
             var abbr = $('#abbreviation').val()
             // Don't do anything if the CGroup info isn't entered yet
@@ -359,8 +536,12 @@ define([
         },
         parse_json:function(){
             var thiz = this
-            var json = this.model.get('url_html')
+            var json = this.model.get('url_data')
             // console.log(json)
+            // If it starts with {"generated": then it's an import.io JSON file
+            if (json.indexOf('{"generated":') === 0){
+                // TODO: Parse import.io JSON here
+            }
             // TODO: This handles the RPCNA data's current format, which does not yet
             //  perfectly match the RCL format.  So put this in a conditional if(){} block 
             //  to test if this is a JSON feed that has this format: {[]} (no "docs")
@@ -433,7 +614,7 @@ define([
                 if (typeof thiz.usecs == 'undefined'){
                     thiz.usecs = 100
                 }
-                if (typeof thiz.geocode_end_time !== 'undefined' &&
+                if ((typeof thiz.geocode_end_time !== 'undefined') &&
                     (now - thiz.geocode_end_time) > thiz.usecs){
                     // This line should prevent two delayed geocode requests from running simultaneously
                     thiz.geocode_end_time = now
@@ -708,3 +889,5 @@ define([
         }
     });
 });
+
+

@@ -1,14 +1,50 @@
-<h2>Step 1:  Please enter the URL of the church directory page or data (RSS, JSON) feed</h2>
-<input type='text' name='url' id='url' class='typeahead' placeholder='Enter directory URL' value='http://opc.org/locator.html'/>
-<div id='rss_feed' style='display:none'>
-    <h2>RSS feed - Does the data below look correct?</h2>
-    <div id='rss_data_formatted'></div>
-    <input type='radio' name='rss_data_correct' value='yes' />Yes<br />
-    <input type='radio' name='rss_data_correct' value='no' />No
-</div>
-<div style='display:none'>
-    <p>Please enter the name of this directory's denomination or group of congregations</p>
-    <input type='text' name='cgroup_name' id='cgroup_name' value='Reformed Presbyterian Church of North America'/>
-    <p>Please enter an abbreviation for this denomination or group of congregations</p>
-    <input type='text' name='abbreviation' id='abbreviation' value='RPCNA'/>
-</div>
+<h2>Step 1:  Please tell us what kind of data you have to import</h2>
+<form role="form">
+    <p>I've got:</p>
+    <div class="radio initial_radios">
+      <label>
+        <input type="radio" name="optionsRadios" id="optionsRadios1" value="importio_json">
+        An import.io JSON file
+      </label>
+    </div>
+    <div class="radio initial_radios">
+      <label>
+        <input type="radio" name="optionsRadios" id="optionsRadios2" value="url_or_guid">
+        A URL for a church directory page, RSS or JSON feed, or an import.io connector GUID
+      </label>
+    </div>
+    <div class="importio-group form-group has-feedback hidden">
+        <div class='geocode_stats hidden'></div>
+        <label for='file'>Upload import.io dataset JSON file here</label>
+        <br />
+        <div class='hidden'>
+            <div class="btn btn-primary btn-file">
+                Browse...<input type="file" id="file" class='file'>
+            </div>
+            or
+        </div>
+        <span class='importio_drop_target'>Drop JSON file here</span>
+    </div>
+    <div class="url-group form-group has-feedback hidden">
+        <label for='url'>GUID or URL</label>
+        <input type='text' name='url' id='url' class='typeahead form-control' 
+            placeholder="Enter directory's GUID or URL" />
+        <span class="help-block" style="display:none"></span>
+    </div>
+    <div class='cgroup_div form-group'></div>
+    <div style='display:none' class='importio_auth_div form-group'>
+        <label for='user_guid'>Please enter your import.io user GUID</label>
+        <input type='text' name='user_guid' id='user_guid' class='user_guid form-control' 
+            placeholder='User GUID' />
+        <label for='api_key'>Please enter your import.io API key</label>
+        <input type='text' name='api_key' id='api_key' class='api_key form-control'
+            placeholder='API key' />
+    </div>
+    <div id='rss_feed' style='display:none' class='form-group'>
+        <h2>RSS feed - Does the data below look correct?</h2>
+        <div id='rss_data_formatted'></div>
+        <input type='radio' name='rss_data_correct' value='yes' />Yes<br />
+        <input type='radio' name='rss_data_correct' value='no' />No
+    </div>
+
+</form>

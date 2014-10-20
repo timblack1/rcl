@@ -14,30 +14,30 @@ define([
             // TODO: Why do these custom cells not render anything?
             Backgrid.NamedenomCell = Backgrid.Cell.extend({
                 className: "namedenom-cell",
-                formatter: Backgrid.StringFormatter,
                 render:function(){
+                    Backgrid.Cell.prototype.render.apply(this, arguments)
                     var model = this.model
-                    var denomination = model.get('denomination_abbr')?' ('+model.get('denomination_abbr')+')':''
-                    this.$el.val(model.get('name') + denomination);
+                    var denomination = model.get('denomination_abbr') ? ' ('+model.get('denomination_abbr')+')' : ''
+                    this.$el.text(this.formatter.fromRaw(model.get('name') + denomination));
                     return this;
                 }
             });
             Backgrid.CitystateCell = Backgrid.Cell.extend({
                 className: "citystate-cell",
-                formatter: Backgrid.StringFormatter,
                 render:function(){
+                    Backgrid.Cell.prototype.render.apply(this, arguments)
                     var model = this.model
-                    this.$el.val(model.get('meeting_city') + ', ' + model.get('meeting_state'));
+                    this.$el.text(this.formatter.fromRaw(model.get('meeting_city') + ', ' + model.get('meeting_state')));
                     return this;
                 }
             });
             Backgrid.ContactinfoCell = Backgrid.Cell.extend({
                 className: "contactinfo-cell",
-                formatter: Backgrid.StringFormatter,
                 render:function(){
+                    Backgrid.Cell.prototype.render.apply(this, arguments)
                     var model = this.model
-                    this.$el.val(model.get('contact_type') + model.get('contact_name') + 
-                        '<br />' + model.get('phone') + '<br />' + model.get('website'));
+                    this.$el.html(this.formatter.fromRaw(model.get('contact_type') + ': ' + model.get('contact_name') + 
+                        '<br />' + model.get('phone') + '<br /><a href="' + model.get('website') + '">' + model.get('website') + '</a>'));
                     return this;
                 }
             });
@@ -47,7 +47,7 @@ define([
             var columns = [{
                 name: "name",
                 label: "Name",
-                cell: "string",
+                cell: "namedenom",
                 editable: false
             }, {
                 name: "city_state",
