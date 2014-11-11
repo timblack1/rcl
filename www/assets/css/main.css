@@ -197,3 +197,8 @@ body>.container .jasmine_reporter {
     color: white;
 }
 
+/* CGroup.html */
+
+.cgroup_div button {
+    margin-top: .7em;
+}
