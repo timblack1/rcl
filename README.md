@@ -4,7 +4,9 @@ Want to find a reformed church in Timbuktu?  Reformed Churches Locator is a web 
 
 Reformed Churches Locator is an attempt to recreate the map & congregations components of PresbyterySite (http://sourceforge.net/projects/presbyterysite), but host & serve the congregation data in a federated or peer-to-peer fashion in order to potentially manage data from all Reformed churches rather than from only one presbytery.
 
-Please note that the most recent versions of Reformed Churches Locator are now being developed at http://github.com/timblack1/rcl.
+Please note that older Reformed Churches Locator issues which describe the overall application architecture are hosted at https://blueprints.launchpad.net/reformedchurcheslocator.
+
+Reformed Churches Locator is an "Offline first" application, meaning will run well offline, then sync its data to the server when it has an internet connection.  It uses Hoodie to store the app's data locally using PouchDB, and syncs to CouchDB on the server through Hoodie's server-side API.
 
 # Creating a new Hoodie App
 
