@@ -12,7 +12,13 @@ Reformed Churches Locator is an "Offline first" application, meaning will run we
 
 # Installation
 
-To install Reformed Churches Locator, just run the following commands in your terminal:
+To install Reformed Churches Locator, first install its dependencies by running the following commands in your terminal:
+
+```bash
+$ sudo apt-get install couchdb nodejs
+```
+
+Then install Reformed Churches Locator by running the following commands in your terminal:
 
 ```bash
 $ git clone https://github.com/timblack1/rcl.git
