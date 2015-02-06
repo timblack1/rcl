@@ -10,9 +10,17 @@ Reformed Churches Locator is an "Offline first" application, meaning will run we
 
 # Installation
 
+To install Reformed Churches Locator, just run the following commands in your terminal:
+
 ```bash
 $ git clone https://github.com/timblack1/rcl.git
 $ npm install
 $ bower install
 $ grunt serve
 ```
+
+This should open up a copy of the application in your web browser.
+
+# Deployment
+
+Because the application is still in development, we have not yet documented how to deploy it to a server.
