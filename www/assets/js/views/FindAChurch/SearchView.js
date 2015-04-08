@@ -29,7 +29,7 @@ define([
             //If the distance unit preference is set,
 			// set the distance units in the form based on what is in the preference.
 			if ( this.is_distance_unit_preference_set() ){
-				this.$('.units').val(localStorage['units_of_measurement']);		
+				this.$('.units').val(localStorage['distance_units']);		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -108,17 +108,20 @@ define([
         
 		is_distance_unit_preference_set:function(){
 			// Get preference here
-			localStorage['units_of_measurement']
-			if (typeof localStorage['units_of_measurement'] === 'undefined'){
+			localStorage['distance_units']
+			if (typeof localStorage['distance_units'] === 'undefined'){
 				return false;
 			}else{
 				return true
 			}
 		},
-		set_distance_unit_preference:function(){
+		set_distance_unit_preference:function(event){
 			//  Set preference here
-            // TODO: Is this the right name for the preference, or should it be 'distance_units'?
-			localStorage['units_of_measurement'] = this.$('.units').val();
+			localStorage['distance_units'] = this.$('.units').val();
+			if (event.target === this.$(".units")) {
+				loclalStorage['distance_units_manual'] = 'manual'
+				//if a person selects the the distance, it becomes their preference
+			}
 			
 		},
         location_keyup:function(event){
@@ -157,10 +160,8 @@ define([
                 distance = radius * 1000;
             }
             
-            //  TODO: Start here.
-            // TODO: Event handler: On search form submission, record the currently-selected distance unit
-            //  in a preference, and record there whether they selected it manually or not (NOTE: this second task
-            //  is not done yet).
+			this.set_distance_unit_preference()
+
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
@@ -177,24 +178,14 @@ define([
                         units:units,
                         results:results
                     })
-					if (!thiz.is_distance_unit_preference_set()){
+					if (!thiz.is_distance_unit_preference_set() && localStorage['distance_units_manual'] !== 'manual'){
     				    // Try figuring the user's distance_unit preference based on the country in which they are searching.
-						var distance_units = thiz.get_distance_units(results)
     					// Set the preference to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
-						localStorage['units_of_measurement'] = distance_units
+						localStorage['distance_units'] = distance_units
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
 					}
-					
-                    // TODO: Send the request to Google; if Google says the location is ambiguous, 
-                    //  then use one of the location methods above (geolocation, etc.) to send Google
-                    //  a hint about in which country the user is attempting to search.
-             		// TODO: Event handler: On search results being returned to the browser from the 
-                    //  Google Maps API, Google's geocode responses state in which country the searched-for 
-                    //  location is found, so after they search, you can set their distance units for them 
-                    //  (in a preference and in the form) based on the country, unless (in a preference you can see)
-                    //  they have already selected a distance unit manually.
                 } else {
                     alert("Geocode was not successful for the following reason: " + status);
                 }
@@ -202,3 +193,4 @@ define([
 		}
     });
 });
+//TODO:  Figure out why after the above work to save the distance units preference, after typing an address in the location search box, there is an error in the JavaScript cntrols and the map does not center on that location.
