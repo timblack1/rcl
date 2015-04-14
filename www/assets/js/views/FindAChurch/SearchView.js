@@ -2,9 +2,10 @@ define([
         'config',
         'backbone',
         'mustache',
+        'jquery',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Backbone, Mustache, template){
+        function(config, Backbone, Mustache, $, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -16,10 +17,10 @@ define([
             this.$el.html(Mustache.render(template))
             
             // Attach search event handler to search button and text box
-            this.listenTo(this.$('.search'), 'click', this.geocode)
-            this.listenTo(this.$('.location'), 'keyup', this.location_keyup)
-            this.listenTo(this.$('.radius'), 'change', this.geocode)
-            this.listenTo(this.$('.units'), 'change', this.set_distance_unit_preference)
+            $('.search').on('click', this.geocode)
+            $('.location').on('keyup', this.location_keyup)
+            $('.radius').on('change', this.geocode)
+            $('.units').on('change', this.set_distance_unit_preference)
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
