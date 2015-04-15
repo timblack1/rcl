@@ -20,7 +20,7 @@ define([
             $('.search').on('click', this.geocode)
             $('.location').on('keyup', this.location_keyup)
             $('.radius').on('change', this.geocode)
-            $('.units').on('change', this.set_distance_unit_preference)
+            $('.units').on('change', this.geocode)
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
@@ -161,7 +161,7 @@ define([
                 distance = radius * 1000;
             }
             
-			this.set_distance_unit_preference()
+			this.set_distance_unit_preference(event)
 
             // Geocode location
         	var thiz=this
