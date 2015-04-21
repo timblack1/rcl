@@ -1,0 +1,32 @@
+{
+  "name": "backbone-hoodie",
+  "version": "1.0.6",
+  "description": "hoodie data bindings for backbone models",
+  "keywords": [
+    "backbone",
+    "hoodie",
+    "model",
+    "binding",
+    "data"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bbn/backbone-hoodie.git"
+  },
+  "github": "https://github.com/bbn/backbone-hoodie",
+  "license": "MIT",
+  "dependencies": {
+    "backbone": "^1.0.0",
+    "hoodie": "*"
+  },
+  "main": "src/backbone-hoodie",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-uglify": "~0.2.5",
+    "grunt-contrib-jshint": "~0.7.1"
+  },
+  "engines": {
+    "node": "0.10.x"
+  }
+}
