@@ -1,7 +1,38 @@
 {
-    "name": "reformed-churches-locator",
-    "version": "0.0.1",
-    "dependencies": {
-        "request": "2.9.201"
-    }
+  "name": "rcl",
+  "version": "1.0.16",
+  "type": "app",
+  "license": "MIT",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/timblack1/rcl.git"
+  },
+  "dependencies": {
+    "hoodie-plugin-appconfig": "^2.0.0",
+    "hoodie-plugin-email": "^1.0.0",
+    "hoodie-plugin-global-share": "^3.0.0",
+    "hoodie-plugin-http": "0.0.1",
+    "hoodie-plugin-users": "^2.0.0",
+    "hoodie-server": "^2.0.0",
+    "request": "^2.0.0"
+  },
+  "files": [
+    "www/"
+  ],
+  "engines": {
+    "node": ">=0.10.22"
+  },
+  "scripts": {
+    "start": "node node_modules/hoodie-server/bin/start"
+  },
+  "hoodie": {
+    "plugins": [
+      "hoodie-plugin-appconfig",
+      "hoodie-plugin-email",
+      "hoodie-plugin-users",
+      "hoodie-plugin-global-share",
+      "hoodie-plugin-http"
+    ]
+  }
 }

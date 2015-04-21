@@ -1,5 +1,8 @@
 *~
-.bzr
+*.swp
+node_modules
+data
+deploy.sh
 .couchapprc
 login.txt
 changes_listeners_temp.js
@@ -9,3 +12,4 @@ port.txt
 libpeerconnection.log
 rcl.sublime-project
 rcl.sublime-workspace
+deploy.sh

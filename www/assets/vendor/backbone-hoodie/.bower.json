@@ -1,0 +1,19 @@
+{
+  "name": "backbone-hoodie",
+  "version": "1.0.6",
+  "main": "backbone-hoodie.js",
+  "dependencies": {
+    "backbone": "^1.0.0",
+    "hoodie": "*"
+  },
+  "homepage": "https://github.com/hoodiehq/backbone-hoodie",
+  "_release": "1.0.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.6",
+    "commit": "11cc2c59135f888f031a737cc3a5eb31d81675d5"
+  },
+  "_source": "git://github.com/hoodiehq/backbone-hoodie.git",
+  "_target": "~1.0.6",
+  "_originalSource": "backbone-hoodie"
+}
