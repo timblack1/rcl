@@ -21,6 +21,13 @@ define([
             $('.location').on('keyup', this.location_keyup)
             $('.radius').on('change', this.geocode)
             $('.units').on('change', this.geocode)
+
+			//START HERE.  TODO: Filter for unique denomination abbreviations.  Underscore pluck function makes it easy to do that
+
+            //Get a list of unique cgroup abbreviations out of the database, and display them in the filter control.
+            $.get('  /user%2F64bshoa/_design/tmp/_view/cgroup_abbreviation?group=true', function(data){ console.log(data); } );
+			this.cgroup_coll = new model.CGroup()
+            this.cgroup_coll.fetch();
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
