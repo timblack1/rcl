@@ -1,11 +1,12 @@
 define([
         'config',
+        'model',
         'backbone',
         'mustache',
         'jquery',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Backbone, Mustache, $, template){
+        function(config, model, Backbone, Mustache, $, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -21,6 +22,23 @@ define([
             $('.location').on('keyup', this.location_keyup)
             $('.radius').on('change', this.geocode)
             $('.units').on('change', this.geocode)
+
+        // Step 1:  Get a list of unique cgroup abbreviations out of the database, and display them in the filter control.  Example code:
+			var thiz = this;
+			var cgroups = new model.CGroups();
+			cgroups.fetch({success:function(){
+    			var names = _.uniq(cgroups.pluck('name'));
+    			// You can then display these unique cgroup abbreviations in the filter control.
+    			_.each(names, function(name){
+        			thiz.$('#group_filter div').append("<a href='#' id='cgroup-" + name + "'>" + name + "</a> ");
+        			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database for congs which have that cgroup abbreviation, and display those congs in the map.
+        			thiz.listenTo(thiz.$('#cgroup-' + name), 'click', function(){
+            			// So, load one cgroup collection in Backbone into the map.
+           			 	var cgroup = cgroups.findWhere({name:name})
+           			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
+                 	})
+  				});
+			}})
 
 			//START HERE.  TODO: Filter for unique denomination abbreviations.  Underscore pluck function makes it easy to do that
 
@@ -109,9 +127,8 @@ define([
 				localStorage('distance_units', 'miles')
 			}else{
 				localStorage('distance_units', 'km')
-			}
-
-		},
+				}
+        	},
         
         
 		is_distance_unit_preference_set:function(){
@@ -170,6 +187,8 @@ define([
             
 			this.set_distance_unit_preference(event)
 
+			
+      
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
