@@ -27,14 +27,14 @@ define([
 			var thiz = this;
 			var cgroups = new model.CGroups();
 			cgroups.fetch({success:function(){
-    			var names = _.uniq(cgroups.pluck('name'));
+    			var abbreviations = _.without(_.uniq(cgroups.pluck('abbreviation')),undefined);
     			// You can then display these unique cgroup abbreviations in the filter control.
-    			_.each(names, function(name){
-        			thiz.$('#group_filter div').append("<a href='#' id='cgroup-" + name + "'>" + name + "</a> ");
+    			_.each(abbreviations, function(abbreviation){
+        			thiz.$('#group_filter div').append("<a href='#' id='cgroup-" + abbreviation + "'>" + abbreviation + "</a> ");
         			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database for congs which have that cgroup abbreviation, and display those congs in the map.
-        			thiz.listenTo(thiz.$('#cgroup-' + name), 'click', function(){
+        			thiz.listenTo(thiz.$('#cgroup-' + abbreviation), 'click', function(){
             			// So, load one cgroup collection in Backbone into the map.
-           			 	var cgroup = cgroups.findWhere({name:name})
+           			 	var cgroup = cgroups.findWhere({abbreviation:abbreviation})
            			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
                  	})
   				});
