@@ -34,8 +34,10 @@ define([
         			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database for congs which have that cgroup abbreviation, and display those congs in the map.
         			thiz.listenTo(thiz.$('#cgroup-' + abbreviation), 'click', function(){
             			// So, load one cgroup collection in Backbone into the map.
+            			debugger;
            			 	var cgroup = cgroups.findWhere({abbreviation:abbreviation})
-           			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
+           			 	thiz.collection.reset(cgroup.get('congregations'))
+     //    			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
                  	})
   				});
 			}})
@@ -43,9 +45,9 @@ define([
 			//START HERE.  TODO: Filter for unique denomination abbreviations.  Underscore pluck function makes it easy to do that
 
             //Get a list of unique cgroup abbreviations out of the database, and display them in the filter control.
-            $.get('  /user%2F64bshoa/_design/tmp/_view/cgroup_abbreviation?group=true', function(data){ console.log(data); } );
-			this.cgroup_coll = new model.CGroup()
-            this.cgroup_coll.fetch();
+        //   $.get('  /user%2F64bshoa/_design/tmp/_view/cgroup_abbreviation?group=true', function(data){ console.log(data); } );
+		//	this.cgroup_coll = new model.CGroup()
+        //    this.cgroup_coll.fetch();
             
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
