@@ -1,16 +1,13 @@
 {
   "name": "rcl-node-changes-listeners",
   "version": "0.0.0",
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
   "dependencies": {
-    "hoodie": "latest",
-    "hoodie-server": "^3.0.0",
-    "request": "^2.0.0"
+    "request": "^2.0.0",
+    "jquery": "^1.7.3",
+    "cradle": "^0.6.3"
   },
   "devDependencies": {
+    "longjohn": "^0.0.4"
   },
   "engines": {
     "node": "^0.10.38"

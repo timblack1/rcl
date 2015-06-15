@@ -1,3 +1,5 @@
+'use strict'
+
 // This code (and its parent process in changes.js) is a Node.JS listener
 //  listening to CouchDB's _changes feed, and is derived from
 //  https://github.com/mikeal/node.couch.js and
@@ -11,10 +13,11 @@
 var buffer = '',
   http = require('http'),
   https = require('https'),
-  ncl_dir = '/_attachments/node_changes_listeners/',
-  config = require('./config'),
+  ncl_dir = './rcl/node_changes_listeners/',
+  config = require(ncl_dir + 'config'),
   db = config.db,
-  log = require('./lib').log;
+  currently_getting = [],
+  log = require(ncl_dir + 'lib').log;
 //$ = require('jquery');
 //var model = require('model.js').model;
 //stdin = process.openStdin();
@@ -42,7 +45,7 @@ function get_url(doc, from_url, to_html, status_flag, options) {
       // Check to see if we got a 404 response
       if (res.statusCode == '404') {
         console.log('Got a 404!');
-        // TODO: If we got a 404, then notify the user this page doesn't exist
+        // If we got a 404, then notify the user this page doesn't exist
         doc[status_flag] = '404';
         db.save(doc._id, doc._rev, doc);
       } else {
@@ -71,7 +74,6 @@ function save(options) {
     options.doc = doc;
     if (!err && options.doc && options.doc._id && typeof options.doc._id !== 'undefined') {
       // Save to the db all the HTML we've gotten
-      // TODO: This is running several times in series
       options.doc[options.to_html] = options.output_array;
       options.doc[options.status_flag] = 'gotten';
       // Deletes number downloaded since it's not needed anymore
@@ -86,13 +88,15 @@ function save(options) {
             // console.log('options.save_attempts: ' + options.save_attempts);
             save(options);
           } else {
+            // Note: The error below doesn't matter because this whole main-level function named save()
+            //  is superceded by hoodie-plugin-http.
             // TODO: This is where we get an error.  For some reason sometimes,
             //  but not always, we have the wrong revision here, and this causes get_state_url_html
             //  to never == 'gotten', (so the state details page doesn't display?)
             // console.error('Failed to save doc: ' + options.doc._id, options.doc._rev);
           }
         } else {
-          // console.log('Succeeded at saving all the states\' HTML pages')
+          // console.log("Succeeded at saving all the states' HTML pages")
           options.output_array_saved = true;
           // Remove this options.status_flag from the list of tasks
           currently_getting.splice(currently_getting.indexOf(options.status_flag), 1);
@@ -157,7 +161,6 @@ function recurse_urls(i, options) {
     currently_getting.splice(currently_getting.indexOf(options.status_flag), 1);
   }
 }
-currently_getting = [];
 
 function get_url_set(options) {
   // Don't run more than one copy of this task at a time
@@ -177,7 +180,6 @@ function get_url_set(options) {
 
 // Only get changes after "update_seq"
 db.get('', function(err, doc) {
-  // TODO: This throws:  TypeError: Cannot read property 'update_seq' of undefined
   db.changes({
     since: doc.update_seq
   }).on('change', function(change) {
@@ -200,7 +202,6 @@ db.get('', function(err, doc) {
                 for (var i = 0; i < doc.state_url_html.length; i++) {
                   // TODO: Get each cong's URL
                   var state_html = doc.state_url_html[i];
-
                   // TODO: Get each cong page's HTML & write to database
                 }
               }

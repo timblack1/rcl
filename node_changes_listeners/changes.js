@@ -1,11 +1,13 @@
+'use strict'
+
 // Use cradle to watch the database's changes and stream them in
 // TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
 //  CouchAppObject model here?
 
-var ncl_dir = './_attachments/node_changes_listeners/',
+var ncl_dir = './',
   child_process = require('child_process.js'),
+  p,
   util = require('util'),
-  vm = require('vm'),
   fs = require('fs'),
   config = require(ncl_dir + 'config'),
   db = config.db,
@@ -33,65 +35,50 @@ function write_new_changes_listener_file(doc) {
 
 function start_child_process() {
   db.get('_design/rcl', function(err, doc) {
-    write_new_changes_listener_file(doc.changes_listeners);
-  });
-  // Spawn changes listener process
-  //var mode = 'spawn';
-  var mode = 'fork';
-  if (mode == 'spawn') {
-    p = child_process.spawn(process.execPath, [changes_listeners_filename]);
-    // Log errors to stderr of this process (not the child process)
-    p.stderr.on("data", function(chunk) {
-      util.error(chunk.toString());
+    write_new_changes_listener_file(doc.node_changes_listeners.changes_listeners);
+    // Spawn changes listener process
+    //var mode = 'spawn';
+    var mode = 'fork';
+    if (mode == 'spawn') {
+      p = child_process.spawn(process.execPath, [changes_listeners_filename]);
+      // Log errors to stderr of this process (not the child process)
+      p.stderr.on("data", function(chunk) {
+        util.error(chunk.toString());
+      });
+    } else if (mode == 'fork') {
+      p = child_process.fork(changes_listeners_filename);
+    }
+    p.on('error', function(err) {
+      // TODO: Consider replacing this with the domain example at http://nodejs.org/api/domain.html
+      console.log(err);
+      console.log(err.stack);
+      console.log('Killing child process');
+      p.kill();
+      p = start_child_process();
     });
-  } else if (mode == 'fork') {
-    p = child_process.fork(changes_listeners_filename);
-  }
-  p.on('error', function(err) {
-    // TODO: Replace this with the domain example at http://nodejs.org/api/domain.html
-    console.log(err);
-    console.log(err.stack);
-    console.log('Killing child process');
-    p.kill();
-    // TODO: Could this cause a memory leak?
-    delete p;
-    p = start_child_process();
-    console.log('Killing child process');
+    return p;
   });
-  return p;
 }
-// TODO: When the child process is started the first time, the CPU goes to 100%.  When I save a file
-//  and the changes listener below restarts the child process, then the CPU goes back to normal usage.
+
 p = start_child_process();
 console.log('Starting child process...');
 
 // Only get changes after "update_seq"
 db.get('', function(err, doc) {
-  console.log('doc: ' + doc);
   db.changes({
     since: doc.update_seq
   }).on('change', function(change) {
+    // TODO: Check whether change.id contains '_design/' here (before db.get() below) so as
+    //  not to have to download the whole doc into memory, then use a direct HTTP call to 
+    //  get the new version of the changes_listeners.js file.
     db.get(change.id, change.changes[0].rev, function(err, doc) {
       if (change.id && change.id.slice(0, '_design/'.length) === '_design/') {
         // This is a change to the design document
         // If the rcl design document changed, then reload the changes listeners.
         // Get the new design doc
-        //console.log('Restarting because design doc changed...')
-        //return;
-        // TODO: Start here.  This throws:
-        /*
-        /home/tim/Documents/MyWebPages/CaneyPUGgies/code/rcl/_attachments/node_changes_listeners/node_modules/longjohn/index.js:111
-            throw e;
-              ^
-        RangeError: Maximum call stack size exceeded
-        */
-        // This may be due to my changing the filesystem location of changes.js, which is 
-        //  referenced immediately below.
-        console.log(doc.node_changes_listeners.changes);
+        console.log('Restarting because design doc changed...')
         if (doc.node_changes_listeners.changes) {
-          return;
-          //console.log('Restarting because design doc changed...')
-          // take down the process with the old design doc
+          // take down the process running the old changes_listeners.js file
           p.kill();
           fs.unlinkSync(changes_listeners_filename);
           // start up the process with the new design doc

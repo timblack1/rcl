@@ -15,7 +15,7 @@
     "hoodie-plugin-users": "^2.0.0",
     "hoodie-plugin-http": "latest",
     "hoodie-plugin-global-share": "^3.0.0",
-	"request": "^2.0.0"
+    "request": "^2.0.0"
   },
   "files": [
     "www/"

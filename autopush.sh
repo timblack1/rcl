@@ -27,7 +27,7 @@ then
   DBNAME=rcl;
 fi;
 
-URL=http://$LOGIN@$HOST:$PORT/$DBNAME
+URL=http:///$LOGIN@$HOST:$PORT/$DBNAME
 
 # Create .couchapprc file if this has not been done yet
 # TODO: erica loads .couchapprc.* so we need to rename this file to not start with the dot.
@@ -39,8 +39,9 @@ then
 fi
 
 # Push app's db functions (views, updates, etc.) into database in case this has not been done yet
-erica push $URL
+erica -v push $URL
 # couchapp push $URL
+# couchdb-push $URL
 
 # Start watching the filesystem for changes, and push new changes into the database
 # Avoid multiple pushes caused by text editors saving the file more than once.
@@ -49,6 +50,7 @@ inotifywait -mr . --exclude .git -e close_write --format '%w %e %T' --timefmt '%
     delta=`expr $current - $tm`
     if [ $delta -lt 2 -a $delta -gt -2 ] ; then
         sleep 1  # sleep 1 second to let file operations end
-        ~/bin/erica push $URL
+        ~/bin/erica -v push $URL
+        # couchdb-push $URL
     fi
 done
