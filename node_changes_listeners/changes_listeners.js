@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // This code (and its parent process in changes.js) is a Node.JS listener
 //  listening to CouchDB's _changes feed, and is derived from

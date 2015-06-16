@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 // Use cradle to watch the database's changes and stream them in
 // TODO: Could we use jquery.couch.js here instead of cradle, in order to use our 
