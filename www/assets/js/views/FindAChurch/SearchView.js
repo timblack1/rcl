@@ -1,10 +1,12 @@
 define([
         'config',
+        'model',
         'backbone',
         'mustache',
+        'jquery',
         'text!views/FindAChurch/Search.html'
         ], 
-        function(config, Backbone, Mustache, template){
+        function(config, model, Backbone, Mustache, $, template){
 
     return Backbone.View.extend({
         initialize: function(){
@@ -16,11 +18,37 @@ define([
             this.$el.html(Mustache.render(template))
             
             // Attach search event handler to search button and text box
-            this.listenTo(this.$('.search'), 'click', this.geocode)
-            this.listenTo(this.$('.location'), 'keyup', this.location_keyup)
-            this.listenTo(this.$('.radius'), 'change', this.geocode)
-            this.listenTo(this.$('.units'), 'change', this.set_distance_unit_preference)
-            
+            $('.search').on('click', this.geocode)
+            $('.location').on('keyup', this.location_keyup)
+            $('.radius').on('change', this.geocode)
+            $('.units').on('change', this.geocode)
+
+        // Step 1:  Get a list of unique cgroup abbreviations out of the database, and display
+        //  them in the filter control.
+			var thiz = this;
+			var cgroups = new model.CGroups();
+			cgroups.fetch({success:function(){
+    			var abbreviations = _.without(_.uniq(cgroups.pluck('abbreviation')),undefined);
+    			// You can then display these unique cgroup abbreviations in the filter control.
+    			_.each(abbreviations, function(abbreviation){
+        			thiz.$('#group_filter div').append("<a href='#' id='cgroup-" + abbreviation + "'>" + abbreviation + "</a> ");
+        			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database
+        			//   for congs which have that cgroup abbreviation, and display those congs in the map.
+        			thiz.$('#cgroup-' + abbreviation).on( 'click', function(){
+            			// So, load one cgroup collection in Backbone into the map.
+            			var cgroup = cgroups.findWhere({abbreviation:abbreviation})
+            			// START HERE TODO: Figure out the right syntax to actually
+            			//   update thiz.collection and fire its change listeners
+           			 	thiz.collection.reset(cgroup.get('congregations').fetch({
+							success:function(){
+								thiz.collection.reset(cgroup.get('congregations'))
+							}
+           			 	}))
+   //      			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
+                 	})
+  				});
+			}})
+
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
             //  some input from the user.
@@ -29,7 +57,7 @@ define([
             //If the distance unit preference is set,
 			// set the distance units in the form based on what is in the preference.
 			if ( this.is_distance_unit_preference_set() ){
-				this.$('.units').val(localStorage['units_of_measurement']);		
+				this.$('.units').val(localStorage['distance_units']);		
 			}
             // TODO:     * Else, on page load, before the person searches, 
 			else {
@@ -55,45 +83,33 @@ define([
                 }else{
                     console.log("Geolocation is not supported by this browser.");
                     // TODO:   * Next, try the browser country or language setting.
-                    var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
-                    console.log(userLang)
-                    // Determine if userLang contains a 2-character country code after a hyphen
-                    //  (e.g., userLang could equal 'en-US')
-                    var country_code = userLang.split('-')[1]
-                    var language_code = userLang.split('-')[0]
-                    if (country_code !== '' && typeof country_code !== 'undefined'){
-                        // Test if this country code uses miles or kilometers.
-                        // TODO: Maybe these codes should be put into one data structure with the array used
-                        //  below (["United Kingdom", "Liberia", "Myanmar", "United States"]) so we don't 
-                        //  complicate future maintenance of the application.
-                        var country_codes = ['GB', 'LR', 'MM', 'US']
-                        // If country_code is in the list, then
-                        if (country_codes.indexOf(country_code) !== -1){
-                            // Record preference accordingly
-                            localStorage('distance_units', 'miles')
-                        }else{
-                            localStorage('distance_units', 'km')
-                        }
-                    }else{
-                        // Use the language code.  This might help:  http://download.geonames.org/export/dump/countryInfo.txt
-                        // These are the languages of the countries that use miles
-                        var languages = ['en', 'mm', 'bur', 'mya']
-                        // If the country's language is NOT in this set, then the country uses kilometers.
-                        if (languages.indexOf(language_code) === -1){
-                            localStorage('distance_units', 'km')
-                        }else{
-                            // If the country does use this language, then we don't know if it uses miles or kilometers.
-                        }
-                    }
-                    // TODO:   * Get their preference from their IP address
+//                     var userLang = navigator.language || navigator.browserLanguage || navigator.systemLanguage || navigator.userLanguage;
+//                     console.log(userLang)
+//                     // Determine if userLang contains a 2-character country code after a hyphen
+//                     //  (e.g., userLang could equal 'en-US')
+//                     var country_code = userLang.split('-')[1]
+//                     var language_code = userLang.split('-')[0]
+//                     if (country_code !== '' && typeof country_code !== 'undefined'){
+// 						this.record_distance_units(country_code)
+//                     }else{
+//                         // Use the language code.  This might help:  http://download.geonames.org/export/dump/countryInfo.txt
+//                         // These are the languages of the countries that use miles
+//                         var languages = ['en', 'mm', 'bur', 'mya']
+//                         // If the country's language is NOT in this set, then the country uses kilometers.
+//                         if (languages.indexOf(language_code) === -1){
+//                             localStorage('distance_units', 'km')
+//                         }else{
+//                             // If the country does use this language, then we don't know if it uses miles or kilometers.
+//                         }
+//                     }
+//                     // TODO:   * Get their preference from their IP address
                     // TODO:        Load http://freegeoip.net/json/ via JQuery.get()
-                    // TODO:        Extract country code
-                    // Note:  This is the way Doug needs to implement this code
-                    $.get('http://freegeoip.net/json/', function(data, response){
-                        var country_code = data.country_code
-                        // TODO:        Test if this country_code uses miles or kilometers.
-                        // TODO:        Record preference accordingly
-                    })
+				    $.get("http://freegeoip.net/json",function(data,status){
+						var country_code = data.country_code
+						thiz.record_distance_units(country_code)
+						
+					});
+						        			
                     
                     // Create the map
                     this.create_map({coords:this.default_map_center})
@@ -101,20 +117,38 @@ define([
 
 			}
         },
+        record_distance_units:function(country_code){
+			// Test if this country code uses miles or kilometers.
+			// TODO: Maybe these codes should be put into one data structure with the array used
+			//  below (["United Kingdom", "Liberia", "Myanmar", "United States"]) so we don't 
+			//  complicate future maintenance of the application.
+			var country_codes = ['GB', 'LR', 'MM', 'US']
+			// If country_code is in the list, then
+			if (country_codes.indexOf(country_code) !== -1){
+				// Record preference accordingly
+				localStorage('distance_units', 'miles')
+			}else{
+				localStorage('distance_units', 'km')
+				}
+        	},
+        
         
 		is_distance_unit_preference_set:function(){
 			// Get preference here
-			localStorage['units_of_measurement']
-			if (typeof localStorage['units_of_measurement'] === 'undefined'){
+			localStorage['distance_units']
+			if (typeof localStorage['distance_units'] === 'undefined'){
 				return false;
 			}else{
 				return true
 			}
 		},
-		set_distance_unit_preference:function(){
+		set_distance_unit_preference:function(event){
 			//  Set preference here
-            // TODO: Is this the right name for the preference, or should it be 'distance_units'?
-			localStorage['units_of_measurement'] = this.$('.units').val();
+			localStorage['distance_units'] = this.$('.units').val();
+			if (event.target === this.$(".units")) {
+				loclalStorage['distance_units_manual'] = 'manual'
+				//if a person selects the the distance, it becomes their preference
+			}
 			
 		},
         location_keyup:function(event){
@@ -153,10 +187,10 @@ define([
                 distance = radius * 1000;
             }
             
-            //  TODO: Start here.
-            // TODO: Event handler: On search form submission, record the currently-selected distance unit
-            //  in a preference, and record there whether they selected it manually or not (NOTE: this second task
-            //  is not done yet).
+			this.set_distance_unit_preference(event)
+
+			
+      
             // Geocode location
         	var thiz=this
             var location = $('.location').val()
@@ -173,24 +207,14 @@ define([
                         units:units,
                         results:results
                     })
-					if (!thiz.is_distance_unit_preference_set()){
+					if (!thiz.is_distance_unit_preference_set() && localStorage['distance_units_manual'] !== 'manual'){
     				    // Try figuring the user's distance_unit preference based on the country in which they are searching.
-						var distance_units = thiz.get_distance_units(results)
     					// Set the preference to contain 'miles' or 'km'
 						var distance_units = thiz.get_distance_units(results)
-						localStorage['units_of_measurement'] = distance_units
+						localStorage['distance_units'] = distance_units
                         // Set form to display the distance units of the country in which the user searched
                         thiz.$('.units').val(distance_units)
 					}
-					
-                    // TODO: Send the request to Google; if Google says the location is ambiguous, 
-                    //  then use one of the location methods above (geolocation, etc.) to send Google
-                    //  a hint about in which country the user is attempting to search.
-             		// TODO: Event handler: On search results being returned to the browser from the 
-                    //  Google Maps API, Google's geocode responses state in which country the searched-for 
-                    //  location is found, so after they search, you can set their distance units for them 
-                    //  (in a preference and in the form) based on the country, unless (in a preference you can see)
-                    //  they have already selected a distance unit manually.
                 } else {
                     alert("Geocode was not successful for the following reason: " + status);
                 }
@@ -198,3 +222,4 @@ define([
 		}
     });
 });
+//TODO:  Figure out why after the above work to save the distance units preference, after typing an address in the location search box, there is an error in the JavaScript cntrols and the map does not center on that location.

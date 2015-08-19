@@ -212,7 +212,8 @@ define([
     modelStore.Cong_Person = Backbone.RelationalModel.extend({})
     modelStore.Office_Person = Backbone.RelationalModel.extend({})
     modelStore.Person_Role = Backbone.RelationalModel.extend({})
-
+//TODO: The filter is not filtering the unselected congregations.
+//      We need to figure out how to filter for only the congregations in one cgroup.
     modelStore.CGroup = Backbone.RelationalModel.extend({
         collection:'CGroups',
         urlRoot:'/cgroup',
