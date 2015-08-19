@@ -27,7 +27,7 @@
     "bootstrap": "latest",
     "bootstrap.modalform": "~1.0.0",
     "jasmine": "latest",
-    "jquery": "1.11.0",
+    "jquery": "^2.1.4",
     "jquery.xpath": "https://github.com/ilinsky/jquery-xpath.git",
     "jquery-migrate": "latest",
     "modernizr": "latest",

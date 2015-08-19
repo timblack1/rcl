@@ -23,7 +23,8 @@ define([
             $('.radius').on('change', this.geocode)
             $('.units').on('change', this.geocode)
 
-        // Step 1:  Get a list of unique cgroup abbreviations out of the database, and display them in the filter control.  Example code:
+        // Step 1:  Get a list of unique cgroup abbreviations out of the database, and display
+        //  them in the filter control.
 			var thiz = this;
 			var cgroups = new model.CGroups();
 			cgroups.fetch({success:function(){
@@ -31,24 +32,23 @@ define([
     			// You can then display these unique cgroup abbreviations in the filter control.
     			_.each(abbreviations, function(abbreviation){
         			thiz.$('#group_filter div').append("<a href='#' id='cgroup-" + abbreviation + "'>" + abbreviation + "</a> ");
-        			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database for congs which have that cgroup abbreviation, and display those congs in the map.
-        			thiz.listenTo(thiz.$('#cgroup-' + abbreviation), 'click', function(){
+        			// 2.  Step 2:  Onclick of an abbreviation in the filter control, query the database
+        			//   for congs which have that cgroup abbreviation, and display those congs in the map.
+        			thiz.$('#cgroup-' + abbreviation).on( 'click', function(){
             			// So, load one cgroup collection in Backbone into the map.
-            			debugger;
-           			 	var cgroup = cgroups.findWhere({abbreviation:abbreviation})
-           			 	thiz.collection.reset(cgroup.get('congregations'))
-     //    			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
+            			var cgroup = cgroups.findWhere({abbreviation:abbreviation})
+            			// START HERE TODO: Figure out the right syntax to actually
+            			//   update thiz.collection and fire its change listeners
+           			 	thiz.collection.reset(cgroup.get('congregations').fetch({
+							success:function(){
+								thiz.collection.reset(cgroup.get('congregations'))
+							}
+           			 	}))
+   //      			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
                  	})
   				});
 			}})
 
-			//START HERE.  TODO: Filter for unique denomination abbreviations.  Underscore pluck function makes it easy to do that
-
-            //Get a list of unique cgroup abbreviations out of the database, and display them in the filter control.
-        //   $.get('  /user%2F64bshoa/_design/tmp/_view/cgroup_abbreviation?group=true', function(data){ console.log(data); } );
-		//	this.cgroup_coll = new model.CGroup()
-        //    this.cgroup_coll.fetch();
-            
             // TODO: Improve User Interface:
             // TODO: - Try to be able to guess which unit of distance (Mi or KM) they prefer based on 
             //  some input from the user.
