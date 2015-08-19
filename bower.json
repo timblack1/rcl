@@ -5,9 +5,16 @@
     "Tim Black <tim@alwaysreformed.com>",
     "Doug Huston <>"
   ],
-  "description": "",
+  "description": "The most up-to-date directory of Reformed churches worldwide.",
+  "homepage": "https://github.com/timblack1/rcl#readme",
   "main": "app/index.html",
   "license": "MIT",
+  "keywords": [
+    "reformed",
+    "churches",
+    "locator",
+    "directory"
+  ],
   "ignore": [
     "**/.*",
     "node_modules",

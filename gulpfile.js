@@ -14,7 +14,7 @@ var glob = require('glob');
 // For hoodie_js task
 var http = require('http');
 // var connect = require('gulp-connect');
-var exec = require('child_process').exec;
+var spawn = require('child_process').spawn;
 // For browserSync proxy middleware
 var proxyMiddleware = require('http-proxy-middleware');
 
@@ -175,33 +175,10 @@ gulp.task('precache', function (callback) {
 // Clean Output Directory
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
 
-// // Set up proxy for Hoodie API
-// // TODO: I might need to serve BOTH the app AND /_api from 9000, and get the port dynamically which Hoodie chose
-// gulp.task('connect', ['hoodie_js'], function () {
-//   connect.server({
-//     root: ['.tmp', 'app'],
-//     port: 3002,
-//     livereload: true,
-//     middleware: function (connect, opt) {
-//       var Proxy = require('gulp-connect-proxy');
-//       opt.route = '/_api';
-//       var proxy = new Proxy(opt);
-//       return [proxy];
-//     }
-//   });
-// });
-
-gulp.task('hoodie_start', function(){
-  // Start Hoodie first to see if we can get it to load in time for copying hoodie.js
-  var child = exec('node_modules/hoodie-server/bin/start --custom-ports 3002,3003,3004', function(error, stdout, stderr){
-    // TODO: Get Hoodie's output to display so users can click on its links.
-    console.log('stdout: ' + stdout);
-    console.log('stderr: ' + stderr);
-    if (error !== null) {
-      console.log('exec error: ' + error);
-    }
-  });
-  return child;
+gulp.task('hoodie_start', function(done){
+  // Start Hoodie
+  spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '3002,3003,3004']);
+  done();
 });
 
 gulp.task('hoodie', ['serve', 'hoodie_start'], function(){
