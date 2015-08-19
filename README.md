@@ -24,7 +24,7 @@ Then install Reformed Churches Locator by running the following commands in your
 $ git clone https://github.com/timblack1/rcl.git
 $ npm install
 $ bower install
-$ grunt serve
+$ gulp serve
 ```
 
 This should open up a copy of the application in your web browser.
@@ -32,7 +32,3 @@ This should open up a copy of the application in your web browser.
 # Deployment
 
 Because the application is still in development, we have not yet documented how to deploy it to a server.
-
-# Status
-
-About to overwrite the `master` branch with the `polymer_integration` branch.

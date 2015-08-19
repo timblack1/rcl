@@ -1,0 +1,154 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../elements.html">
+
+<dom-module id="find-a-church" hoodie="{{hoodie}}">
+  <style>
+    :host {
+      display: flex;
+      justify-content: center;
+    }
+    #map_overlay {
+      z-index: 1;
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 0.5em;
+      padding: 0 1em 1em 1em;
+      margin-top: 0.5em;
+    }
+    paper-checkbox {
+      display: block;
+      margin-top: 1em;
+    }
+    cgroup-filter {
+      margin-top: 1em;
+    }
+  </style>
+  <template>
+
+    <div id="map_overlay" class="">
+
+      <paper-input id="search_for_a_church" 
+        label="Search for a church..."
+        value="{{search_string}}">
+      </paper-input>
+      <proximity-controls></proximity-controls>
+      
+      <voice-recognition id="voice_recognition"
+        continuous="false"
+        on-result="voice_recognition_result"
+        text="{{search_string}}">
+      </voice-recognition>
+
+      <paper-checkbox id="toggle_keywords_only_button" on-tap="toggle_keywords_only">
+        Keywords only
+      </paper-checkbox>
+      <paper-checkbox id="toggle_voice_recognition_button" on-tap="toggle_voice_recognition">
+        Voice recognition <span>{{voice_recognition_state}}</span>
+      </paper-checkbox>
+
+      <cgroup-filter id="cgroup_filter"
+        selected_cgroups="{{selected_cgroups}}"
+        available_cgroups="{{available_cgroups}}">
+      </cgroup-filter>
+
+    </div>
+
+    <div id="map_container">
+      <google-map id="google_map" map="{{map}}" latitude="{{this.$.google_map_search.result.latitude}}" 
+        longitude="{{this.$.google_map_search.result.longitude}}" 
+        zoom="13" class="fit fitToMarkers">
+      </google-map>
+      <google-map-search id="google_map_search"
+        map="{{map}}"
+        query="{{search_string}}">
+      </google-map-search>
+    </div>
+
+  </template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'find-a-church',
+
+    properties: {
+      hoodie: {
+        type: Object,
+        notify: true
+      },
+      selected_cgroups: {
+        type: Array,
+        notify: true
+      },
+      available_cgroups: {
+        type: Array,
+        notify: true
+      }
+    },
+    observers: [
+      // Needed because selected_cgroups is an array
+      '_selected_cgroups_changed(selected_cgroups.splices)'
+    ],
+    ready:function(){
+      this.voice_recognition_state = 'OFF';
+      // TODO: On page load and search event, make the search box transform/animate to a small size,
+      //  at the top of the map, and more transparent.
+      // TODO: On interaction with the search box (e.g., mouseover or focusing its paper-input),
+      //  transform/animate it to its full display
+      // TODO: Get location search to work
+      // TODO: Permit searching by keyword if Google doesn't return a location, permit keyword only searches
+      //  via a toggle
+      // TODO: Use analytics to track whether users prefer searching by location or by keyword, in order to
+      //  create a sane default.
+    },
+    attached:function(){
+      this.async(function(){
+        this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+        var thiz = this;
+        // Get selected_cgroups from a user preference
+        this.hoodie.store.find('selected-cgroups', 'selected-cgroups')
+        .then(function(selected_cgroups){
+          thiz.selected_cgroups = selected_cgroups.cgroups;
+        });
+//         this.hoodie.store.add('cgroup', {abbreviation:"OPC"});
+//         this.hoodie.store.add('cgroup', {abbreviation:"PCA"});
+//         this.hoodie.store.add('cgroup', {abbreviation:"URC"});
+//         this.hoodie.store.add('cgroup', {abbreviation:"RCUS"});
+//         this.hoodie.store.add('cgroup', {abbreviation:"RPCNA"});
+        // TODO: Connect cgroup-filter attributes to database
+        this.hoodie.store.findAll('cgroup')
+          .then(function(cgroups){
+            thiz.available_cgroups = cgroups;
+          });
+        // Create handler to update available_cgroups
+        this.hoodie.store('cgroup').on('add update remove change clear', function(){
+          thiz.hoodie.store.findAll('cgroup')
+            .then(function(cgroups){
+              thiz.available_cgroups = cgroups;
+            });
+        });
+        // TODO: Connect proximity-controls attributes to database        
+      });
+    },
+    toggle_voice_recognition:function(){
+      if (this.voice_recognition_state === 'ON'){
+        this.$.voice_recognition.stop();
+        this.voice_recognition_state = 'OFF';
+      }else{
+        this.$.search_for_a_church.value = '';
+        this.$.voice_recognition.start();
+        this.voice_recognition_state = 'ON';
+      }
+    },
+    voice_recognition_result:function(event){
+      this.search_string = event.detail.result;
+    },
+    _selected_cgroups_changed:function(changeRecord){
+      var thiz = this;
+      // We have to wait until all properties have been initialized
+      Polymer.Base.async(function(){
+        thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups:thiz.selected_cgroups});
+      }, 300);
+    }
+  });
+})();
+</script>

@@ -1,9 +1,0 @@
-[
-  ".*~$",
-  // ".*\\.swp$"
-  ".*\\.bak$",
-  "changes_listeners_temp.js",
-  "node_modules/*",
-  "sync.txt",
-  ".couchapprc-tmpl.template"
-]

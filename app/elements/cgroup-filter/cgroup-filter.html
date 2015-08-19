@@ -1,0 +1,73 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="cgroup-filter" 
+  selected_cgroups="{{selected_cgroups}}"
+  available_cgroups="{{available_cgroups}}" >
+  <style>
+    :host {
+      display: block;
+    }
+    #selected paper-button,
+    #available_filtered paper-button {
+      border: 2px solid lightblue;
+      border-radius: 0.3em;
+    }
+  </style>
+  <template>
+    
+    <p>Filter by denomination (or other group):</p>
+    <div id="selected">
+      <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
+        <paper-button on-tap="remove_cgroup"><span>{{item.abbreviation}}</span> x </paper-button>
+      </template>
+    </div>
+    <paper-input label="Find a denomination..."></paper-input>
+    <paper-checkbox>List all groups</paper-checkbox>
+    <paper-checkbox>Show full names</paper-checkbox>
+    <div id="available_filtered">
+      <template id="available_list" is="dom-repeat" items="{{available_cgroups}}">
+        <paper-button on-tap="add_to_selected">{{item.abbreviation}}</paper-button>
+      </template>
+    </div>
+    
+  </template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'cgroup-filter',
+
+    properties: {
+      selected_cgroups: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      available_cgroups: {
+        type: Array,
+        notify: true
+      }
+    },
+    ready:function(){
+    },
+    remove_cgroup:function(event){
+      // Remove this item from selected_cgroups
+      var index = this.selected_cgroups.indexOf(event.model.get('item'));
+      this.selected_cgroups.splice(index, 1);
+      // We have to clone the array to get the template to update
+      this.selected_cgroups = this.selected_cgroups.slice();
+    },
+    add_to_selected:function(event){
+      // Don't add the cgroup if it is already in the list.
+      var item = event.model.get('item');
+      if (this.selected_cgroups.indexOf(item) == -1){
+        // Add the selected cgroup to the list of selected cgroups
+        this.selected_cgroups.push(event.model.get('item'));
+        // We have to clone the array to get the template to update
+        this.selected_cgroups = this.selected_cgroups.slice();
+      }
+    }
+
+  });
+})();
+</script>
