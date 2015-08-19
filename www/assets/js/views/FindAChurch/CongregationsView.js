@@ -11,7 +11,6 @@ define([
         },
         render: function(){
             // TODO: render() is being called twice!
-            // TODO: Why do these custom cells not render anything?
             Backgrid.NamedenomCell = Backgrid.Cell.extend({
                 className: "namedenom-cell",
                 render:function(){
@@ -42,8 +41,6 @@ define([
                 }
             });
             // Declare Backgrid columns
-            // TODO: Once we have cgroup data related to each cong,
-            //    Add the denomination abbreviation into the name column using a custom renderer
             var columns = [{
                 name: "name",
                 label: "Name",

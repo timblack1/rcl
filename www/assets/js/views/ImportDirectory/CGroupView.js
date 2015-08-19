@@ -19,6 +19,7 @@ define([
         render: function(){
             this.$el.html(Mustache.render(template));
             this.delegateEvents()
+            this.$('button').hide()
             // Populate form fields with initial values found in the model, so user can edit them
             this.$('#cgroup_name').val(this.model.get('name'))
             this.$('#abbreviation').val(this.model.get('abbreviation'))
@@ -78,6 +79,9 @@ define([
         update:function(){
             this.$('#cgroup_name').val(this.model.get('name'))
             this.$('#abbreviation').val(this.model.get('abbreviation'))
+            // TODO: Why doesn't this write the abbreviation on page load when the abbreviation is in the db?
+            //  I have to click in the cgroup_name field to get the abbreviation to display.  Hmm....
+            console.log(this.model.get('abbreviation'))
         },
         save:function(){
             this.model.save({

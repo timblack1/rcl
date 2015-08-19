@@ -80,7 +80,6 @@ define([
             // Different types of changes that need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
-                'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
         },
@@ -286,9 +285,7 @@ define([
                 this.model.set('pagetype', 'html')
                 // Determine what type of directory this is
                 // batchgeo
-                if (this.uses_batch_geo(data) === true && 
-                    typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
-                    typeof this.model.get('get_json') == 'undefined'){
+                if (this.uses_batch_geo(data) === true){
                     this.process_batch_geo(data)
                 }else{
                     // TODO: If the other form fields are empty,
@@ -390,23 +387,51 @@ define([
                         // URL is valid, so
                         // Get HTML from URL and save it in the model
                         hoodie.task.start('http-get', { url: page_url }).done(function(task){
-                            // If we have not already created a directory on this page, create it; else get the existing directory
+                            // If we have not already created a directory on this page, create it;
+                            //  else get the existing directory
                             thiz.model = thiz.directories.findWhere({url:page_url})
-                            if (!thiz.hasOwnProperty('model')){
+                            if (typeof thiz.model === 'undefined'){
                                 // The dir hasn't been created yet, so create it
                                 thiz.model = new model.Directory({url:page_url})
                             }
                             // Create changes listeners on this.model
+                            // TODO: Change the way the change events are handled which are
+                            //  currently configured to monitor changes  to attributes which
+                            //  are no longer in use.  Instead of monitoring attributes, now
+                            //  all we have to do is handle the task response here.
+                            //  'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
+
                             thiz.changes_listeners()
-                            // TODO: If the cgroup's associated directory exists in the db, get it
-                            thiz.get_cgroup()
+                            // Display the cgroup name and abbreviation text inputs, and
+                            //  allow the user to edit them.  If they are blank, require the
+                            //  user to fill them in.
+                            // Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
+                            thiz.cgroups = new model.CGroups
+                            thiz.cgroups.fetch()
+                            // Handle case where this cgroup doesn't exist yet
+                            thiz.cgroup = thiz.model.get('cgroup');
+                            if (!thiz.hasOwnProperty('cgroup') || thiz.cgroup == null){
+                                thiz.cgroup = thiz.cgroups.create({})
+                                // Associate this cgroup with this directory
+                                thiz.model.set('cgroup', thiz.cgroup)
+                                thiz.model.save()
+                            }
+                            // Create the CGroupView
+                            thiz.cgroup_view = new CGroupView({
+                                model:thiz.cgroup,
+                                el:thiz.$('.cgroup_div')
+                            })
+                            // Display the associated cgroup for the user to edit
+                            thiz.cgroup_view.render()
+                            thiz.cgroup_view.$el.hide().show(2000)
                             // Add url_html to thiz.model, and save thiz.model
-                            thiz.model.set('url_data', task.data)
+                            thiz.model.set('batchgeo_map_html', task.data)
                             thiz.model.save()
                             thiz.report_url_is_valid()
-                            // Trigger next form elements to display
+                            // TODO: This does not yet work right for http://www.pcaac.org/church-search/
                             console.log('Start here')
-                            thiz.got_url_data();
+                            // Trigger next form elements to display
+                            thiz.get_batchgeo_json();
                             // TODO: If the other form fields are empty,
                              //     auto-populate them with info from this
                              //     directory's cgroup to help the user
@@ -715,17 +740,17 @@ define([
         },
         get_batchgeo_json:function(){
             var thiz = this
-            this.model.fetch({success:function(){
-                thiz.model.unset('get_batchgeo_map_html')
-                var html = thiz.model.get('batchgeo_map_html')
-                // console.log(html)
-                var json_url = html.match(/(https:\/\/.+?.cloudfront.net\/map\/json\/.+?)['"]{1}/i)[1]
-                console.log(new Date().getTime() + '\tb: get_json for ' + json_url)
-                // TODO: Request that the node script get this URL's contents
-                thiz.model.set('json_url', json_url)
-                thiz.model.set('get_json', 'requested')
+            var html = thiz.model.get('batchgeo_map_html')
+            // console.log(html)
+            var map_url = html.match(/(https:\/\/batchgeo.com\/map\/.+?)['"]{1}/i)[1]
+            hoodie.task.start('http-get', { url: map_url }).done(function(task){
+                var json = task.data.match(/(\/\/.+?.cloudfront.net\/map\/json\/.+?)['"]{1}/i)[1]
+                thiz.model.set({
+                    'json_url':map_url,
+                    'batchgeo_json':json
+                })
                 thiz.model.save()
-             }})
+            })
          },
          batchgeo_parse_json:function(){
             this.model.unset('get_json')
