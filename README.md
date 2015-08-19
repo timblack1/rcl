@@ -32,3 +32,7 @@ This should open up a copy of the application in your web browser.
 # Deployment
 
 Because the application is still in development, we have not yet documented how to deploy it to a server.
+
+# Status
+
+About to overwrite the `master` branch with the `polymer_integration` branch.
