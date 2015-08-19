@@ -4,27 +4,49 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>app-main</title>
 
-  <script src="../bower_components/webcomponentsjs/webcomponents.js"></script>
-  <script src="../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../bower_components/polymer/polymer.html">
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+  <script src="../../bower_components/test-fixture/test-fixture-mocha.js"></script>
+  <link rel="import" href="../../bower_components/test-fixture/test-fixture.html">
 
   <!-- Step 1: import the element to test -->
-  <link rel="import" href="../elements/app-main/app-main.html">
+  <link rel="import" href="../app-main/app-main.html">
 
 </head>
 <body>
 
-  <app-main id="fixture" test_mode="true"></app-main>
+
+  <test-fixture id="app">
+    <template>
+      <app-main test_mode="true"></app-main>
+    </template>
+  </test-fixture>
 
   <script>
+    'use strict';
+    
+    // Silence jshint
+//     var assert = assert;
+//     var test = test;
+//     var setup = setup;
+//     var suite = suite;
+//     var flush = flush;
+//     var fixture = fixture;
+//     var teardown = teardown;
+
+    var app;
+
     suite('app-main', function() {
 
-      suiteSetup(function(){});
-      setup(function(){});
+      setup(function(){
+        // Provide a global reference to the app's element
+        app = fixture('app');
+      });
 
       test('Title displays', function() {
-        var el = document.querySelector('app-main');
-        var title = el.shadowRoot.querySelector('#title');
-        assert.equal(title.textContent, 'Reformed Churches Locator');
+        app = fixture('app');
+        assert.equal(app.$.title.textContent, 'Reformed Churches Locator');
       })
 
       test('Map displays', function() {
