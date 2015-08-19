@@ -80,6 +80,7 @@ define([
             // Different types of changes that need to be handled
             this.listenTo(this.model,{
                 'change':this.handle_404,
+                'change:get_batchgeo_map_html':this.got_batchgeo_map_html,
                 'change:get_json':this.got_json
             })
         },
@@ -285,7 +286,9 @@ define([
                 this.model.set('pagetype', 'html')
                 // Determine what type of directory this is
                 // batchgeo
-                if (this.uses_batch_geo(data) === true){
+                if (this.uses_batch_geo(data) === true && 
+                    typeof this.model.get('get_batchgeo_map_html') == 'undefined' &&
+                    typeof this.model.get('get_json') == 'undefined'){
                     this.process_batch_geo(data)
                 }else{
                     // TODO: If the other form fields are empty,
@@ -390,7 +393,7 @@ define([
                             // If we have not already created a directory on this page, create it;
                             //  else get the existing directory
                             thiz.model = thiz.directories.findWhere({url:page_url})
-                            if (typeof thiz.model === 'undefined'){
+                            if (!thiz.hasOwnProperty('model')){
                                 // The dir hasn't been created yet, so create it
                                 thiz.model = new model.Directory({url:page_url})
                             }
