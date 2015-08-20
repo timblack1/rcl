@@ -47,7 +47,8 @@
 
       <cgroup-filter id="cgroup_filter"
         selected_cgroups="{{selected_cgroups}}"
-        available_cgroups="{{available_cgroups}}">
+        available_cgroups="{{available_cgroups}}"
+        available_cgroups_displayed="{{available_cgroups_displayed}}">
       </cgroup-filter>
 
     </div>
@@ -80,6 +81,10 @@
         notify: true
       },
       available_cgroups: {
+        type: Array,
+        notify: true
+      },
+      available_cgroups_displayed: {
         type: Array,
         notify: true
       }
