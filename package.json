@@ -79,8 +79,8 @@
   },
   "scripts": {
     "test": "node_modules/hoodie-server/bin/start --custom-ports=3002,3003,3004 & pid=$! && wct && kill $pid",
-    "start": "node node_modules/hoodie-server/bin/start",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post && gp.sh timblack1 rcl"
+    "start": "gulp serve",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "hoodie": {
     "plugins": [

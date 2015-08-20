@@ -18,13 +18,13 @@ To install Reformed Churches Locator, first install its dependencies by running 
 $ sudo apt-get install couchdb nodejs git
 ```
 
-Then install Reformed Churches Locator by running the following commands in your terminal:
+Then install and run Reformed Churches Locator by running the following commands in your terminal:
 
 ```bash
 $ git clone https://github.com/timblack1/rcl.git
 $ npm install
 $ bower install
-$ gulp serve
+$ npm start
 ```
 
 This should open up a copy of the application in your web browser.
