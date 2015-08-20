@@ -101,12 +101,12 @@
       });
 
       test('available_cgroups - add to - should increase length of available_cgroups and ' +
-            'display that cgroup', function() {
+            'display that cgroup', function(done) {
         var length = cf.available_cgroups.length;
         cf.push('available_cgroups', {abbreviation:"OPC"});
         assert.equal(length + 1, cf.available_cgroups.length);
         flush(function(){
-          assert.equal(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC x ");
+          assert.equal(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC");
           // Cleanup
           cf.pop('available_cgroups');
           done();
@@ -114,7 +114,7 @@
       });
 
       test('available_cgroups - remove from - should decrease length of available_cgroups ' +
-            'and no longer display that cgroup', function() {
+            'and no longer display that cgroup', function(done) {
         cf.push('available_cgroups', {abbreviation:"OPC"});
         var length = cf.available_cgroups.length;
         cf.pop('available_cgroups');
@@ -130,12 +130,39 @@
     suite('clicks', function() {
       var cf;
 
-      setup(function() {
+      /* Utility functions BEGIN */
+
+      function populate_available_cgroups(){
+        cf.push('available_cgroups',
+          {abbreviation:'OPC'},
+          {abbreviation:'URC'},
+          {abbreviation:'PCA'},
+          {abbreviation:'RPCNA'},
+          {abbreviation:'RCUS'},
+          {abbreviation:'KAPC'}
+        );
+      }
+
+      /* Utility functions END */
+
+      setup(function(done) {
         cf = fixture('basic');
+        populate_available_cgroups();
+        flush(done);
       });
 
-      test('on available cgroup - clicked cgroup should be added to selected_cgroups and display', function() {
-        assert.equal(1,0);
+      teardown(function(){
+        cf.available_cgroups = [];
+      });
+
+      test('on available cgroup - clicked cgroup should be added to selected_cgroups and display', function(done) {
+        var opc = cf.querySelector('#OPC');
+        opc.fire('tap');
+        flush(function(){
+          assert.include(cf.selected_cgroups, {abbreviation:'OPC'});
+          assert.include(cf.$.selected.textContent, 'OPC');
+          done();
+        });
       });
 
       test('on same available cgroup two times - only one copy of clicked cgroup should be ' +

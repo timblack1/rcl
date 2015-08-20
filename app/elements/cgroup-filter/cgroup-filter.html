@@ -27,7 +27,7 @@
     <paper-input label="Filter by denomination (or other group)..."></paper-input>
     <div id="available_filtered">
       <template id="available_list" is="dom-repeat" items="{{available_cgroups}}">
-        <paper-button on-tap="add_to_selected">{{item.abbreviation}}</paper-button>
+        <paper-button on-tap="add_to_selected" id="{{item.abbreviation}}">{{item.abbreviation}}</paper-button>
       </template>
     </div>
     <div>
