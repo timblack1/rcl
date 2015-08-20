@@ -76,11 +76,12 @@
       this.splice('selected_cgroups', index, 1);
     },
     add_to_selected:function(event){
+      var thiz = this;
       // Don't add the cgroup if it is already in the list.
       var item = event.model.get('item');
-      if (this.selected_cgroups.indexOf(item) == -1){
+      if (thiz.selected_cgroups.filter(function(ob){ return ob.abbreviation === item.abbreviation; }).length === 0){
         // Add the selected cgroup to the list of selected cgroups
-        this.push('selected_cgroups', event.model.get('item'));
+        thiz.push('selected_cgroups', event.model.get('item'));
       }
     },
     show_hide_header:function(splices){
