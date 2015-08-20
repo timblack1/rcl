@@ -1,3 +1,5 @@
+| [![Build Status](https://travis-ci.org/timblack1/rcl.svg?branch=master)](https://travis-ci.org/timblack1/rcl) | [![Coverage Status](https://coveralls.io/repos/timblack1/rcl/badge.svg?branch=master&service=github)](https://coveralls.io/github/timblack1/rcl?branch=master) | [![Dependency Status](https://david-dm.org/timblack1/rcl.svg)](https://david-dm.org/timblack1/rcl/master) | [![devDependency Status](https://david-dm.org/timblack1/rcl/master/dev-status.svg)](https://david-dm.org/timblack1/rcl/master#info=devDependencies) |
+| --- | --- | --- | --- |
 # Reformed Churches Locator
 
 Want to find a reformed church in Timbuktu?  Reformed Churches Locator is a web application that will provide a searchable, user-editable map and directory of all Reformed churches in the world. It will aggregate congregations' contact info via data feeds from various sources, and provide a JavaScript widget containing a map & directory that can be embedded into your website using a simple code snippet (like embedding a YouTube video). It will federate filtered sets of congregation data to other Reformed Churches Locator nodes via CouchDB's filtered replications.  The intended result is that Reformed Churches Locator will become the source of the most up-to-date contact info for Reformed churches, and will simplify the job of creating a denominational church directory.
@@ -18,13 +20,13 @@ To install Reformed Churches Locator, first install its dependencies by running 
 $ sudo apt-get install couchdb nodejs git
 ```
 
-Then install Reformed Churches Locator by running the following commands in your terminal:
+Then install and run Reformed Churches Locator by running the following commands in your terminal:
 
 ```bash
 $ git clone https://github.com/timblack1/rcl.git
 $ npm install
 $ bower install
-$ gulp serve
+$ npm start
 ```
 
 This should open up a copy of the application in your web browser.

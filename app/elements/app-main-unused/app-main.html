@@ -1,0 +1,178 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-from-right-animation.html">
+<!-- <link rel="import" href="../../bower_components/speech-mic/speech-mic.html"> -->
+<!-- <link rel="import" href="../../bower_components/paper-menu/core-submenu.html"> -->
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+
+<link rel="import" href="../../bower_components/hoodie-accountbar/hoodie-accountbar.html">
+
+<link rel="stylesheet" href="app-main.css">
+
+<dom-module id='app-main'>
+
+  <style>
+  </style>
+
+
+  <template>
+    
+    <paper-header-panel mode="seamed" id="core_header_panel" navigation class="flex">
+
+      <paper-toolbar id="core_toolbar">
+        <div id="title">Reformed Churches Locator</div>
+      </paper-toolbar>
+
+      <paper-menu selected="{{route}}" valueattr="hash" selectedindex="0" id="core_menu" 
+          theme="core-light-theme" 
+          on-core-select="menuItemSelected">
+          <template is="dom-repeat" items="{{pages}}">
+            <paper-item hash="{{hash}}" id="{{hash}}" class="horizontal center layout" active
+              on-tap="setHandler" data-handler="{{handler}}">
+              <iron-icon icon="{{icon}}"></iron-icon>
+              <a href="#{{hash}}">{{name}}</a>
+            </paper-item>
+          </template>
+      </paper-menu>
+
+    </paper-header-panel>
+
+<!-- 
+    <iron-input tool id="core_field" icon="search" theme="core-dark-theme" class="horizontal layout center">
+      <iron-icon icon="search" id="core_icon"></iron-icon>
+      <paper-input id="input" value="{{ $.speech_mic.transcript }}" 
+        label="Search for a church..."
+        floatingLabel="true">
+    </iron-input>
+    <speech-mic tool completetranscript="hello" id="speech_mic"></speech-mic>
+ -->
+
+    <hoodie-accountbar tool></hoodie-accountbar>
+
+    <neon-animated-pages id="pages" selected="{{route}}" valueattr="hash" transitions="slide-from-right">
+      <section hash="find_a_church" id="find_a_church_section">
+        <google-map id="google_map" latitude="{{ $.google_map_search.result.latitude }}" 
+          longitude="{{ $.google_map_search.result.longitude }}" 
+          zoom="13" class="fit fitToMarkers">
+        </google-map>
+        <google-map-search id="google_map_search" map="{{ $.google_map.map }}" query="{{ $.input.value }}"></google-map-search>
+      </section>
+      <section hash="import_a_directory" id="import_a_directory_section" class="layout vertical center-center fit">
+        <div>Import a directory</div>
+      </section>
+      <core-a11y-keys target="{{}}"
+        keys="up down left right space space+shift"
+        on-keys-pressed="keyHandler"></iron-a11y-keys>
+    </neon-animated-pages>
+
+
+  </template>
+
+  <script>
+
+    (function() {
+
+      Polymer({
+        is: 'app-main',
+        properties: {
+          pages: {
+            type: Array,
+            value: [
+              {name:'Find a church', hash:'find_a_church', handler:'find_a_church', icon:'search'},
+              {name:'Import a directory', hash:'import_a_directory', handler:'import_a_directory', icon:'file-upload'},
+            ],
+            notify: true
+          },
+          test_mode: {
+            type: Boolean,
+            value: false,
+            notify: true
+          }
+        },
+        ready:function(){
+          // TODO: Integrate the following:
+  //         <script data-main="assets/js/main" src="assets/vendor/requirejs/require.js"
+  //         <script src="//cdn.import.io/js/2.0.0/importio.js">
+  //         <script>
+  //             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+  //             (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  //             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+  //             s.parentNode.insertBefore(g,s)}(document,'script'));
+  //         /script>
+          if (!this.test_mode){
+            // Don't set the default route when testing, because it makes the tests run in an infinite loop!
+            this.route = this.route || 'find_a_church';
+          }
+          this.fix_map_height();
+          // Focus the search box
+          document.querySelector('app-main /deep/ #input').focus();
+        },
+        setHandler:function(e, detail, sender){
+          // This is necessary to use the dynamically-created on-tap handler function names
+          this[sender.dataset.handler]();
+        },
+        fix_map_height:function(){
+          // TODO: Fix how this makes the map pan to return the map tiles' center to the map element's center.
+          //  It does this every time the "Find a church" page loads.
+          var thiz = this;
+          // Fix the height of the map to fit the available space
+          var new_height = document.querySelector('body').clientHeight - document.querySelector('app-main /deep/ paper-toolbar').clientHeight;
+          if (thiz.$.google_map.clientHeight == 0 || thiz.$.google_map.clientHeight != new_height){
+            document.querySelector('app-main /deep/ google-map').style.height = new_height + 'px';
+            thiz.$.google_map.resize();
+          }
+          if (this.route !== 'find_a_church'){
+            // Resize after having loaded the app from a non-map page
+            this.$.pages.addEventListener('core-animated-pages-transition-prepare', function() {
+              thiz.$.google_map.resize();
+              thiz.$.pages.removeEventListener('core-animated-pages-transition-prepare');
+            });
+          }
+        },
+        find_a_church:function(){
+          this.fix_map_height();
+        },
+        import_a_directory:function(){
+        },
+        menuItemSelected:function(e, detail, sender){
+          // Close drawer when menu item is clicked
+          if (detail.isSelected){
+            this.$.core_scaffold.closeDrawer();
+          }
+        },
+        keyHandler:function(e, detail, sender) {
+          // TODO: This should not fire on [left right space] when in the search box, but does.  See issue #25.
+          // TODO: Make a unit test for this.
+          var pages = this.$.pages;
+          switch (detail.key) {
+            case 'left':
+            case 'up':
+              pages.selectPrevious();
+              break;
+            case 'right':
+            case 'down':
+              pages.selectNext();
+              break;
+            case 'space':
+              detail.shift ? pages.selectPrevious() : pages.selectNext();
+              break;
+          }
+        }
+      });
+
+    })();
+
+  </script>
+
+</dom-module>
