@@ -5,6 +5,7 @@ services:
 cache:
   directories:
     - node_modules
+    - bower_components
 notifications:
   email: false
 node_js:
