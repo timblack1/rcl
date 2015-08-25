@@ -710,7 +710,7 @@ var requirejs, require, define;
                 if ((isBrowser || isWebWorker) && !checkLoadedTimeoutId) {
                     checkLoadedTimeoutId = setTimeout(function () {
                         checkLoadedTimeoutId = 0;
-                        checkLoaded();
+                           checkLoaded();
                     }, 50);
                 }
             }

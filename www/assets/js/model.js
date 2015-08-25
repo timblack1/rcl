@@ -380,7 +380,7 @@ define([
         },
         handle_changes:function(model, value, options){
             // When this collection changes, geocode or re-geocode any congs that need it
-            if (value instanceof Backbone.Collection){
+            if (model instanceof Backbone.Collection){
                 // This is an add event, and probably originated from a call to congs.fetch() to get all congs
                 //  from the local hoodie store.
                 // So add only those congs which haven't been geocoded yet.
