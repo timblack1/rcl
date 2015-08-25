@@ -1,9 +1,0 @@
-[
-  ".*~$",
-  ".*\\.bak$",
-  "\\.git$",
-  "changes_listeners_temp.js",
-  "node_modules/*",
-  "sync.txt",
-  "login.txt"
-]

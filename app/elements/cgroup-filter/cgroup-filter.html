@@ -1,0 +1,95 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="cgroup-filter" 
+  selected_cgroups="{{selected_cgroups}}"
+  available_cgroups="{{available_cgroups}}" >
+  <style>
+    :host {
+      display: block;
+    }
+    #header {
+      margin-bottom: 0.5em;
+    }
+    #selected paper-button,
+    #available_filtered paper-button {
+      border: 2px solid lightblue;
+      border-radius: 0.3em;
+    }
+  </style>
+  <template>
+    
+    <p id="header" hidden="{{hide_header}}">Selected denominations:</p>
+    <div id="selected">
+      <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
+        <paper-button on-tap="remove_cgroup"><span>{{item.abbreviation}}</span> x </paper-button>
+      </template>
+    </div>
+    <paper-input label="Filter by denomination (or other group)..."></paper-input>
+    <div id="available_filtered">
+      <template id="available_list" is="dom-repeat" items="{{available_cgroups}}">
+        <paper-button on-tap="add_to_selected">{{item.abbreviation}}</paper-button>
+      </template>
+    </div>
+    <div>
+      <paper-checkbox>List all groups</paper-checkbox>
+      <paper-checkbox>Show full names</paper-checkbox>
+    </div>
+    
+  </template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'cgroup-filter',
+
+    properties: {
+      selected_cgroups: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      available_cgroups: {
+        type: Array,
+        notify: true
+      },
+      available_cgroups_displayed: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      hide_header: {
+        type: Boolean,
+        value: true,
+        notify: true
+      }
+    },
+    observers: [
+      'show_hide_header(selected_cgroups.splices)'
+    ],
+    ready:function(){
+      this.show_hide_header();
+    },
+    remove_cgroup:function(event){
+      // Remove this item from selected_cgroups
+      var index = this.selected_cgroups.indexOf(event.model.get('item'));
+      this.splice('selected_cgroups', index, 1);
+    },
+    add_to_selected:function(event){
+      // Don't add the cgroup if it is already in the list.
+      var item = event.model.get('item');
+      if (this.selected_cgroups.indexOf(item) == -1){
+        // Add the selected cgroup to the list of selected cgroups
+        this.push('selected_cgroups', event.model.get('item'));
+      }
+    },
+    show_hide_header:function(splices){
+      if (this.selected_cgroups.length === 0){
+        this.hide_header = true;
+      }else{
+        this.hide_header = false;
+      }
+    }
+
+  });
+})();
+</script>

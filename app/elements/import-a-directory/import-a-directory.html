@@ -1,0 +1,27 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="import-a-directory" hoodie="{{hoodie}}" >
+  <style>
+    :host {
+      display: block;
+    }
+  </style>
+  <template>
+    <div>Hello</div>
+  </template>
+</dom-module>
+<script>
+(function() {
+  Polymer({
+    is: 'import-a-directory',
+
+    properties: {
+      hoodie: {
+        type: Object,
+        notify: true,
+        reflectToAttribute: true
+      }
+    }
+  });
+})();
+</script>

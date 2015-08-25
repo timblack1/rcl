@@ -1,0 +1,100 @@
+/* Import a directory page */
+
+/* Initial buttons */
+
+.geocode_stats {
+    float:right;
+    background-color: lightgray;
+    padding: 0 1.5em 1.5em 1.5em;
+    margin: 1em;
+    border-radius: 0.8em;
+    border: 2px dotted gray;
+}
+.geocode_stats tr td:last-child {
+    padding-left: 0.5em;
+    color: green;
+}
+
+/* For download congs page */
+.content_frame {
+    width:900px;
+    height:250px;
+    overflow:scroll;
+}
+.content_frame_narrow {
+    width:612px;
+    margin-right: 1em;
+}
+#fields_container {
+    width: 300px;
+    float:right;
+}
+.field_row {
+    clear: both;
+}
+.field_row:hover {
+    background:#fffcce;
+}
+.field_row>div {
+    display:inline-block;
+    vertical-align:top;
+}
+.field_row div:first-child {
+    float:left;
+    width:140px;
+}
+.field_selected {
+    border: 1px dotted blue;
+    border-radius: 5px;
+}
+.regex_section {
+    margin-top: 1em;
+}
+
+/* Radio button fix */
+#steps input+label {
+    display:inline;
+    vertical-align:text-top;
+}
+#steps label {
+    margin-left:1em;
+}
+/* File input fix to give it Bootstrap styling */
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+.importio_drop_target {
+    border: 2px dotted lightgray;
+    padding: .5em;
+    border-radius: 0.5em;
+    color: lightgray;
+}
+.importio_drop_target:hover{
+    border: 2px dotted blue;
+    color: blue;
+}
+.dragover {
+    border: 2px dotted blue;
+    color: blue;
+}
+.dropped, .importio_drop_target:hover.dropped {
+    border: 2px dotted white;
+    background-color: lightgreen;
+    color: white;
+}
