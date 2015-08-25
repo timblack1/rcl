@@ -1,38 +1,90 @@
 {
-  "name": "rcl",
-  "version": "1.0.16",
+  "name": "reformed-churches-locator",
   "type": "app",
   "license": "MIT",
-  "description": "",
+  "description": "The most up-to-date directory of Reformed churches worldwide.",
+  "authors": [
+    "Tim Black <tim@alwaysreformed.com> (http://alwaysreformed.com/)",
+    "Doug Huston <>"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/timblack1/rcl.git"
   },
+  "homepage": "https://github.com/timblack1/rcl#readme",
+  "keywords": [
+    "reformed",
+    "churches",
+    "locator",
+    "directory"
+  ],
+  "bugs": {
+    "url": "https://github.com/timblack1/rcl/issues"
+  },
+  "browser": {
+    "hoodie": "./bower_components/hoodie-service/hoodie.js"
+  },
   "dependencies": {
+    "hoodie": "latest",
     "hoodie-plugin-appconfig": "^2.0.1",
-    "hoodie-plugin-email": "^1.0.0",
-    "hoodie-plugin-global-share": "^3.0.0",
-    "hoodie-plugin-http": "0.0.1",
+    "hoodie-plugin-http": "latest",
     "hoodie-plugin-users": "^2.2.1",
     "hoodie-server": "^3.0.0",
     "request": "^2.0.0"
   },
-  "files": [
-    "www/"
-  ],
+  "devDependencies": {
+    "apache-server-configs": "^2.7.1",
+    "browser-sync": "^2.6.4",
+    "browserify": "~5.10.1",
+    "del": "^1.1.1",
+    "glob": "^5.0.6",
+    "gulp": "^3.8.5",
+    "gulp-autoprefixer": "^2.1.0",
+    "gulp-cache": "^0.2.8",
+    "gulp-changed": "^1.0.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-flatten": "0.0.4",
+    "gulp-if": "^1.2.1",
+    "gulp-imagemin": "^2.2.1",
+    "gulp-jshint": "^1.6.3",
+    "gulp-load-plugins": "^0.10.0",
+    "gulp-minify-html": "^1.0.2",
+    "gulp-rename": "^1.2.0",
+    "gulp-replace": "^0.5.3",
+    "gulp-size": "^1.0.0",
+    "gulp-uglify": "^1.2.0",
+    "gulp-uncss": "^1.0.1",
+    "gulp-useref": "^1.1.2",
+    "gulp-vulcanize": "^6.0.0",
+    "http-proxy-middleware": "0.0.5",
+    "jshint-stylish": "^2.0.0",
+    "merge-stream": "^0.1.7",
+    "opn": "^1.0.0",
+    "require-dir": "^0.3.0",
+    "run-sequence": "^1.0.2",
+    "semantic-release": "^4.1.0",
+    "url": "^0.10.3",
+    "vulcanize": ">= 1.4.2",
+    "web-component-tester": "^3.3.9"
+  },
   "engines": {
     "node": ">=0.10.22"
   },
+  "files": [
+    "app/"
+  ],
   "scripts": {
-    "start": "node node_modules/hoodie-server/bin/start"
+    "test": "node_modules/hoodie-server/bin/start --custom-ports=3002,3003,3004 & pid=$! && wct && kill $pid",
+    "start": "gulp serve",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post"
   },
   "hoodie": {
     "plugins": [
       "hoodie-plugin-appconfig",
-      "hoodie-plugin-email",
-      "hoodie-plugin-users",
-      "hoodie-plugin-global-share",
-      "hoodie-plugin-http"
-    ]
+      "hoodie-plugin-http",
+      "hoodie-plugin-users"
+    ],
+    "hoodiejs": "node_modules/hoodie/src/hoodie.js"
   }
 }

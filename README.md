@@ -1,156 +1,53 @@
-## Reformed Churches Locator
+| [![Build Status](https://travis-ci.org/timblack1/rcl.svg?branch=master)](https://travis-ci.org/timblack1/rcl) | [![Coverage Status](https://coveralls.io/repos/timblack1/rcl/badge.svg?branch=master&service=github)](https://coveralls.io/github/timblack1/rcl?branch=master) | [![Dependency Status](https://david-dm.org/timblack1/rcl.svg)](https://david-dm.org/timblack1/rcl/master) | [![devDependency Status](https://david-dm.org/timblack1/rcl/master/dev-status.svg)](https://david-dm.org/timblack1/rcl/master#info=devDependencies) |
+| --- | --- | --- | --- |
+# Reformed Churches Locator
 
-# Creating a new Hoodie App
+Want to find a reformed church in Timbuktu?  Reformed Churches Locator is a web application 
+that will provide a searchable, user-editable map and directory of all Reformed churches in 
+the world. It will aggregate congregations' contact info via data feeds from various 
+sources, and provide a JavaScript widget containing a map & directory that can be embedded 
+into your website using a simple code snippet (like embedding a YouTube video). It will 
+federate filtered sets of congregation data to other Reformed Churches Locator nodes via 
+CouchDB's filtered replications.  The intended result is that Reformed Churches Locator will 
+become the source of the most up-to-date contact info for Reformed churches, and will 
+simplify the job of creating a denominational church directory.
 
-## Installation
+Reformed Churches Locator will recreate the map & congregations components of PresbyterySite 
+(http://sourceforge.net/projects/presbyterysite), but host & serve the congregation data in a 
+federated or peer-to-peer fashion in order to manage data from all Reformed churches rather 
+than from only one presbytery.
 
-Please refer to the [install guides for OS X, Linux and Windows](http://hood.ie/#installation).
+# Application Architecture
 
-## Plugins
+Please note that older Reformed Churches Locator issues which describe the overall application 
+architecture are hosted at https://blueprints.launchpad.net/reformedchurcheslocator.
 
-To install a specific plugin, run (in your app's directory):
+Reformed Churches Locator is an "Offline first" application, meaning will run well offline, 
+then sync its data to the server when it has an internet connection.  It uses Hoodie to store
+the app's data locally using PouchDB, and syncs to CouchDB on the server through Hoodie's 
+server-side API.
 
-    $ hoodie install <name>
+# Installation
 
-where `<name>` is one of the Hoodie Plugin.
+To install Reformed Churches Locator, first install its dependencies by running the following 
+commands in your terminal.  This command is the syntax used by Ubuntu's package manager.  If 
+you're not on Ubuntu, replace `sudo apt-get install` with your package manager's syntax.
 
-To uninstall use:
-
-    $ hoodie uninstall <name>
-
-### List of Hoodie Plugins
-
-* users (installed by default)
-  - user sign up
-  - user sign in
-  - password forget
-  - change username
-  - change password
-
-* email (installed by default)
-  - send multipart emails
-
-
-## Troubleshooting
-
-In case you get npm permission errors, this is most likely down to the
-fact that you have prior used the 'sudo' command to install node
-modules.
-
-`sudo -H npm yourCommand` should fix this. For slightly more detail,
-please check out: [Why you shouldn't use sudo with npm](http://blog.hood.ie/2014/02/why-you-shouldnt-use-sudo-with-npm/)
-
-Make sure that local-tld got installed correctly
-
-    $ NODE_PATH=`npm root -g`
-    $ open $NODE_PATH/local-tld
-
-Make sure that paths have been set correctly
-
-    $ echo $NODE_PATH
-    $ cat ~/Library/LaunchAgents/ie.hood.local-tld-service.plist
-
-In some situations, you may need to manually update `~/Library/LaunchAgents/ie.hood.local-tld-service.plist` to correctly source your Node installation, particularly if you are using a Node version manager, such as `nvm`.
-
-Check the output of `$ cat ~/Library/LaunchAgents/ie.hood.local-tld-service.plist` for the following:
-
-```
-<key>ProgramArguments</key>
-<array>
-    <string>should equal the output of `$ which node`</string>
-    <string>should equal the output of `$ echo $NODE_PATH` + /local-tld/bin/local-tld-service</string>
-</array>
+```bash
+$ sudo apt-get install couchdb nodejs git
 ```
 
-If these values aren't correct, you'll need to open `~/Library/LaunchAgents/ie.hood.local-tld-service.plist` in a text editor and update the file with the aforementioned values.
+Then install and run Reformed Churches Locator by running the following commands in your terminal:
 
-If things do not work, try:
+```bash
+$ git clone https://github.com/timblack1/rcl.git
+$ npm install
+$ bower install
+$ npm start
+```
 
-    $ launchctl unload ~/Library/LaunchAgents/ie.hood.local-tld-service.plist
-    $ launchctl load -Fw ~/Library/LaunchAgents/ie.hood.local-tld-service.plist
+This should open up a copy of the application in your web browser.
 
-If things STILL don't work, try that (but don't tell Jan) ((I saw this! — Jan))
+# Deployment
 
-    $ sudo $NODE_PATH/local-tld/bin/local-tld-troubleshoot
-
-**Vhosts**
-
-If you find Hoodie interfering with your vhosts, here's a temporary workaround:
-
-To get your vhosts back: `$ sudo ipfw flush`
-
-To get local-tld back: `$ npm install -g local-tld`
-
-To find out which state you're in: `$ sudo ipfw list`
-If this includes something like "00100 fwd 127.0.0.1,5999 tcp from any to me dst-port 80 in", local-tld is currently running and might be blocking your vhosts.
-
-## Deploy to Nodejitsu
-
-You need a Nodejitsu account and the `jitsu` tool installed.
-
-Create a new hoodie app:
-
-    $ hoodie new myapp
-
-Start app locally:
-
-    $ cd myapp
-    $ hoodie start
-
-Create a database:
-
-    $ jitsu database create couch myapp
-
-This prints out the URL for your database, something like:
-
-    http://nodejitsudb123456789.iriscouch.com:5984
-
-Go to:
-
-    http://nodejitsudb123456789.iriscouch.com:5984/_utils
-
-In the bottom right, click on "Fix This". Create a new user with the username `admin` and a password of your choice. Remember the password.
-
-Create the Nodejitsu app.
-
-    $ jitsu apps create
-
-Set your database URL as an environment variable:
-
-    $ jitsu env set COUCH_URL http://nodejitsudb1234567890.iriscouch.com:5984
-    $ jitsu env set HOODIE_ADMIN_USER admin
-    $ jitsu env set HOODIE_ADMIN_PASS <yourpassword>
-
-
-`<yourpassword>` is the one you set up two steps ago.
-
-Deploy!
-
-    $ jitsu deploy
-
-(wait a minute)
-
-Go to: `http://myapp.jit.su`
-
-Boom.
-
-## Deploy on a regular Linux/UNIX box:
-
-[See deployment.md](deployment.md)
-
-<!--## Deploy dreamcode tl;dr
-
-    $ hoodie new myapp
-    $ cd myapp
-    $ hoodie start
-
-    $ hoodie remote add nodejitsu
-     - jitsu login
-     - jitsu database create couch myapp
-         - setup couchdb admin
-     - jitsu apps create
-     - jitsu env set COUCH_URL http://...
-     - jitsu env set COUCH_PASS <secret>
-
-    $ hoodie deploy
-     - jitsu deploy-->
+Because the application is still in development, we have not yet documented how to deploy it to a server.
