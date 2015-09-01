@@ -1,4 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <dom-module id="cgroup-filter" 
   selected_cgroups="{{selected_cgroups}}"
@@ -14,6 +17,8 @@
     #available_filtered paper-button {
       border: 2px solid lightblue;
       border-radius: 0.3em;
+      margin: 0.2em;
+      margin-bottom: 1em;
     }
   </style>
   <template>
@@ -21,18 +26,32 @@
     <p id="header" hidden="{{hide_header}}">Selected denominations:</p>
     <div id="selected">
       <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
-        <paper-button on-tap="remove_cgroup"><span>{{item.abbreviation}}</span> x </paper-button>
+        <paper-button on-tap="remove_cgroup">
+          <span hidden="{{hide_abbreviation}}" class="abbreviation"><span>{{item.abbreviation}}</span> x </span>
+          <span hidden="{{hide_name}}" class="name"><span>{{item.name}}</span> x </span>
+        </paper-button>
       </template>
     </div>
-    <paper-input label="Filter by denomination (or other group)..."></paper-input>
+    <paper-input id="filter_input" 
+      label="Filter by denomination (or other group)..." 
+      on-input="filter_input_changed"
+      value="{{filter_value}}">
+    </paper-input>
     <div id="available_filtered">
-      <template id="available_list" is="dom-repeat" items="{{available_cgroups}}">
-        <paper-button on-tap="add_to_selected" id="{{item.abbreviation}}">{{item.abbreviation}}</paper-button>
+      <template id="available_list" is="dom-repeat" items="{{available_cgroups_displayed}}">
+        <paper-button on-tap="add_to_selected" id="{{item.abbreviation}}">
+          <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
+          <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
+        </paper-button>
       </template>
     </div>
     <div>
-      <paper-checkbox>List all groups</paper-checkbox>
-      <paper-checkbox>Show full names</paper-checkbox>
+      <paper-checkbox id="list_all_groups" on-tap="list_all_groups_tapped">List all groups</paper-checkbox>
+      <paper-checkbox id="show_full_names"
+        on-tap="show_full_names_tapped" 
+        hidden="{{hide_show_full_names}}">
+        Show full names
+      </paper-checkbox>
     </div>
     
   </template>
@@ -62,10 +81,26 @@
         type: Boolean,
         value: true,
         notify: true
+      },
+      hide_abbreviation: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      hide_name: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      hide_show_full_names: {
+        type: Boolean,
+        value: true,
+        notify: true
       }
     },
     observers: [
-      'show_hide_header(selected_cgroups.splices)'
+      'show_hide_header(selected_cgroups.splices)',
+      'notify_acd_changed(available_cgroups_displayed.splices)'
     ],
     ready:function(){
       this.show_hide_header();
@@ -90,6 +125,48 @@
       }else{
         this.hide_header = false;
       }
+    },
+    list_all_groups_tapped:function(event){
+      if (this.$.list_all_groups.checked === true){
+        // List all groups
+        this.$.filter_input.value = '';
+        // Clone the available_cgroups array to avoid clearing it below
+        this.available_cgroups_displayed = this.available_cgroups.slice(0);
+      }else{
+        // Hide all groups
+        // Clear the array in a way that Polymer will notice
+        this.splice('available_cgroups_displayed', 0, this.available_cgroups_displayed.length);
+      }
+    },
+    show_full_names_tapped:function(event){
+      this.hide_abbreviation = !this.hide_abbreviation;
+      this.hide_name = !this.hide_name;
+    },
+    // Displays the list of available cgroups which match the search term
+    filter_input_changed:function(event){
+      var thiz = this;
+      this.debounce('filter_wait', function(){
+        console.log('after wait');
+        thiz.available_cgroups_displayed = thiz.available_cgroups.filter(function(ob){
+          if (ob.name.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
+            return true;
+          }else if (ob.abbreviation.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
+            return true;
+          }else{
+            return false;
+          }
+        });
+        console.log('after changing available_cgroups_displayed');
+      }, 100);
+    },
+    // This function is currently used only to notify the tests
+    notify_acd_changed:function(event){
+      if (this.available_cgroups_displayed.length === 0){
+        this.hide_show_full_names = true;
+      }else{
+        this.hide_show_full_names = false;
+      }
+      this.fire('available-cgroups-displayed-changed');
     }
 
   });
