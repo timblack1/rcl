@@ -81,7 +81,7 @@
         cf.push('selected_cgroups', {abbreviation:"OPC"});
         assert.equal(length + 1, cf.selected_cgroups.length);
         flush(function(){
-          assert.equal(cf.$.selected.querySelector('paper-button').textContent,"OPC x ");
+          assert.include(cf.$.selected.querySelector('paper-button').textContent,"OPC x ");
           // Cleanup
           cf.pop('selected_cgroups');
           done();
@@ -100,25 +100,25 @@
         });
       });
 
-      test('available_cgroups - add to - should increase length of available_cgroups and ' +
-            'display that cgroup', function() {
-        var length = cf.available_cgroups.length;
-        cf.push('available_cgroups', {abbreviation:"OPC"});
-        assert.equal(length + 1, cf.available_cgroups.length);
+      test('available_cgroups_displayed - add to - should increase length of available_cgroups_displayed and ' +
+            'display that cgroup', function(done) {
+        var length = cf.available_cgroups_displayed.length;
+        cf.push('available_cgroups_displayed', {abbreviation:"OPC"});
+        assert.equal(length + 1, cf.available_cgroups_displayed.length);
         flush(function(){
-          assert.equal(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC x ");
+          assert.include(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC");
           // Cleanup
-          cf.pop('available_cgroups');
+          cf.pop('available_cgroups_displayed');
           done();
         });
       });
 
-      test('available_cgroups - remove from - should decrease length of available_cgroups ' +
-            'and no longer display that cgroup', function() {
-        cf.push('available_cgroups', {abbreviation:"OPC"});
-        var length = cf.available_cgroups.length;
-        cf.pop('available_cgroups');
-        assert.equal(length - 1, cf.available_cgroups.length);
+      test('available_cgroups_displayed - remove from - should decrease length of available_cgroups_displayed ' +
+            'and no longer display that cgroup', function(done) {
+        cf.push('available_cgroups_displayed', {abbreviation:"OPC"});
+        var length = cf.available_cgroups_displayed.length;
+        cf.pop('available_cgroups_displayed');
+        assert.equal(length - 1, cf.available_cgroups_displayed.length);
         flush(function(){
           assert.notInclude(cf.$.available_filtered.textContent, 'OPC');
           done();
@@ -130,42 +130,144 @@
     suite('clicks', function() {
       var cf;
 
-      setup(function() {
+      /* Utility functions BEGIN */
+
+      function populate_available_cgroups(){
+        cf.push('available_cgroups',
+          {abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
+          {abbreviation:'URC', name:'United Reformed Churches in North America'},
+          {abbreviation:'PCA', name:'Presbyterian Church in America'},
+          {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
+          {abbreviation:'RCUS', name:'Reformed Church of the United States'},
+          {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
+        );
+      }
+
+      /* Utility functions END */
+
+      setup(function(done) {
         cf = fixture('basic');
+        populate_available_cgroups();
+        flush(done);
       });
 
-      test('on available cgroup - clicked cgroup should be added to selected_cgroups and display', function() {
-        assert.equal(1,0);
+      teardown(function(){
+        // Clear the arrays in a way Polymer mutation observers will notice
+        cf.splice('available_cgroups', 0, cf.available_cgroups.length);
+        cf.splice('available_cgroups_displayed', 0, cf.available_cgroups_displayed.length);
       });
 
-      test('on same available cgroup two times - only one copy of clicked cgroup should be ' +
-            'present in selected_cgroups and display', function() {
-        assert.equal(1,0);
+      test('on available cgroup - clicked cgroup should be added to selected_cgroups and display', function(done) {
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          var opc = cf.$.available_filtered.querySelector('#OPC');
+          opc.fire('tap');
+          flush(function(){
+            assert.include(cf.selected_cgroups, {abbreviation:'OPC', name: 'Orthodox Presbyterian Church'});
+            assert.include(cf.$.selected.textContent, 'OPC');
+            done();
+          });
+        });
       });
 
-      test('on selected cgroup - clicked cgroup should be removed from selected_cgroups and display', function() {
-        assert.equal(1,0);
+      test('on same available cgroup 2 times - only 1 copy of clicked cgroup should be ' +
+            'present in selected_cgroups and display', function(done) {
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          var opc = cf.$.available_filtered.querySelector('#OPC');
+          opc.fire('tap');
+          opc.fire('tap');
+          flush(function(){
+            assert.equal(cf.selected_cgroups.length, 1);
+            done();
+          });
+        });
+      });
+
+      test('on selected cgroup - clicked cgroup should be removed from selected_cgroups and display', function(done) {
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          // Setup:  add OPC to selected_cgroups
+          var opc = cf.$.available_filtered.querySelector('#OPC');
+          opc.fire('tap');
+          flush(function(){
+            // Click to remove it from selected_cgroups
+            var opc2 = cf.$.selected.querySelector('paper-button');
+            opc2.fire('tap');
+            flush(function(){
+              assert.notInclude(cf.selected_cgroups, {abbreviation:'OPC'});
+              assert.notInclude(cf.$.selected.textContent, 'OPC');
+              done();
+            });
+          });
+        });
       });
 
       test('on "List all groups" - placing it in the checked state - should clear search ' +
             'box and display all cgroups, by copying all available_cgroups into ' +
-            'available_cgroups_displayed', function() {
-        assert.equal(1,0);
+            'available_cgroups_displayed', function(done) {
+        cf.$.filter_input.value = 'testing';
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          assert.equal(cf.$.filter_input.value, '');
+          assert.equal(cf.$.available_filtered.querySelectorAll('paper-button').length, cf.available_cgroups.length);
+          done();
+        });
       });
 
-      test('on "List all groups" - placing it in the unchecked state - should clear display ' +
-            'area so no cgroups display, by emptying available_cgroups_displayed', function() {
-        assert.equal(1,0);
+      test('on "List all groups" twice - placing it in the unchecked state - should clear display ' +
+            'area so no cgroups display, by emptying available_cgroups_displayed', function(done) {
+        cf.$.filter_input.value = 'testing';
+        cf.$.list_all_groups.fire('tap');
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          assert.equal(cf.$.available_filtered.querySelectorAll('paper-button').length, 0);
+          done();
+        });
       });
 
       test('on "Show full names" - placing it in the checked state - should switch all cgroup ' +
-            'names from abbreviations to full names', function() {
-        assert.equal(1,0);
+            'names from abbreviations to full names', function(done) {
+        cf.$.list_all_groups.fire('tap');
+        cf.$.show_full_names.fire('tap');
+        flush(function(){
+          assert.equal(getComputedStyle(cf.$.available_filtered.querySelector('.name')).display, 'inline');
+          assert.equal(getComputedStyle(cf.$.available_filtered.querySelector('.abbreviation')).display, 'none');
+          done();
+        });
       });
 
       test('on "Show full names" - placing it in the unchecked state - should switch all ' +
-            'cgroup names from full names to abbreviations', function() {
-        assert.equal(1,0);
+            'cgroup names from full names to abbreviations', function(done) {
+        cf.$.list_all_groups.fire('tap');
+        cf.$.show_full_names.fire('tap');
+        cf.$.show_full_names.fire('tap');
+        flush(function(){
+          assert.equal(getComputedStyle(cf.$.available_filtered.querySelector('.name')).display, 'none');
+          assert.equal(getComputedStyle(cf.$.available_filtered.querySelector('.abbreviation')).display, 'inline');
+          done();
+        });
+      });
+
+      test('if there are no available_cgroups_displayed, the show_full_names checkbox should not display', function(done){
+        // Verify that we're starting with the right display mode
+        assert.equal(cf.available_cgroups_displayed.length, 0);
+        cf.$.list_all_groups.fire('tap');
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          assert.equal(cf.$.show_full_names.hidden, true);
+          done();
+        });
+      });
+
+      test('if there are some available_cgroups_displayed, the show_full_names checkbox should display', function(done){
+        // Verify that we're starting with the right display mode
+        assert.equal(cf.available_cgroups_displayed.length, 0);
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          assert.equal(cf.$.show_full_names.hidden, false);
+          done();
+        });
       });
 
     });
@@ -173,19 +275,66 @@
     suite('search box', function() {
       var cf;
 
+      /* Utility functions BEGIN */
+
+      function populate_available_cgroups(){
+        cf.push('available_cgroups',
+          {abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
+          {abbreviation:'URC', name:'United Reformed Churches in North America'},
+          {abbreviation:'PCA', name:'Presbyterian Church in America'},
+          {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
+          {abbreviation:'RCUS', name:'Reformed Church of the United States'},
+          {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
+        );
+      }
+
+      /* Utility functions END */
+
       setup(function() {
         cf = fixture('basic');
+        populate_available_cgroups();
       });
 
-      test('enter the first, a middle, or a final part of a cgroup name - should display ' +
-            'that cgroup by putting it into available_cgroups_displayed', function() {
-        assert.equal(1,0);
+      test('enter the first, a middle, or a final part of a cgroup name or abbreviation - should display ' +
+            'that cgroup by putting it into available_cgroups_displayed', function(done) {
+        var test_strings = [
+          'OPC',
+          'OP',
+          'PC',
+          'opc',
+          'op',
+          'pc',
+          'pca',
+          'ka',
+          'ur',
+          'rc'
+        ];
+        var iterator = 0;
+        function recurse(){
+          cf.$.filter_input.value = test_strings[iterator];
+          cf.$.filter_input.fire('input');
+          cf.addEventListener('available-cgroups-displayed-changed', function acd_changed_handler(event){
+            cf.removeEventListener(event.type, acd_changed_handler);
+            flush(function(){
+              assert.include(cf.$.available_filtered.textContent.toLowerCase(), test_strings[iterator].toLowerCase());
+              // If not yet done iterating through the test_strings, call this function recursively.
+              //  Otherwise, finish the test.
+              if (iterator < test_strings.length -1){
+                iterator++;
+                recurse();
+              }else{
+                done();
+              }
+            });
+          });
+        }
+        recurse();
       });
 
-      test('enter the first, a middle, or a final part of a cgroup abbreviation - should display ' +
-            'that cgroup by putting it into available_cgroups_displayed', function() {
-        assert.equal(1,0);
-      });
+//       test('if the search box is cleared, then do not list all groups unless that checkbox is checked', function(done){
+        
+//         assert.equal(1,0);
+//       });
 
     });
 
