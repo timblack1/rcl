@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../elements.html">
 
 <dom-module id="find-a-church" hoodie="{{hoodie}}">
@@ -30,6 +31,7 @@
         label="Search for a church..."
         value="{{search_string}}">
       </paper-input>
+
       <proximity-controls></proximity-controls>
       
       <voice-recognition id="voice_recognition"
@@ -114,11 +116,12 @@
         .then(function(selected_cgroups){
           thiz.selected_cgroups = selected_cgroups.cgroups;
         });
-//         this.hoodie.store.add('cgroup', {abbreviation:"OPC"});
-//         this.hoodie.store.add('cgroup', {abbreviation:"PCA"});
-//         this.hoodie.store.add('cgroup', {abbreviation:"URC"});
-//         this.hoodie.store.add('cgroup', {abbreviation:"RCUS"});
-//         this.hoodie.store.add('cgroup', {abbreviation:"RPCNA"});
+//         this.hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         // TODO: Connect cgroup-filter attributes to database
         this.hoodie.store.findAll('cgroup')
           .then(function(cgroups){
