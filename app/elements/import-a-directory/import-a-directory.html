@@ -4,14 +4,19 @@
   <style>
     :host {
       display: block;
+      padding: 1em;
+    }
+    paper-material {
+      padding: 1em;
     }
   </style>
   <template>
-    <div>Click here to import a directory</div>
-    <paper-button
-      raised>
-      Select import.io file
-    </paper-button>
+    <paper-material elevation="1">
+      <h1>Import a directory</h1>
+      <div>Click to select an import.io file</div>
+      <paper-input type="file" on-change="handle_file_selected"></paper-input>
+      <geocode-stats></geocode-stats>
+    </paper-material>
   </template>
 </dom-module>
 <script>
@@ -25,7 +30,44 @@
         notify: true,
         reflectToAttribute: true
       }
+    },
+    ready:function(){
+    },
+    attached:function(){
+      this.async(function(){
+        this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+      });
+    },
+    // Gets data from selected import.io file, geocodes it if necessary, and writes it into the database.
+    handle_file_selected:function(event){
+      // from old URLView.js:importio_drop_target_drop
+      // Get file contents here
+      var file = event.target.files[0];
+      var reader = new FileReader();
+      reader.addEventListener('load', function loadEnd(){
+        json = reader.result;
+        var congs_obj = JSON.parse(json);
+        // Determine if this import.io data source is already in a directory in the database
+        var importio_guid = congs_obj.data[0]._source[0];
+        // TODO: Start here
+        // Render stats view on geocoding progress
+        //  Use GeocodeStatsView
+        // TODO: Fire displaying next form fields here as needed
+        // TODO: Get the directory's identity from the cong URLs
+        // TODO: Display the form to edit the directory's name
+        // TODO: Display a stats view to notify the user of the following stats:
+        //  running total: X congs have been imported successfully
+        //  event: All congs' data have been imported
+        //  running total: X congs have been geocoded successfully
+        //  event: All congs' data have been geocoded successfully
+        //  event: X congs failed geocoding (offer link to view the details)
+        
+        // TODO: Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
+            
+      });
+      reader.readAsText(file);
     }
+
   });
 })();
 </script>

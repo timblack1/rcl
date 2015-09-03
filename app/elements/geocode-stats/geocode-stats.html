@@ -1,0 +1,29 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="geocode-stats">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <div>Hello from <span>{{foo}}</span></div>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'geocode-stats',
+
+      properties: {
+        foo: {
+          type: String,
+          value: 'geocode-stats',
+          notify: true
+        }
+      }
+    });
+  })();
+  </script>
+</dom-module>
