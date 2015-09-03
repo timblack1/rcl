@@ -97,15 +97,6 @@
     ],
     ready:function(){
       this.voice_recognition_state = 'OFF';
-      // TODO: On page load and search event, make the search box transform/animate to a small size,
-      //  at the top of the map, and more transparent.
-      // TODO: On interaction with the search box (e.g., mouseover or focusing its paper-input),
-      //  transform/animate it to its full display
-      // TODO: Get location search to work
-      // TODO: Permit searching by keyword if Google doesn't return a location, permit keyword only searches
-      //  via a toggle
-      // TODO: Use analytics to track whether users prefer searching by location or by keyword, in order to
-      //  create a sane default.
     },
     attached:function(){
       this.async(function(){
@@ -124,17 +115,16 @@
 //         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         // TODO: Connect cgroup-filter attributes to database
         this.hoodie.store.findAll('cgroup')
-          .then(function(cgroups){
-            thiz.available_cgroups = cgroups;
-          });
+        .then(function(cgroups){
+          thiz.available_cgroups = cgroups;
+        });
         // Create handler to update available_cgroups
         this.hoodie.store('cgroup').on('add update remove change clear', function(){
           thiz.hoodie.store.findAll('cgroup')
-            .then(function(cgroups){
-              thiz.available_cgroups = cgroups;
-            });
+          .then(function(cgroups){
+            thiz.available_cgroups = cgroups;
+          });
         });
-        // TODO: Connect proximity-controls attributes to database        
       });
     },
     toggle_voice_recognition:function(){

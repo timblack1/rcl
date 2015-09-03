@@ -1,5 +1,5 @@
 {
-  "name": "rcl",
+  "name": "reformed-churches-locator",
   "type": "app",
   "license": "MIT",
   "description": "The most up-to-date directory of Reformed churches worldwide.",
@@ -63,7 +63,7 @@
     "opn": "^1.0.0",
     "require-dir": "^0.3.0",
     "run-sequence": "^1.0.2",
-    "semantic-release": "^4.0.2",
+    "semantic-release": "^4.1.0",
     "serve-waterfall": "^1.1.0",
     "url": "^0.10.3",
     "vulcanize": ">= 1.4.2",
@@ -75,9 +75,6 @@
   "files": [
     "app/"
   ],
-  "engines": {
-    "node": ">=0.10.22"
-  },
   "scripts": {
     "test": "node_modules/hoodie-server/bin/start --custom-ports=3002,3003,3004 & pid=$! && wct && kill $pid",
     "start": "gulp serve",
