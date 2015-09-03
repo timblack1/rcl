@@ -19,7 +19,7 @@
   <link rel="import" href="../../../bower_components/test-fixture/test-fixture.html">
 
   <!-- Import the element to test -->
-  <link rel="import" href="cgroup-filter.html">
+  <link rel="import" href="../elements/cgroup-filter/cgroup-filter.html">
 
 </head>
 <body>
@@ -62,10 +62,16 @@
      *      -> should switch all cgroup names from abbreviations to full names
      *    - on "Show full names" - placing it in the unchecked state
      *      -> should switch all cgroup names from full names to abbreviations
+     *    - if there are no available_cgroups_displayed
+     *      -> the show_full_names checkbox should not display
+     *    - if there are some available_cgroups_displayed
+     *      -> the show_full_names checkbox should display
      *  - text input search box
      *    - enter the first, a middle, or a final part of a cgroup name
      *    - enter the first, a middle, or a final part of a cgroup abbreviation
      *      -> should display that cgroup by putting it into available_cgroups_displayed
+     *    - if empty and display all cgroups is not checked
+     *      -> available_cgroups_displayed should be empty
      */
 
     suite('properties', function() {
@@ -102,6 +108,7 @@
 
       test('available_cgroups_displayed - add to - should increase length of available_cgroups_displayed and ' +
             'display that cgroup', function(done) {
+        cf.$.list_all_groups.fire('tap');
         var length = cf.available_cgroups_displayed.length;
         cf.push('available_cgroups_displayed', {abbreviation:"OPC"});
         assert.equal(length + 1, cf.available_cgroups_displayed.length);
@@ -115,6 +122,7 @@
 
       test('available_cgroups_displayed - remove from - should decrease length of available_cgroups_displayed ' +
             'and no longer display that cgroup', function(done) {
+        cf.$.list_all_groups.fire('tap');
         cf.push('available_cgroups_displayed', {abbreviation:"OPC"});
         var length = cf.available_cgroups_displayed.length;
         cf.pop('available_cgroups_displayed');
@@ -249,9 +257,11 @@
         });
       });
 
-      test('if there are no available_cgroups_displayed, the show_full_names checkbox should not display', function(done){
+      test('if there are no available_cgroups_displayed or selected, ' + 
+            'the show_full_names checkbox should not display', function(done){
         // Verify that we're starting with the right display mode
         assert.equal(cf.available_cgroups_displayed.length, 0);
+        cf._clear_selected_cgroups();
         cf.$.list_all_groups.fire('tap');
         cf.$.list_all_groups.fire('tap');
         flush(function(){
@@ -260,10 +270,21 @@
         });
       });
 
-      test('if there are some available_cgroups_displayed, the show_full_names checkbox should display', function(done){
+      test('if there are some available_cgroups_displayed or selected, ' +
+            'the show_full_names checkbox should display', function(done){
         // Verify that we're starting with the right display mode
         assert.equal(cf.available_cgroups_displayed.length, 0);
         cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          assert.equal(cf.$.show_full_names.hidden, false);
+          done();
+        });
+      });
+
+      test('if there are some selected_cgroups, ' +
+            'the show_full_names checkbox should display', function(done){
+        // Add one cgroup to the selected list
+        cf.push('selected_cgroups', cf.available_cgroups[0]);
         flush(function(){
           assert.equal(cf.$.show_full_names.hidden, false);
           done();
@@ -331,10 +352,18 @@
         recurse();
       });
 
-//       test('if the search box is cleared, then do not list all groups unless that checkbox is checked', function(done){
-        
-//         assert.equal(1,0);
-//       });
+      test('if the search box is empty and list_all_groups is not checked, then do not list all groups', function(done){
+        cf.$.filter_input.value = 'OPC';
+        cf.$.filter_input.value = '';
+        cf.$.filter_input.fire('input');
+        cf.addEventListener('available-cgroups-displayed-changed', function acd_changed_handler(event){
+          cf.removeEventListener(event.type, acd_changed_handler);
+          flush(function(){
+            assert.equal(cf.available_cgroups_displayed.length, 0);
+            done();
+          });
+        });
+      });
 
     });
 

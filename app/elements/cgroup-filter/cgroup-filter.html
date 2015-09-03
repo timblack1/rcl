@@ -2,6 +2,12 @@
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<!-- Needed for tests -->
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 
 <dom-module id="cgroup-filter" 
   selected_cgroups="{{selected_cgroups}}"
@@ -46,7 +52,10 @@
       </template>
     </div>
     <div>
-      <paper-checkbox id="list_all_groups" on-tap="list_all_groups_tapped">List all groups</paper-checkbox>
+      <paper-checkbox id="list_all_groups" 
+        on-tap="list_all_groups_tapped">
+        List all groups
+      </paper-checkbox>
       <paper-checkbox id="show_full_names"
         on-tap="show_full_names_tapped" 
         hidden="{{hide_show_full_names}}">
@@ -100,7 +109,8 @@
     },
     observers: [
       'show_hide_header(selected_cgroups.splices)',
-      'notify_acd_changed(available_cgroups_displayed.splices)'
+      '_handle_acd_changed(available_cgroups_displayed.splices)',
+      '_handle_selected_cgroups_changed(selected_cgroups.splices)'
     ],
     ready:function(){
       this.show_hide_header();
@@ -133,9 +143,7 @@
         // Clone the available_cgroups array to avoid clearing it below
         this.available_cgroups_displayed = this.available_cgroups.slice(0);
       }else{
-        // Hide all groups
-        // Clear the array in a way that Polymer will notice
-        this.splice('available_cgroups_displayed', 0, this.available_cgroups_displayed.length);
+        this._clear_available_cgroups_displayed();
       }
     },
     show_full_names_tapped:function(event){
@@ -146,7 +154,6 @@
     filter_input_changed:function(event){
       var thiz = this;
       this.debounce('filter_wait', function(){
-        console.log('after wait');
         thiz.available_cgroups_displayed = thiz.available_cgroups.filter(function(ob){
           if (ob.name.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
             return true;
@@ -156,17 +163,40 @@
             return false;
           }
         });
-        console.log('after changing available_cgroups_displayed');
       }, 100);
     },
-    // This function is currently used only to notify the tests
-    notify_acd_changed:function(event){
-      if (this.available_cgroups_displayed.length === 0){
+    // Handle changes to available_cgroups_displayed
+    _handle_acd_changed:function(event){
+      this.hide_or_show_full_names();
+      // Don't show all cgroups available if the user hasn't requested that
+      if (this.filter_value === '' && !this.$.list_all_groups.checked){
+        this._clear_available_cgroups_displayed();
+      }
+      this.fire('available-cgroups-displayed-changed');
+    },
+    // Handle changes to selected_cgroups
+    _handle_selected_cgroups_changed:function(event){
+      this.hide_or_show_full_names();
+    },
+    // Hide show_full_names checkbox if it's not needed
+    hide_or_show_full_names:function(){
+      if (this.selected_cgroups.length === 0 && 
+          this.available_cgroups_displayed &&
+          this.available_cgroups_displayed.length === 0){
         this.hide_show_full_names = true;
       }else{
         this.hide_show_full_names = false;
       }
-      this.fire('available-cgroups-displayed-changed');
+    },
+    // Hide all groups
+    _clear_available_cgroups_displayed:function(){
+      // Clear the array in a way that Polymer will notice
+      this.splice('available_cgroups_displayed', 0, this.available_cgroups_displayed.length);
+    },
+    // Unselect all groups
+    _clear_selected_cgroups:function(){
+      // Clear the array in a way that Polymer will notice
+      this.splice('selected_cgroups', 0, this.selected_cgroups.length);
     }
 
   });
