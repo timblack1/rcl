@@ -7,7 +7,12 @@
         display: block;
       }
     </style>
-    <div>Hello from <span>{{foo}}</span></div>
+    <h4>Geocoding report:</h4>
+    <table>
+        <tr><td>Wait time between geocode requests:</td><td>{{usecs}}</td></tr>
+        <tr><td>Remaining congs to geocode:</td><td>{{number_to_geocode}}</td></tr>
+        <tr><td>Number geocoded:</td><td>{{number_geocoded}}</td></tr>
+    </table>
   </template>
   <script>
   (function() {
@@ -17,9 +22,19 @@
       is: 'geocode-stats',
 
       properties: {
-        foo: {
-          type: String,
-          value: 'geocode-stats',
+        usecs: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+        number_to_geocode: {
+          type: Number,
+          value: 0,
+          notify: true
+        },
+        number_geocoded: {
+          type: Number,
+          value: 0,
           notify: true
         }
       }

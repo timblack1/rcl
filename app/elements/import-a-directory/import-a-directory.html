@@ -15,7 +15,7 @@
       <h1>Import a directory</h1>
       <div>Click to select an import.io file</div>
       <paper-input type="file" on-change="handle_file_selected"></paper-input>
-      <geocode-stats></geocode-stats>
+      <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
     </paper-material>
   </template>
 </dom-module>
@@ -29,6 +29,11 @@
         type: Object,
         notify: true,
         reflectToAttribute: true
+      },
+      hide_geocode_stats: {
+        type: Boolean,
+        value: true,
+        notify: true
       }
     },
     ready:function(){
@@ -44,14 +49,16 @@
       // Get file contents here
       var file = event.target.files[0];
       var reader = new FileReader();
+      var thiz = this;
       reader.addEventListener('load', function loadEnd(){
         json = reader.result;
         var congs_obj = JSON.parse(json);
         // Determine if this import.io data source is already in a directory in the database
         var importio_guid = congs_obj.data[0]._source[0];
         // TODO: Start here
+        //  Consider writing all the data to the database first, then geocoding after that
         // Render stats view on geocoding progress
-        //  Use GeocodeStatsView
+        thiz.hide_geocode_stats = false;
         // TODO: Fire displaying next form fields here as needed
         // TODO: Get the directory's identity from the cong URLs
         // TODO: Display the form to edit the directory's name
@@ -63,7 +70,6 @@
         //  event: X congs failed geocoding (offer link to view the details)
         
         // TODO: Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
-            
       });
       reader.readAsText(file);
     }
