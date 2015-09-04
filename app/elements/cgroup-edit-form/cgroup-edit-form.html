@@ -1,6 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<dom-module id="cgroup-edit-form" name="{{name}}" abbreviation="{{abbreviation}}">
+<dom-module id="cgroup-edit-form" cgroup="{{cgroup}}">
   <template>
     <style>
       :host {
@@ -10,11 +10,11 @@
     <p>Create or edit this group of congregations</p>
     <paper-input id="name"
       label="Full name"
-      value="{{name}}">
+      value="{{cgroup.name}}">
     </paper-input>
     <paper-input id="abbreviation"
       label="Abbreviation"
-      value="{{abbreviation}}">
+      value="{{cgroup.abbreviation}}">
     </paper-input>
     <paper-button raised>Submit</paper-button>
   </template>
@@ -26,12 +26,9 @@
       is: 'cgroup-edit-form',
 
       properties: {
-        name: {
-          type: String,
-          notify: true
-        },
-        abbreviation: {
-          type: String,
+        cgroup: {
+          type: Object,
+          value: {},
           notify: true
         }
       }

@@ -65,6 +65,7 @@
       var reader = new FileReader();
       var thiz = this;
       reader.addEventListener('load', function loadEnd(){
+        reader.removeEventListener(event.type, loadEnd);
         var json = reader.result;
         var congs_obj = JSON.parse(json);
         // Determine if this import.io data source is already in a directory in the database.
@@ -121,10 +122,13 @@
             })
             .done(function(directory){
               // Show form to edit cgroup information
-              thiz.hide_cgroup_edit_form = false;
-              // TODO: Handle adding or removing related cgroups
+              // TODO: Handle adding or removing related cgroups. I think we should permit selecting only
+              //  one cgroup here.  Will it be too hard to make cgroup-filter work this way?
+              // Ask, "Which denomination or other group of churches does this directory represent?"
               // TODO: Add an element below cgroup-filter to permit adding a new cgroup 
               //  which doesn't exist.
+              // TODO: When adding a new cgroup, ask the user to enter the name and abbreviation of the cgroup 
+              thiz.hide_cgroup_edit_form = false;
               // TODO: Write the congregations in this directory to the database
               // TODO: Should we associate the cgroup with these congs here?
             })
