@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
 
 <dom-module id="import-a-directory" hoodie="{{hoodie}}" >
   <style>
@@ -13,9 +14,10 @@
   <template>
     <paper-material elevation="1">
       <h1>Import a directory</h1>
-      <div>Click to select an import.io file</div>
+      <div>Select an import.io file</div>
       <paper-input type="file" on-change="handle_file_selected"></paper-input>
       <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
+      <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}"></cgroup-edit-form>
     </paper-material>
   </template>
 </dom-module>
@@ -31,6 +33,11 @@
         reflectToAttribute: true
       },
       hide_geocode_stats: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      hide_cgroup_edit_form: {
         type: Boolean,
         value: true,
         notify: true
@@ -53,9 +60,18 @@
       reader.addEventListener('load', function loadEnd(){
         json = reader.result;
         var congs_obj = JSON.parse(json);
-        // TODO: Determine if this import.io data source is already in a directory in the database
-        var importio_guid = congs_obj.data[0]._source[0];
         // TODO: Start here
+        // TODO: Show form to edit cgroup information
+        thiz.$.cgroup_edit_form.hidden = false;
+        // TODO: Determine if this import.io data source is already in a directory in the database.
+        //  Use the importio_guid and the site's URL to determine this
+        var importio_guid = congs_obj.data[0]._source[0];
+        if (in_directory){
+          // Update existing data
+          // TODO: Populate cgroup-edit-form with this cgroup's info
+        }else{
+          // Create new directory
+        }
         //  Consider writing all the data to the database first, then geocoding after that
         // TODO: Display form to let user describe this cgroup
         // Render stats view on geocoding progress
