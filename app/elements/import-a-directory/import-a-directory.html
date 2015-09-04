@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
+<link rel="import" href="../../elements/cgroup-filter/cgroup-filter.html">
 
 <dom-module id="import-a-directory" hoodie="{{hoodie}}" >
   <style>
@@ -17,6 +18,7 @@
       <div>Select an import.io file</div>
       <paper-input type="file" on-change="handle_file_selected"></paper-input>
       <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
+      <cgroup-filter id="cgroup_filter" hidden="{{hide_cgroup_filter}}"></cgroup-filter>
       <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}"></cgroup-edit-form>
     </paper-material>
   </template>
@@ -41,6 +43,11 @@
         type: Boolean,
         value: true,
         notify: true
+      },
+      hide_cgroup_filter: {
+        type: Boolean,
+        value: true,
+        notify: true
       }
     },
     ready:function(){
@@ -58,20 +65,74 @@
       var reader = new FileReader();
       var thiz = this;
       reader.addEventListener('load', function loadEnd(){
-        json = reader.result;
+        var json = reader.result;
         var congs_obj = JSON.parse(json);
-        // TODO: Start here
-        // TODO: Show form to edit cgroup information
-        thiz.$.cgroup_edit_form.hidden = false;
-        // TODO: Determine if this import.io data source is already in a directory in the database.
-        //  Use the importio_guid and the site's URL to determine this
+        // Determine if this import.io data source is already in a directory in the database.
+        // Note that
+        //  - directory objects represent remote church directory websites, and
+        //  - cgroup objects represent one denomination or group like the OPC, NAPARC, etc.
+        //  So this directory's congregations fall in one or more cgroups, so we need
+        //    to load a <cgroup-filter> here to allow the user to select the correct cgroup.
+        //  Use the importio_guid to determine this
         var importio_guid = congs_obj.data[0]._source[0];
-        if (in_directory){
-          // Update existing data
-          // TODO: Populate cgroup-edit-form with this cgroup's info
-        }else{
-          // Create new directory
-        }
+        // Get this directory if it exists in the db
+        thiz.hoodie.store.findAll(function(object){
+          if (object.type === 'directory' && object.importio_guid === importio_guid){
+            return true;
+          }
+        })
+        .done(function(directories){
+          if (directories.length !== 0){
+            // Then display this directory's cgroups
+            var directory = directories[0];
+            // Find the cgroups to which this directory's congregations belong, and display them in the
+            //  <cgroup-filter>
+            // TODO: Start here
+            thiz.hoodie.store.findAll('cgroup')
+            .done(function(available_cgroups){
+              this.$.cgroup_filter.available_cgroups = available_cgroups;
+              // TODO: Why doesn't this get called?
+              debugger;
+              // Find related cgroups
+              thiz.hoodie.store.findAll(function(object){
+                if (object.type === 'cgroup_directory' && object.directory_id === directory._id){
+                  return true;
+                }
+              })
+              .done(function(cgroups){
+                // Display related cgroups in <cgroup-filter>
+                debugger;
+                this.$.cgroup_filter.selected_cgroups = cgroups;
+                this.hide_cgroup_filter = false;
+                // TODO: Set up listener (elsewhere in the code) to handle updating the cgroup_directory
+                //  docs with their new new cgroups.
+              });
+            });
+          }else{
+            // Else create this directory
+            // Create the directory
+            var a = document.createElement('a');
+            a.href = congs_obj.data[0]._pageUrl;
+            var domain_name = a.hostname;
+            thiz.hoodie.store.add('directory', {
+              importio_guid: importio_guid,
+              url: domain_name, // url of directory's main page, approximated to domain name
+              directory_type:'importio'
+            })
+            .done(function(directory){
+              // Show form to edit cgroup information
+              thiz.hide_cgroup_edit_form = false;
+              // TODO: Handle adding or removing related cgroups
+              // TODO: Add an element below cgroup-filter to permit adding a new cgroup 
+              //  which doesn't exist.
+              // TODO: Write the congregations in this directory to the database
+              // TODO: Should we associate the cgroup with these congs here?
+            })
+            .fail(function(error){
+              console.log(error);
+            });
+          }
+        });
         //  Consider writing all the data to the database first, then geocoding after that
         // TODO: Display form to let user describe this cgroup
         // Render stats view on geocoding progress
