@@ -66,12 +66,16 @@
      *      -> the show_full_names checkbox should not display
      *    - if there are some available_cgroups_displayed
      *      -> the show_full_names checkbox should display
+     *    - in select_one_mode, if two cgroups are clicked
+     *        -> it should only permit selecting one cgroup
      *  - text input search box
      *    - enter the first, a middle, or a final part of a cgroup name
      *    - enter the first, a middle, or a final part of a cgroup abbreviation
      *      -> should display that cgroup by putting it into available_cgroups_displayed
      *    - if empty and display all cgroups is not checked
      *      -> available_cgroups_displayed should be empty
+     *    - in select_one_mode, if text is entered which doesn't match a cgroup
+     *        -> it should display a button to add a cgroup if the cgroup does not exist
      */
 
     suite('properties', function() {
@@ -291,6 +295,33 @@
         });
       });
 
+      test('in select_one_mode, if two cgroups are clicked, ' +
+           'it should only permit selecting one cgroup', function(done){
+        cf.select_one_mode = true;
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          cf.$.available_filtered.querySelector('#OPC').fire('tap');
+          cf.$.available_filtered.querySelector('#PCA').fire('tap');
+          flush(function(){
+            assert.equal(cf.selected_cgroups.length, 1);
+            done();
+          });
+        });
+      });
+
+      test('when not in select_one_mode, it should permit selecting more than one cgroup', function(done){
+        cf.select_one_mode = false;
+        cf.$.list_all_groups.fire('tap');
+        flush(function(){
+          cf.$.available_filtered.querySelector('#OPC').fire('tap');
+          cf.$.available_filtered.querySelector('#PCA').fire('tap');
+          flush(function(){
+            assert.equal(cf.selected_cgroups.length, 2);
+            done();
+          });
+        });
+      });
+
     });
 
     suite('search box', function() {
@@ -362,6 +393,43 @@
             assert.equal(cf.available_cgroups_displayed.length, 0);
             done();
           });
+        });
+      });
+
+      test('in select_one_mode, if text is entered which does not match a cgroup, ' +
+           'it should display a button to add a cgroup, ' +
+           'and hide the two checkboxes', function(done){
+        cf.select_one_mode = true;
+        cf.$.filter_input.value = 'Cumberland Presbyterian Church';
+        cf.$.filter_input.fire('input');
+        cf.async(function(){
+          assert.equal(cf.$.add_cgroup_button.hidden, false);
+          assert.equal(cf.$.list_all_groups.hidden, true);
+          assert.equal(cf.$.show_full_names.hidden, true);
+          done();
+        }, 300);
+      });
+
+      test('in select_one_mode, if text is entered which matches a cgroup, ' +
+           'it should not display a button to add a cgroup, ' +
+           'and should display the two checkboxes', function(done){
+        cf.select_one_mode = true;
+        cf.$.filter_input.value = 'Church';
+        cf.$.filter_input.fire('input');
+        cf.async(function(){
+          assert.equal(cf.$.add_cgroup_button.hidden, true);
+          assert.equal(cf.$.list_all_groups.hidden, false);
+          assert.equal(cf.$.show_full_names.hidden, false);
+          done();
+        }, 300);
+      });
+
+      test('when not in select_one_mode, ' +
+           'it should not display a button to add a cgroup if the cgroup does not exist', function(done){
+        cf.select_one_mode = false;
+        flush(function(){
+          assert.equal(cf.$.add_cgroup_button.hidden, true);
+          done();
         });
       });
 

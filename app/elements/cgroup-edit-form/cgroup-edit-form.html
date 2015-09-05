@@ -7,7 +7,7 @@
         display: block;
       }
     </style>
-    <p>Create or edit this group of congregations</p>
+    <p>Please describe this group of congregations</p>
     <paper-input id="name"
       label="Full name"
       value="{{cgroup.name}}">
@@ -16,7 +16,10 @@
       label="Abbreviation"
       value="{{cgroup.abbreviation}}">
     </paper-input>
-    <paper-button raised>Submit</paper-button>
+    <paper-button raised
+      on-tap="handle_submit">
+      Submit
+    </paper-button>
   </template>
   <script>
   (function() {
@@ -31,6 +34,9 @@
           value: {},
           notify: true
         }
+      },
+      handle_submit:function(event){
+        this.fire('submit');
       }
     });
   })();

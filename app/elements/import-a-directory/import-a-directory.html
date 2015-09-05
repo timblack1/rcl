@@ -16,10 +16,12 @@
     <paper-material elevation="1">
       <h1>Import a directory</h1>
       <div>Select an import.io file</div>
-      <paper-input type="file" on-change="handle_file_selected"></paper-input>
+      <paper-input type="file" on-change="_handle_file_selected"></paper-input>
+      <cgroup-filter id="cgroup_filter"
+        hidden="{{hide_cgroup_filter}}"
+        select_one_mode></cgroup-filter>
+      <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
       <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
-      <cgroup-filter id="cgroup_filter" hidden="{{hide_cgroup_filter}}"></cgroup-filter>
-      <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}"></cgroup-edit-form>
     </paper-material>
   </template>
 </dom-module>
@@ -48,6 +50,11 @@
         type: Boolean,
         value: true,
         notify: true
+      },
+      cgroup: {
+        type: Object,
+        value: {},
+        notify: true
       }
     },
     ready:function(){
@@ -57,8 +64,13 @@
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
       });
     },
-    // Gets data from selected import.io file, geocodes it if necessary, and writes it into the database.
-    handle_file_selected:function(event){
+    /* This function:
+     * - gets directory and congregation data from a user-selected import.io file
+     * - writes directory and associated cgroup data to the database
+     * - geocodes congregations if necessary
+     * - writes congregations into the database
+     */
+    _handle_file_selected:function(event){
       // from old URLView.js:importio_drop_target_drop
       // Get file contents here
       var file = event.target.files[0];
@@ -77,6 +89,8 @@
         //  Use the importio_guid to determine this
         var importio_guid = congs_obj.data[0]._source[0];
         // Get this directory if it exists in the db
+//         thiz.hoodie.store.removeAll('directory');
+//         return;
         thiz.hoodie.store.findAll(function(object){
           if (object.type === 'directory' && object.importio_guid === importio_guid){
             return true;
@@ -88,47 +102,86 @@
             var directory = directories[0];
             // Find the cgroups to which this directory's congregations belong, and display them in the
             //  <cgroup-filter>
-            // TODO: Start here
             thiz.hoodie.store.findAll('cgroup')
             .done(function(available_cgroups){
-              this.$.cgroup_filter.available_cgroups = available_cgroups;
-              // TODO: Why doesn't this get called?
-              debugger;
-              // Find related cgroups
-              thiz.hoodie.store.findAll(function(object){
-                if (object.type === 'cgroup_directory' && object.directory_id === directory._id){
-                  return true;
-                }
-              })
-              .done(function(cgroups){
-                // Display related cgroups in <cgroup-filter>
-                debugger;
-                this.$.cgroup_filter.selected_cgroups = cgroups;
-                this.hide_cgroup_filter = false;
+              thiz.$.cgroup_filter.available_cgroups = available_cgroups;
+              // Get related cgroup
+              thiz.hoodie.store.find('cgroup', directory.cgroup_id)
+              .done(function(cgroup){
+                // Display related cgroup in <cgroup-filter>
+                thiz.$.cgroup_filter.selected_cgroups = [cgroup];
+                thiz.hide_cgroup_filter = false;
                 // TODO: Set up listener (elsewhere in the code) to handle updating the cgroup_directory
                 //  docs with their new new cgroups.
+              })
+              .fail(function(error){
+                console.log(error);
               });
+            })
+            .fail(function(error){
+              console.log(error);
             });
           }else{
             // Else create this directory
-            // Create the directory
+            
+            // Get domain name
             var a = document.createElement('a');
             a.href = congs_obj.data[0]._pageUrl;
             var domain_name = a.hostname;
+            
+            // Create directory
             thiz.hoodie.store.add('directory', {
               importio_guid: importio_guid,
               url: domain_name, // url of directory's main page, approximated to domain name
               directory_type:'importio'
             })
+
+            // Associate one cgroup with this directory
             .done(function(directory){
-              // Show form to edit cgroup information
+              
+              // Display <cgroup-filter> to permit user to select or create the related cgroup
+              thiz.hoodie.store.findAll('cgroup')
+              .done(function(available_cgroups){
+                thiz.$.cgroup_filter.available_cgroups = available_cgroups;
+                thiz.hide_cgroup_filter = false;
+              });
+
+//               // Set up event listener on cgroup_edit_form
+//               thiz.$.cgroup_edit_form.addEventListener('submit', function handle_cgroup_edit_form_submit(event){
+//                 thiz.$.cgroup_edit_form.removeEventListener(event.type, handle_cgroup_edit_form_submit);
+//                 // Write the entered cgroup data to the db, and associate this cgroup with the directory
+//                 // If directory.cgroup_id is undefined, we have to search for this cgroup in case it already
+//                 //  exists.  But this would be easier to do before asking the user to fill out the form.  So
+//                 //  we should use the <cgroup-filter> element here.
+//                 // Else we should create a new cgroup
+//                 thiz.hoodie.store.updateOrAdd('cgroup', directory.cgroup_id, thiz.$.cgroup_edit_form.cgroup)
+//                 .done(function(cgroup){
+//                   thiz.hide_cgroup_edit_form = true;
+//                   debugger;
+//                   thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+//                   .done(function(directory){})
+//                   .fail(function(error){
+//                     debugger;
+//                     console.log(error);
+//                   });
+//                 })
+//                 .fail(function(error){
+//                   console.log(error);
+//                 });
+//               });
+//               // Show form to edit cgroup information
+//               thiz.hide_cgroup_edit_form = false;
+              
+              // TODO: Does the above work when directory.cgroup_id is null? No.
+              //  Or does it create multiple copies of the new cgroup? Yes.
+              //  So how can we fix this?
+
               // TODO: Handle adding or removing related cgroups. I think we should permit selecting only
               //  one cgroup here.  Will it be too hard to make cgroup-filter work this way?
               // Ask, "Which denomination or other group of churches does this directory represent?"
               // TODO: Add an element below cgroup-filter to permit adding a new cgroup 
               //  which doesn't exist.
               // TODO: When adding a new cgroup, ask the user to enter the name and abbreviation of the cgroup 
-              thiz.hide_cgroup_edit_form = false;
               // TODO: Write the congregations in this directory to the database
               // TODO: Should we associate the cgroup with these congs here?
             })
@@ -140,7 +193,7 @@
         //  Consider writing all the data to the database first, then geocoding after that
         // TODO: Display form to let user describe this cgroup
         // Render stats view on geocoding progress
-        thiz.hide_geocode_stats = false;
+        //thiz.hide_geocode_stats = false;
         // TODO: Fire displaying next form fields here as needed
         // TODO: Get the directory's identity from the cong URLs
         // TODO: Display the form to edit the directory's name

@@ -2,16 +2,20 @@
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
 
 <!-- Needed for tests -->
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../elements/cgroup-edit-form/cgroup-edit-form.html">
 
 <dom-module id="cgroup-filter" 
   selected_cgroups="{{selected_cgroups}}"
-  available_cgroups="{{available_cgroups}}" >
+  available_cgroups="{{available_cgroups}}"
+  select_one_mode="{{select_one_mode}}"
+  >
   <style>
     :host {
       display: block;
@@ -43,6 +47,11 @@
       on-input="filter_input_changed"
       value="{{filter_value}}">
     </paper-input>
+    <paper-button id="add_cgroup_button"
+      hidden="{{hide_add_cgroup_button}}"
+      on-tap="_handle_add_cgroup_tapped">
+      Add this denomination
+    </paper-button>
     <div id="available_filtered">
       <template id="available_list" is="dom-repeat" items="{{available_cgroups_displayed}}">
         <paper-button on-tap="add_to_selected" id="{{item.abbreviation}}">
@@ -53,7 +62,8 @@
     </div>
     <div>
       <paper-checkbox id="list_all_groups" 
-        on-tap="list_all_groups_tapped">
+        on-tap="list_all_groups_tapped"
+        hidden="{{hide_list_all_groups}}">
         List all groups
       </paper-checkbox>
       <paper-checkbox id="show_full_names"
@@ -62,6 +72,9 @@
         Show full names
       </paper-checkbox>
     </div>
+    <paper-dialog id="edit_cgroup">
+      <cgroup-edit-form select_one_mode><cgroup-edit-form>
+    </paper-dialog>
     
   </template>
 </dom-module>
@@ -105,6 +118,24 @@
         type: Boolean,
         value: true,
         notify: true
+      },
+      hide_list_all_groups: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      hide_add_cgroup_button: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      /* This mode is used in the "Import a directory" page to help users select the one
+       * cgroup which one directory represents.
+       */
+      select_one_mode: {
+        type: Boolean,
+        value: false,
+        notify: true
       }
     },
     observers: [
@@ -121,12 +152,16 @@
       this.splice('selected_cgroups', index, 1);
     },
     add_to_selected:function(event){
-      var thiz = this;
-      // Don't add the cgroup if it is already in the list.
-      var item = event.model.get('item');
-      if (thiz.selected_cgroups.filter(function(ob){ return ob.abbreviation === item.abbreviation; }).length === 0){
-        // Add the selected cgroup to the list of selected cgroups
-        thiz.push('selected_cgroups', event.model.get('item'));
+      if (this.select_one_mode === true && this.selected_cgroups.length === 1){
+        // Don't add another cgroup
+      }else{
+        var thiz = this;
+        // Don't add the cgroup if it is already in the list.
+        var item = event.model.get('item');
+        if (thiz.selected_cgroups.filter(function(ob){ return ob.abbreviation === item.abbreviation; }).length === 0){
+          // Add the selected cgroup to the list of selected cgroups
+          thiz.push('selected_cgroups', event.model.get('item'));
+        }
       }
     },
     show_hide_header:function(splices){
@@ -150,7 +185,9 @@
       this.hide_abbreviation = !this.hide_abbreviation;
       this.hide_name = !this.hide_name;
     },
-    // Displays the list of available cgroups which match the search term
+    /* Displays the list of available cgroups which match the search term, and in select_one_mode,
+     * permits a user to add a new cgroup to the available cgroups in the database.
+     */
     filter_input_changed:function(event){
       var thiz = this;
       this.debounce('filter_wait', function(){
@@ -163,6 +200,23 @@
             return false;
           }
         });
+        // Handle select_one_mode
+        if (thiz.select_one_mode === true){
+          if (thiz.filter_value.trim() !== '' && 
+              thiz.available_cgroups_displayed.length === 0){
+            // User entered a name but no cgroups are listed, so show button to add a new cgroup
+            //  and hide the checkboxes since they're not needed.
+            thiz.hide_add_cgroup_button = false;
+            thiz.hide_show_full_names = true;
+            thiz.hide_list_all_groups = true;
+          }else if (thiz.available_cgroups_displayed.length !== 0){
+            // Some cgroups are listed, so hide the button to add a new cgroup
+            //  and restore the checkboxes
+            thiz.$.hide_add_cgroup_button = true;
+            thiz.hide_show_full_names = false;
+            thiz.hide_list_all_groups = false;
+          }
+        } 
       }, 100);
     },
     // Handle changes to available_cgroups_displayed
@@ -184,7 +238,8 @@
           this.available_cgroups_displayed &&
           this.available_cgroups_displayed.length === 0){
         this.hide_show_full_names = true;
-      }else{
+      }else if (!this.select_one_mode){
+        // We don't want this to affect select_one_mode
         this.hide_show_full_names = false;
       }
     },
@@ -197,6 +252,12 @@
     _clear_selected_cgroups:function(){
       // Clear the array in a way that Polymer will notice
       this.splice('selected_cgroups', 0, this.selected_cgroups.length);
+    },
+    _handle_add_cgroup_tapped: function(event){
+      this.$.edit_cgroup.open();
+      // TODO: Start here.  Handle the dialog's form submission, in import-a-directory.html 
+      //  if possible, since that's where we need it.
+      // TODO: Style the background color of the dialog white
     }
 
   });

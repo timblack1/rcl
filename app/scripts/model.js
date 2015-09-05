@@ -12,11 +12,6 @@ var model = {
     congregation_id: ''
   }
 
-  cgroup_directory: {
-    cgroup_id: '',
-    directory_id: ''
-  }
-
   // Regular docs
 
   cgroup: {
@@ -31,7 +26,7 @@ var model = {
       congregations, // many-to-many, join docs are of type 'cgroup_congregation'
       people, // many-to-many, join docs are of type 'cgroup_person'
       roles, // many-to-many, join docs are of type 'cgroup_role'
-      directory // many-to-many, join docs are of type 'cgroup_directory'
+      directories // many-to-one
     ]
   }
 
@@ -43,10 +38,9 @@ var model = {
       directory_type:'', // options: ['importio', 'rss', 'html']
       importio_guid: ''  // found in json.data[0]._source[0]; should be the same 
                          //   for every cong from one import.io data source
-    },
-    relations:[
-        cgroups // many-to-many, join docs are of type 'cgroup_directory'
-    ]
+      cgroup_id: ''  // relation. _id of the cgroup this directory represents. One directory represents 
+                  // one cgroup.  But one cgroup can be represented by more than one directory.
+    }
   }  
 
 }
