@@ -99,6 +99,8 @@
           }
         })
         .done(function(directories){
+          // TODO: Refactor from here down into reusable methods, especially because the cong 
+          //  translation & geocoding block is big, and needed in both conditional blocks below.
           if (directories.length !== 0){
             // Then display this directory's cgroups
             var directory = directories[0];
@@ -155,9 +157,7 @@
                     // Associate this new cgroup with the directory
                     thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
                     .done(function(directory){
-                      // TODO: Start here.  Geocode and save the congregations
-                      // TODO: Check whether each congregation already exists. Maybe use updateOrAdd()?
-                      
+                      thiz.geocode_and_save_congs(congs_obj, directory, cgroup);
                     })
                     .fail(function(error){
                       console.log(error);
@@ -230,6 +230,58 @@
         // TODO: Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
       });
       reader.readAsText(file);
+    },
+    geocode_and_save_congs: function(congs_obj, directory, cgroup){
+      // TODO: Geocode and save the congregations
+      // TODO: Check whether each congregation already exists. Maybe use updateOrAdd()?
+      
+      // TODO: Iterate through the congs to geocode each one.
+      //  Can I do it as a queue of promises?
+      //  Or maybe use updateAll() with a function, and filter for the correct type
+      //    and identify each cong via an importio ID or other data.
+      //  Hm...no, that won't work because updateAll() doesn't add new docs.
+      // Note: The attribute which contains the list of cong data objects is called congs_obj.data
+      var congs = congs_obj.data;
+      congs.forEach(function(cong){
+        // Note: Most attributes contain lists.
+        // So if an attribute is a list is longer than 1 item, join the items together with <br />
+        var new_cong = {}
+        // TODO: Start here.  We don't have access to model.Cong yet.  So update our model.js from
+        //  the old model.js, put it in a new element, and import it into this element.
+        var cong_template = new model.Cong
+        // Import only the fields we want in our model
+        _.each(cong_template.default_attributes, function handle_attribute(value, key){
+            // Only join if it is of type = array
+            new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
+        })
+        new_cong.contact_email = (new_cong.hasOwnProperty('contact_email') && typeof new_cong.contact_email !== 'undefined') ?
+            new_cong.contact_email.replace('mailto:','') : ''
+        // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+        //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
+        new_cong.page_url = cong._pageUrl
+        // Get cong's database id from OPC.org
+        if (new_cong.page_url.indexOf('opc.org') !== -1){
+            new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
+            // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
+            //  character of each word.
+            new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+        }
+        // Write this cong to a Backbone_hoodie model, and save to database
+        // Find out whether this model exists in the congs collection
+        var cong_model = thiz.congs.findWhere({page_url:new_cong.page_url})
+        if (typeof cong_model !== 'undefined'){
+            // Cong already exists in the collection, so write new attributes
+            cong_model.save(new_cong)
+        }else{
+            // Cong didn't exist in the collection, so create a new one
+            var cong_model = thiz.congs.create(new_cong)
+        }
+        // Associate this cong with its cgroup
+        cong_model.get('cgroups').add(thiz.cgroup)
+        cong_model.set('denomination_abbr', thiz.cgroup.get('abbreviation'))
+        cong_model.save()
+        
+      });
     }
 
   });
