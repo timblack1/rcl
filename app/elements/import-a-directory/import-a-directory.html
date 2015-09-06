@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
 <link rel="import" href="../../elements/cgroup-filter/cgroup-filter.html">
+<link rel="import" href="../../elements/model-object/model-object.html">
 
 <dom-module id="import-a-directory" hoodie="{{hoodie}}" >
   <style>
@@ -13,6 +14,7 @@
     }
   </style>
   <template>
+    <model-object id="model_object"></model-object>
     <paper-material elevation="1">
       <h1>Import a directory</h1>
       <div>Select an import.io file</div>
@@ -64,6 +66,14 @@
     attached:function(){
       this.async(function(){
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+        this.hoodie.store.on('congregation:change', function(eventName, congregation){
+          // Note: Hoodie's change event handles add, update, and remove events.
+          // TODO: Geocode congregation here.  But maybe not on the update event, unless
+          //  we can determine if the address was updated.  How can we determine that here?
+          //  Maybe that can only be determined in the code below right before we write an
+          //  imported cong to the database. Maybe that is best because we don't want to
+          //  trigger geocoding the same cong in more than one browser for just one address change.
+        });
       });
     },
     /* This function:
@@ -232,6 +242,7 @@
       reader.readAsText(file);
     },
     geocode_and_save_congs: function(congs_obj, directory, cgroup){
+      var thiz = this;
       // TODO: Geocode and save the congregations
       // TODO: Check whether each congregation already exists. Maybe use updateOrAdd()?
       
@@ -246,36 +257,54 @@
         // Note: Most attributes contain lists.
         // So if an attribute is a list is longer than 1 item, join the items together with <br />
         var new_cong = {}
-        // TODO: Start here.  We don't have access to model.Cong yet.  So update our model.js from
-        //  the old model.js, put it in a new element, and import it into this element.
-        var cong_template = new model.Cong
+        // Create a new object which has model.congregation as its prototype
+        var cong_template = Object.create(thiz.$.model_object.model.congregation);
         // Import only the fields we want in our model
-        _.each(cong_template.default_attributes, function handle_attribute(value, key){
+        cong_template.default_attributes.forEach(function handle_attribute(attribute){
             // Only join if it is of type = array
-            new_cong[key] = Array.isArray(cong[key]) ? cong[key].join('<br />') : cong[key]
-        })
+            new_cong[attribute] = Array.isArray(cong[attribute]) ? cong[attribute].join('<br />') : cong[attribute];
+        });
         new_cong.contact_email = (new_cong.hasOwnProperty('contact_email') && typeof new_cong.contact_email !== 'undefined') ?
             new_cong.contact_email.replace('mailto:','') : ''
-        // data[n]._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+        // cong._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
         //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
         new_cong.page_url = cong._pageUrl
         // Get cong's database id from OPC.org
         if (new_cong.page_url.indexOf('opc.org') !== -1){
-            new_cong.source_cong_id = new_cong.page_url.match(/=(\d+?)$/)[1]
             // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
             //  character of each word.
+            // TODO: This doesn't work with names including words like 'of'. Maybe that's why they are ALLCAPS.
             new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
         }
-        // Write this cong to a Backbone_hoodie model, and save to database
-        // Find out whether this model exists in the congs collection
-        var cong_model = thiz.congs.findWhere({page_url:new_cong.page_url})
-        if (typeof cong_model !== 'undefined'){
-            // Cong already exists in the collection, so write new attributes
-            cong_model.save(new_cong)
-        }else{
-            // Cong didn't exist in the collection, so create a new one
-            var cong_model = thiz.congs.create(new_cong)
-        }
+        // TODO: Start here.
+        // Save to database
+        // Find out whether this cong exists in the database
+        thiz.hoodie.store.findAll(function(cong_found){
+          if (cong_found.type === 'congregation' && cong_found.page_url == new_cong.page_url){
+            return true;
+          }
+        })
+        .done(function(congs_found){
+          if (congs_found.length > 0){
+            // Cong already exists in the database, so update with new attributes
+            thiz.hoodie.store.update('congregation', congs_found[0].id, new_cong)
+            .done(function(new_cong){})
+            .fail(function(error){
+              console.log(error);
+            });
+          }else{
+            // Cong does not exist in database, so create new doc
+            thiz.hoodie.store.add('congregation', new_cong)
+            .done(function(new_cong){})
+            .fail(function(error){
+              console.log(error);
+            });
+          }
+        }).fail(function(error){
+          console.log(error);
+        });
+        // TODO: Start here.  This should be integrated into the above, as should geocoding,
+        //  though maybe that could be done in a Hoodie event listener.
         // Associate this cong with its cgroup
         cong_model.get('cgroups').add(thiz.cgroup)
         cong_model.set('denomination_abbr', thiz.cgroup.get('abbreviation'))
