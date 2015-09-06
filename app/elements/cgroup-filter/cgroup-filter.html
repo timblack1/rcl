@@ -72,8 +72,8 @@
         Show full names
       </paper-checkbox>
     </div>
-    <paper-dialog id="edit_cgroup">
-      <cgroup-edit-form select_one_mode><cgroup-edit-form>
+    <paper-dialog id="cgroup_edit_dialog">
+      <cgroup-edit-form id="cgroup_edit_form" select_one_mode><cgroup-edit-form>
     </paper-dialog>
     
   </template>
@@ -254,10 +254,7 @@
       this.splice('selected_cgroups', 0, this.selected_cgroups.length);
     },
     _handle_add_cgroup_tapped: function(event){
-      this.$.edit_cgroup.open();
-      // TODO: Start here.  Handle the dialog's form submission, in import-a-directory.html 
-      //  if possible, since that's where we need it.
-      // TODO: Style the background color of the dialog white
+      this.$.cgroup_edit_dialog.open();
     }
 
   });

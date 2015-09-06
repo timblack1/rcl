@@ -17,10 +17,12 @@
       <h1>Import a directory</h1>
       <div>Select an import.io file</div>
       <paper-input type="file" on-change="_handle_file_selected"></paper-input>
-      <cgroup-filter id="cgroup_filter"
-        hidden="{{hide_cgroup_filter}}"
-        select_one_mode></cgroup-filter>
-      <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
+      <div hidden="{{hide_cgroup_filter}}">
+        <p>Which denomination does this directory represent?</p>
+        <cgroup-filter id="cgroup_filter"
+          select_one_mode></cgroup-filter>
+        <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
+      </div>
       <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
     </paper-material>
   </template>
@@ -144,6 +146,27 @@
               .done(function(available_cgroups){
                 thiz.$.cgroup_filter.available_cgroups = available_cgroups;
                 thiz.hide_cgroup_filter = false;
+                thiz.$.cgroup_filter.addEventListener('submit', function handle_cgroup_edit_form_submit(){
+                  thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
+                  thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
+                  thiz.hide_cgroup_filter = true;
+                  thiz.hoodie.store.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
+                  .done(function(cgroup){
+                    // Associate this new cgroup with the directory
+                    thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                    .done(function(directory){
+                      // TODO: Start here.  Geocode and save the congregations
+                      // TODO: Check whether each congregation already exists. Maybe use updateOrAdd()?
+                      
+                    })
+                    .fail(function(error){
+                      console.log(error);
+                    })
+                  })
+                  .fail(function(error){
+                    console.log(error);
+                  });
+                });
               });
 
 //               // Set up event listener on cgroup_edit_form
