@@ -117,77 +117,80 @@ define([
                 })
                 // Add new congs to map
                 _.each(_.difference(thiz.collection.pluck('id'), _.pluck(thiz.markers, 'couch_id')), function(id){
-                    var cong = thiz.collection.get(id)
-                    // Get cong's latlng
-                    var coords = cong.get('geocode')
-                    if (typeof coords != 'undefined'){
-                        // This is the case we want to handle.
-                        var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
-                        // Here is where we actually plot the congs on the map
-                        var marker = new google.maps.Marker({
-                            position: new google.maps.LatLng(coords.lat, coords.lng),
-                            map: thiz.map,
-                            title: cong.get('name') + denomination
-                        });
-                        google.maps.event.addListener(marker, 'click', function() {
-                            // Render the infowindow HTML
-                            // TODO: make it its own backbone view to prepare for giving it more functionality
-                            // Dynamically create an address to feed into maps.google.com's search page
-                            cong.attributes.address = Mustache.render(AddressTemplate, cong.toJSON()).replace('\n', '')
-                            var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
-                            thiz.infowindow.setContent(contentString)
-                            thiz.infowindow.open(this.map, marker);
-                            // If the "Directions" link is clicked,
-                            // If we already know the user's location
-                            // TODO: Is this code duplicated in the get_location() function?
-                            if (navigator.geolocation){
-                                // Use it without showing the form
-                                var evt = event
-                                navigator.geolocation.getCurrentPosition(function(position){
-                                    window.target = $(evt.target)
-                                    // Set the href of the link so if the user clicks it it will go to the right URL
-                                    $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
-                                                               position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
-                                                               cong.attributes.address)
-                                    $('a.get_directions').attr('target', '_blank')
-                                },function(error){
-                                    switch(error.code){
-                                        case error.PERMISSION_DENIED:
-                                            // console.log("User denied the request for Geolocation.")
-                                            // Hide the link and show the "Get directions" form
-                                            $('body').on('click', 'a.get_directions', thiz.hide_link_show_get_directions_form);
-                                            break;
-                                        case error.POSITION_UNAVAILABLE:
-                                            // console.log("Location information is unavailable.")
-                                            break;
-                                        case error.TIMEOUT:
-                                            // console.log("The request to get user location timed out.")
-                                            break;
-                                        case error.UNKNOWN_ERROR:
-                                            // console.log("An unknown error occurred.")
-                                            break;
-                                    }
-                                });
-                            }else{
-                                // console.log("Geolocation is not supported by this browser.");
-                            }
-                            marker.couch_id = cong.get('id')
-                            // TODO: Make it so the city entered has a different color than results 
-                            //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
+                    if (typeof id !== 'undefined') {
+                        var cong = thiz.collection.get(id)
+                        // Get cong's latlng
+                        var coords = cong.get('geocode')
+                        if (typeof coords != 'undefined'){
+                            // This is the case we want to handle.
+                            var denomination = cong.get('denomination_abbr')?' ('+cong.get('denomination_abbr')+')':''
+                            // Here is where we actually plot the congs on the map
+                            var marker = new google.maps.Marker({
+                                position: new google.maps.LatLng(coords.lat, coords.lng),
+                                map: thiz.map,
+                                title: cong.get('name') + denomination
+                            });
+                            google.maps.event.addListener(marker, 'click', function() {
+                                // Render the infowindow HTML
+                                // TODO: make it its own backbone view to prepare for giving it more functionality
+                                // Dynamically create an address to feed into maps.google.com's search page
+                                cong.attributes.address = Mustache.render(AddressTemplate, cong.toJSON()).replace('\n', '')
+                                var contentString = Mustache.render(CongInfowindowTemplate, cong.toJSON())
+                                thiz.infowindow.setContent(contentString)
+                                thiz.infowindow.open(this.map, marker);
+                                // If the "Directions" link is clicked,
+                                // If we already know the user's location
+                                // TODO: Is this code duplicated in the get_location() function?
+                                if (navigator.geolocation){
+                                    // Use it without showing the form
+                                    var evt = event
+                                    navigator.geolocation.getCurrentPosition(function(position){
+                                        window.target = $(evt.target)
+                                        // Set the href of the link so if the user clicks it it will go to the right URL
+                                        $('a.get_directions').attr('href', 'http://maps.google.com/maps?saddr=' + 
+                                                                   position.coords.latitude + ',' + position.coords.longitude + '&daddr=' + 
+                                                                   cong.attributes.address)
+                                        $('a.get_directions').attr('target', '_blank')
+                                    },function(error){
+                                        switch(error.code){
+                                            case error.PERMISSION_DENIED:
+                                                // console.log("User denied the request for Geolocation.")
+                                                // Hide the link and show the "Get directions" form
+                                                $('body').on('click', 'a.get_directions', thiz.hide_link_show_get_directions_form);
+                                                break;
+                                            case error.POSITION_UNAVAILABLE:
+                                                // console.log("Location information is unavailable.")
+                                                break;
+                                            case error.TIMEOUT:
+                                                // console.log("The request to get user location timed out.")
+                                                break;
+                                            case error.UNKNOWN_ERROR:
+                                                // console.log("An unknown error occurred.")
+                                                break;
+                                        }
+                                    });
+                                }else{
+                                    // console.log("Geolocation is not supported by this browser.");
+                                }
+                                marker.couch_id = cong.get('id')
+                                // TODO: Make it so the city entered has a different color than results 
+                                //  found and/or the results entered have an "A,B,C" feature on the pinpoint.
 
-                            // TODO: Figure out what address formats we need to parse before sending address to Google.
-                            // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
-                            //  Maybe if geocoding add1 fails, try add2
-                            //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
-                            // Name:    Caney OPC
-                            // Add1:    CVHS Gym
-                            // Add2:    300 A St <-- We need this, not addr1
+                                // TODO: Figure out what address formats we need to parse before sending address to Google.
+                                // TODO: Figure out which line(s) (address1 or address2) is needed to send to Google.
+                                //  Maybe if geocoding add1 fails, try add2
+                                //  https://blueprints.launchpad.net/reformedchurcheslocator/+spec/parse-address-formats
+                                // Name:    Caney OPC
+                                // Add1:    CVHS Gym
+                                // Add2:    300 A St <-- We need this, not addr1
 
-                            // Name:    Caney OPC
-                            // Add1:    YMCA
-                            // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
-                        });                        
+                                // Name:    Caney OPC
+                                // Add1:    YMCA
+                                // Add2:    500 S Green St. Room 12 <-- We need this, not addr1
+                            });                        
+                        }
                     }
+
                 })
             },
             
