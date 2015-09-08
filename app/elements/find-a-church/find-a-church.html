@@ -2,7 +2,7 @@
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../elements.html">
 
-<dom-module id="find-a-church" hoodie="{{hoodie}}">
+<dom-module id="find-a-church" hoodie="{{hoodie}}" map="{{map}}">
   <style>
     :host {
       display: flex;
@@ -70,6 +70,9 @@
 </dom-module>
 <script>
 (function() {
+  
+  'use strict';
+
   Polymer({
     is: 'find-a-church',
 
@@ -88,6 +91,10 @@
       },
       available_cgroups_displayed: {
         type: Array,
+        notify: true
+      },
+      map: {
+        type: Object,
         notify: true
       }
     },

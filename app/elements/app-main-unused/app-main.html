@@ -83,6 +83,8 @@
 
     (function() {
 
+      'use strict';
+      
       Polymer({
         is: 'app-main',
         properties: {
@@ -128,7 +130,7 @@
           var thiz = this;
           // Fix the height of the map to fit the available space
           var new_height = document.querySelector('body').clientHeight - document.querySelector('app-main /deep/ paper-toolbar').clientHeight;
-          if (thiz.$.google_map.clientHeight == 0 || thiz.$.google_map.clientHeight != new_height){
+          if (thiz.$.google_map.clientHeight === 0 || thiz.$.google_map.clientHeight !== new_height){
             document.querySelector('app-main /deep/ google-map').style.height = new_height + 'px';
             thiz.$.google_map.resize();
           }

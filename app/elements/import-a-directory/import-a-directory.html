@@ -4,7 +4,7 @@
 <link rel="import" href="../../elements/model-object/model-object.html">
 <link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
 
-<dom-module id="import-a-directory" hoodie="{{hoodie}}" >
+<dom-module id="import-a-directory" hoodie="{{hoodie}}" map="{{map}}">
   <style>
     :host {
       display: block;
@@ -26,9 +26,9 @@
           select_one_mode></cgroup-filter>
         <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
       </div>
-      <geocode-stats hidden="{{hide_geocode_stats}}"></geocode-stats>
+      <geocode-stats hidden="{{hide_geocode_stats}}" id="geocode_stats"></geocode-stats>
     </paper-material>
-    <google-maps-api api-key="AIzaSyCcl9RJaWMuEF50weas-we3D7kns-iWEXQ" version="3.exp" id="maps_api"></google-maps-api>
+
   </template>
 </dom-module>
 <script>
@@ -64,15 +64,47 @@
         type: Object,
         value: {},
         notify: true
+      },
+      map: {
+        type: Object,
+        notify: true
       }
     },
     ready:function(){
       // TODO: Delete API key above, and ask user to get and enter their own API key for their upload
     },
     attached:function(){
+      var thiz = this;
       this.async(function(){
+
+        // Get reference to Hoodie
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+        
+        // Configure listener to congregation:change events
+        this.hoodie.store.on('congregation:change', function(cong){
+          // Handle congs with regeocode === true
+          if (cong.regeocode === true){
+            thiz._geocode_congs(0, [cong]);
+          }
+        });
+        
+        // Trigger regeocoding on page load, after a 5 second delay
+        this.async(function(){
+          this.hoodie.store.findAll(function(cong){
+            if (cong.regeocode === true){
+              return true;
+            }
+          })
+          .done(function(congs){
+            thiz._geocode_congs(0, congs);
+          }).fail(thiz.fail_handler);
+        }, 5000);
+
       });
+    },
+    // Simple default promise fail handler to use throughout the code. It simply logs the error to the console.
+    fail_handler:function(error){
+      console.log(error);
     },
     /* This function:
      * - gets directory and congregation data from a user-selected import.io file
@@ -92,15 +124,15 @@
         var congs_obj = JSON.parse(json);
         // Determine if this import.io data source is already in a directory in the database.
         // Note that
-        //  - directory objects represent remote church directory websites, and
-        //  - cgroup objects represent one denomination or group like the OPC, NAPARC, etc.
-        //  So this directory's congregations fall in one or more cgroups, so we need
-        //    to load a <cgroup-filter> here to allow the user to select the correct cgroup.
+        //  - a directory object represents one remote church directory website, and
+        //  - a cgroup object represents one denomination or group like the OPC, NAPARC, etc.
+        //  - a directory represents one cgroup (not many)
+        //  So, we need to load a <cgroup-filter> here to allow the user to select the directory's cgroup.
         //  Use the importio_guid to determine this
         var importio_guid = congs_obj.data[0]._source[0];
         // Get this directory if it exists in the db
-//         thiz.hoodie.store.removeAll('directory');
-//         return;
+        thiz.hoodie.store.removeAll('directory');
+        return;
         thiz.hoodie.store.findAll(function(object){
           if (object.type === 'directory' && object.importio_guid === importio_guid){
             return true;
@@ -109,11 +141,13 @@
         .done(function(directories){
           // TODO: Refactor from here down into reusable methods, especially because the cong 
           //  translation & geocoding block is big, and needed in both conditional blocks below.
-          if (directories.length !== 0){
-            // Then display this directory's cgroups
+          if (directories.length > 1){
+            console.error('There is more than one directory with this importio_guid!');
+          }
+          if (directories.length === 1){
+            // Then display this directory's cgroup
             var directory = directories[0];
-            // Find the cgroups to which this directory's congregations belong, and display them in the
-            //  <cgroup-filter>
+            // Find the cgroup which this directory represents, and display it in the <cgroup-filter>
             thiz.hoodie.store.findAll('cgroup')
             .done(function(available_cgroups){
               thiz.$.cgroup_filter.available_cgroups = available_cgroups;
@@ -125,14 +159,8 @@
                 thiz.hide_cgroup_filter = false;
                 // TODO: Set up listener (elsewhere in the code) to handle updating the cgroup_directory
                 //  docs with their new new cgroups.
-              })
-              .fail(function(error){
-                console.log(error);
-              });
-            })
-            .fail(function(error){
-              console.log(error);
-            });
+              }).fail(thiz.fail_handler);
+            }).fail(thiz.fail_handler);
           }else{
             // Else create this directory
             
@@ -160,65 +188,25 @@
                   thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                   thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                   thiz.hide_cgroup_filter = true;
+                  debugger;
                   thiz.hoodie.store.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                   .done(function(cgroup){
                     // Associate this new cgroup with the directory
                     thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
                     .done(function(directory){
-                      thiz.geocode_and_save_congs(congs_obj, directory, cgroup);
-                    })
-                    .fail(function(error){
-                      console.log(error);
-                    });
-                  })
-                  .fail(function(error){
-                    console.log(error);
-                  });
+                      thiz._translate_and_save_congs(congs_obj, directory, cgroup);
+                    }).fail(thiz.fail_handler);
+                  }).fail(thiz.fail_handler);
                 });
               });
 
-//               // Set up event listener on cgroup_edit_form
-//               thiz.$.cgroup_edit_form.addEventListener('submit', function handle_cgroup_edit_form_submit(event){
-//                 thiz.$.cgroup_edit_form.removeEventListener(event.type, handle_cgroup_edit_form_submit);
-//                 // Write the entered cgroup data to the db, and associate this cgroup with the directory
-//                 // If directory.cgroup_id is undefined, we have to search for this cgroup in case it already
-//                 //  exists.  But this would be easier to do before asking the user to fill out the form.  So
-//                 //  we should use the <cgroup-filter> element here.
-//                 // Else we should create a new cgroup
-//                 thiz.hoodie.store.updateOrAdd('cgroup', directory.cgroup_id, thiz.$.cgroup_edit_form.cgroup)
-//                 .done(function(cgroup){
-//                   thiz.hide_cgroup_edit_form = true;
-//                   debugger;
-//                   thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
-//                   .done(function(directory){})
-//                   .fail(function(error){
-//                     debugger;
-//                     console.log(error);
-//                   });
-//                 })
-//                 .fail(function(error){
-//                   console.log(error);
-//                 });
-//               });
-//               // Show form to edit cgroup information
-//               thiz.hide_cgroup_edit_form = false;
-              
               // TODO: Does the above work when directory.cgroup_id is null? No.
               //  Or does it create multiple copies of the new cgroup? Yes.
               //  So how can we fix this?
 
-              // TODO: Handle adding or removing related cgroups. I think we should permit selecting only
-              //  one cgroup here.  Will it be too hard to make cgroup-filter work this way?
-              // Ask, "Which denomination or other group of churches does this directory represent?"
-              // TODO: Add an element below cgroup-filter to permit adding a new cgroup 
-              //  which doesn't exist.
-              // TODO: When adding a new cgroup, ask the user to enter the name and abbreviation of the cgroup 
               // TODO: Write the congregations in this directory to the database
               // TODO: Should we associate the cgroup with these congs here?
-            })
-            .fail(function(error){
-              console.log(error);
-            });
+            }).fail(thiz.fail_handler);
           }
         });
         //  Consider writing all the data to the database first, then geocoding after that
@@ -239,18 +227,14 @@
       });
       reader.readAsText(file);
     },
-    geocode_and_save_congs: function(congs_obj, directory, cgroup){
+    /* Translate from importio cong format to our schema, then save the cong. Note this
+     *  currently only handles an importio-formatted congs_obj.
+     */
+    _translate_and_save_congs: function(congs_obj, directory, cgroup){
       var thiz = this;
-      // TODO: Geocode and save the congregations
-      // TODO: Check whether each congregation already exists. Maybe use updateOrAdd()?
-      
-      // TODO: Iterate through the congs to geocode each one.
-      //  Can I do it as a queue of promises?
-      //  Or maybe use updateAll() with a function, and filter for the correct type
-      //    and identify each cong via an importio ID or other data.
-      //  Hm...no, that won't work because updateAll() doesn't add new docs.
       // Note: The attribute which contains the list of cong data objects is called congs_obj.data
       var congs = congs_obj.data;
+
       congs.forEach(function(cong){
         // Note: Most attributes contain lists.
         // So if an attribute is a list is longer than 1 item, join the items together with <br />
@@ -267,13 +251,16 @@
         // cong._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
         //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
         new_cong.page_url = cong._pageUrl;
-        // Get cong's database id from OPC.org
+        // Handle congs from OPC.org
         if (new_cong.page_url.indexOf('opc.org') !== -1){
             // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
             //  character of each word.
             // TODO: This doesn't work with names including words like 'of'. Maybe that's why they are ALLCAPS.
             new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
         }
+        // Record the source of this revision of this cong
+        new_cong.source_id = directory.id;
+        
         // Save to database
         // Find out whether this cong exists in the database
         thiz.hoodie.store.findAll(function(cong_found){
@@ -284,126 +271,126 @@
         .done(function(congs_found){
           if (congs_found.length > 0){
             // Cong already exists in the database, so update with new attributes
-            var address_fields = [
-              'meeting_address1',
-              'meeting_address2',
-              'meeting_city',
-              'meeting_state',
-              'meeting_zip'
-            ];
-
+            
             // Compare old address values with new address values.
-            //  If the new_cong's values are different, then geocode this cong.
-            var fields_changed = address_fields.filter(function(item){
-              return new_cong[item] !== congs_found[0][item];
-            });
-            if (fields_changed.length > 0){
-              thiz.geocode_cong(new_cong)
-              .done(function(new_cong){
-                // Update cong in database.
-                return thiz.update_cong(congs_found[0].id, new_cong);
-              })
-              .fail(function(error){
-                console.log(error);
-              });
-            }else{
-              // Update cong in database.
-              return thiz.update_cong(congs_found[0].id, new_cong);
+            //  If the new_cong's values are different, then flag to geocode this cong.
+            if (thiz._get_cong_address_to_geocode(new_cong) !== thiz._get_cong_address_to_geocode(congs_found[0])){
+              // Set regeocode flag
+              new_cong.regeocode = true;
             }
-          }else{
-            // Cong does not exist in database, so geocode, then create new doc
-            thiz.geocode_cong(new_cong)
-            .done(function(new_cong){
-              // Add cong to database.
-              thiz.hoodie.store.add('congregation', new_cong)
-              .done(function(new_cong){})
-              .fail(function(error){
-                console.log(error);
-              });
+            
+            // Update this cong's cgroups
+            // First find all related cgroups
+            thiz.hoodie.store.findAll(function(doc){
+              if (doc.type === 'cgroup_congregation' &&
+                  doc.congregation_id === congs_found[0].id && 
+                  doc.cgroup_id === cgroup.id){
+                return true;
+              }
             })
-            .fail(function(error){
-              console.log(error);
-            });
+            // Second, add this cgroup if it has not yet been added to the cong's cgroups
+            .done(function(cgroup_congregations){
+              if (cgroup_congregations.length === 0){
+                thiz.hoodie.store.add('cgroup_congregation', {
+                  cgroup_id: cgroup.id,
+                  congregation_id: congs_found[0].id
+                })
+                .done(function(){}).fail(thiz.fail_handler);
+              }
+            }).fail(thiz.fail_handler);
+            
+            // Update in database
+            thiz.update_cong(congs_found[0].id, new_cong);
+
+          }else{
+            
+            // Cong does not exist in database, so flag to geocode, then create new doc
+            new_cong.regeocode = true;
+            thiz.hoodie.store.add('congregation', new_cong)
+            .done(function(){
+
+              // Create a join doc for this congregation's cgroup
+              thiz.hoodie.store.add('cgroup_congregation', {
+                cgroup_id: cgroup.id,
+                congregation_id: congs_found[0].id
+              })
+              .done(function(){}).fail(thiz.fail_handler);
+
+            }).fail(thiz.fail_handler);
+
           }
-        }).fail(function(error){
-          console.log(error);
-        });
-        // TODO: Start here.  This should be integrated into the above, as should geocoding,
-        //  though maybe that could be done in a Hoodie event listener.
-
-        // TODO: Geocode congregation here.  But maybe not on the update event, unless
-        //  we can determine if the address was updated.  How can we determine that here?
-        //  Maybe that can only be determined in the code below right before we write an
-        //  imported cong to the database. Maybe that is best because we don't want to
-        //  trigger geocoding the same cong in more than one browser for just one address change.
-
-        // Associate this cong with its cgroup
-        cong_model.get('cgroups').add(thiz.cgroup);
-        cong_model.set('denomination_abbr', thiz.cgroup.get('abbreviation'));
-        cong_model.save();
-        
+        }).fail(thiz.fail_handler);
       });
     },
-    geocode_cong:function(cong){
-      // Note that if the API takes a long time to load on a slow connection,
-      //  it is possible that it would not yet be available.  That's unlikely by
-      //  the time the user calls this method.  But if it happens, refer to the google-maps-api
-      //  docs for how to initialize the following variable only after the API loads.
-      var geocoder = this.$.maps_api.api.geocoder;
+    _get_cong_address_to_geocode:function(cong){
       // Get cong's address to geocode
-      // Note this is limited to 2500 requests per day, then is "rate-limited on a per-second basis."
-      //  See https://developers.google.com/maps/documentation/javascript/geocoding
       // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
-      var address_line = ''
+      var address_line = '';
       if (cong.meeting_address1.search(/\d/) !== -1){
-          address_line = cong.meeting_address1
+          address_line = cong.meeting_address1;
       } else if (cong.meeting_address2.search(/\d/) !== -1){
-          address_line = cong.meeting_address2
+          address_line = cong.meeting_address2;
       }else{
-          address_line = cong.meeting_address1
+          address_line = cong.meeting_address1;
       }
       var address =   address_line + ', ' + 
                       (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ' + 
                       (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
-                      (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''))
-      // TODO: Start here.
-      // TODO: Refactor this to return a promise.
-      // TODO:  Consider how to refactor this to geocode only one cong at a time.
-      //  Currently the code tries all at once, then when it realizes it's getting errors,
-      //  it throttles back, but the effect of that throttling is probably to throttle back too
-      //  much, so the whole geocoding batch runs much slower than it has to.  So the way to refactor
-      //  this is to keep track of which cong is being handled, then only once one cong is geocoded,
-      //  move on to the next cong.
+                      (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''));
+      return address;      
+    },
+    // Recursive function which geocodes an array of congregations, and throttles back the rate 
+    //  if the geocoder tells us we are geocoding too fast.
+    _geocode_congs:function(index, congs_array, usecs){
+      // Note that if the API takes a long time to load on a slow connection,
+      //  it is possible that it would not yet be available.  That's unlikely by
+      //  the time the user calls this method.  But if it happens, refer to the google-maps-api
+      //  docs for how to initialize the following variable only after the API loads.
+      var thiz = this;
+      // Note the geocoder is limited to 2500 requests per day, then is "rate-limited on a per-second basis."
+      //  See https://developers.google.com/maps/documentation/javascript/geocoding
+      var geocoder = this.map.geocoder;
+      if (typeof usecs === 'undefined'){
+        usecs = 100;
+      }
 
+      // Report progress to user
+      this.$.geocode_stats.usecs = usecs;
+      this.$.geocode_stats.number_to_geocode = congs_array.length;
+      
+      var address = this._get_cong_address_to_geocode(congs_array[index]);
       geocoder.geocode( { 'address': address }, function(results, status) {
-          // console.log(results, status)
-          // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
-          //  or status == 'ZERO_RESULTS'
-          if (status == google.maps.GeocoderStatus.OK) {
-              var loc = results[0].geometry.location
-              congs[index].loc = [loc.lat(), loc.lng()]
-              // Delay bulkSave until after asynchronous geocoding is done for all congs
-              congs[index].geocoding = 'done'
-              thiz.geocode_end_time = new Date().getTime()
-              bulksave(congs)
+        // console.log(results, status)
+        // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
+        //  or status == 'ZERO_RESULTS'
+        if (status === thiz.map.GeocoderStatus.OK) {
+          var loc = results[0].geometry.location;
+          congs_array[index].geocode = {lat:loc.lat(), lng: loc.lng()};
+          // Save cong with updated geocode
+          thiz.hoodie.store.update('congregation', congs_array[index].id, congs_array[index])
+          .done(function(){
+            
+            // Report progress to user
+            thiz.$.geocode_stats.number_geocoded = thiz.$.geocode_stats.number_geocoded++;
+
+            // Call this function recursively to geocode the next cong
+            index++;
+            thiz._geocode_congs(index, congs_array, usecs);
+
+          }).fail(thiz.fail_handler);
+        }else{
+          // If we were sending the requests to fast, try this cong again and increase the delay
+          if (status === thiz.map.GeocoderStatus.OVER_QUERY_LIMIT){
+            usecs += 100;
+            setTimeout(function(){
+              thiz._geocode_congs(index, congs_array, usecs);
+            },usecs);
           }else{
-              // === if we were sending the requests to fast, try this one again and increase the delay
-              if (status == google.maps.GeocoderStatus.OVER_QUERY_LIMIT){
-                  thiz.usecs += 100;
-                  setTimeout(function(){
-                      geocode(address, congs, index)
-                  },thiz.usecs)
-              }else{
-                  var reason  =   "Code "+status;
-                  var msg     = 'address="' + address + '" error=' +reason+ '(usecs='+thiz.usecs+'ms)';
-                  if (typeof thiz.errors == 'undefined'){
-                      thiz.errors = 1
-                  }else{
-                      thiz.errors++
-                  }
-                  console.error('Errors: ' + thiz.errors, msg)
-              }
+            var reason  =   'Code ' + status;
+            var msg     = 'address="' + address + '" error=' + reason + '(usecs=' + usecs + 'ms)';
+            console.error('Error: ' + msg);
           }
+        }
       });
     },
     update_cong:function(id, cong){
@@ -411,10 +398,7 @@
       return this.hoodie.store.update('congregation', id, cong)
       .done(function(cong){
         return cong;
-      })
-      .fail(function(error){
-        console.log(error);
-      });
+      }).fail(this.fail_handler);
     }
 
   });

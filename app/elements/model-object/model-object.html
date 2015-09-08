@@ -47,11 +47,11 @@
 
           cgroup: {
             default_attributes:{
-               type: 'cgroup',
-               name: '',
-               abbreviaton: '',
-               website: '',
-               parent_cgroup_id: '', // relation; permits cgroups to be arranged hierarchically
+              type: 'cgroup',
+              name: '',
+              abbreviaton: '',
+              website: '',
+              parent_cgroup_id: '', // relation; permits cgroups to be arranged hierarchically
             },
             relations:[
               'congregations', // many-to-many, join docs are of type 'cgroup_congregation'
@@ -63,46 +63,48 @@
 
           congregation: {
             default_attributes:{
-                name : '',
-                meeting_address1 : '',
-                meeting_address2:'',
-                meeting_city:'',
-                meeting_region:'',
-                meeting_state:'',
-                meeting_zip:'',
-                meeting_country:'',
-                geocode: {
-                    lat:'',
-                    lng:''
-                },
-                mailing_address1:'',
-                mailing_address2:'',
-                mailing_city:'',
-                mailing_state:'',
-                mailing_zip:'',
-                mailing_country:'',
-                phone:'',
-                fax:'',
-                contact_email:'',
-                website:'',
-                sermons_url:'',
-                service_info:'',
-                other_info:'',
-                presbytery_name:'',
-                pastor_name:'',
-                contact_type:'',
-                contact_name:'',
-                date_founded:'', // date
-                number_of_members:'', // integer
-                range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
-                                            //   permitted/preferred or the only available data
-                organized:'', // boolean, defines whether this is a mission work or an organized congregation
-                source:'', // Foreign key:  Which source this cong's data came from. Usually a directory.
-                page_url:'', // The URL in the source's site
+              name : '',
+              meeting_address1 : '',
+              meeting_address2:'',
+              meeting_city:'',
+              meeting_region:'',
+              meeting_state:'',
+              meeting_zip:'',
+              meeting_country:'',
+              geocode: {
+                lat:'',
+                lng:''
+              },
+              mailing_address1:'',
+              mailing_address2:'',
+              mailing_city:'',
+              mailing_state:'',
+              mailing_zip:'',
+              mailing_country:'',
+              phone:'',
+              fax:'',
+              contact_email:'',
+              website:'',
+              sermons_url:'',
+              service_info:'',
+              other_info:'',
+              presbytery_name:'',
+              pastor_name:'',
+              contact_type:'',
+              contact_name:'',
+              date_founded:'', // date
+              number_of_members:'', // integer
+              range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+                                             //   permitted/preferred or the only available data
+              organized:'', // boolean, defines whether this is a mission work or an organized congregation
+              source_id:'', // Foreign key:  Which source this revision of this cong's data
+                            //  came from:  a directory, user, RSS feed...
+              page_url:'',  // The URL in the source's site
+              regeocode:false // Boolean. Whether to regeocode this cong
             },
             relations: [
               'cgroups', // many-to-many, join docs are of type 'cgroup_congregation'
-              'people' // many-to-many, join docs are of type 'congregation_person'
+              'people'   // many-to-many, join docs are of type 'congregation_person'
             ]
 
           },
@@ -113,10 +115,10 @@
               url:'', // url of directory's main page. As an approximation
                       //  of the directory's main page, extract the domain name from json.data[0]._pageUrl.
               directory_type:'', // options: ['importio', 'rss', 'html']
-              importio_guid: '',  // found in json.data[0]._source[0]; should be the same 
+              importio_guid: '', // found in json.data[0]._source[0]; should be the same 
                                  //   for every cong from one import.io data source
-              cgroup_id: ''  // relation. _id of the cgroup this directory represents. One directory represents 
-                          // one cgroup.  But one cgroup can be represented by more than one directory.
+              cgroup_id: '' // relation. _id of the cgroup this directory represents. One directory represents 
+                            // one cgroup.  But one cgroup can be represented by more than one directory.
             }
           }  
 
