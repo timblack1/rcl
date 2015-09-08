@@ -64,12 +64,13 @@
     "require-dir": "^0.3.0",
     "run-sequence": "^1.0.2",
     "semantic-release": "^4.1.0",
+    "serve-waterfall": "^1.1.0",
     "url": "^0.10.3",
     "vulcanize": ">= 1.4.2",
     "web-component-tester": "^3.3.9"
   },
   "engines": {
-    "node": ">=0.10.22"
+    "node": ">=0.12.0"
   },
   "files": [
     "app/"
