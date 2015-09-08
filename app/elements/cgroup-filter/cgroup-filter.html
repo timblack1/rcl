@@ -260,6 +260,8 @@
       this.$.cgroup_edit_dialog.open();
       // Prepopulate the form to help the user
       this.$.cgroup_edit_form.$.name.value = this.filter_value;
+      // TODO: This isn't working yet.  Do we need to call it after a flush() call?
+      //  Read the docs, google for advice.
       this.$.cgroup_edit_form.$.name.focus();
     }
 

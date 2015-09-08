@@ -96,7 +96,9 @@
             }
           })
           .done(function(congs){
-            thiz._geocode_congs(0, congs);
+            if (congs.length > 0){
+              thiz._geocode_congs(0, congs);
+            }
           }).fail(thiz.fail_handler);
         }, 5000);
 
@@ -184,11 +186,11 @@
               .done(function(available_cgroups){
                 thiz.$.cgroup_filter.available_cgroups = available_cgroups;
                 thiz.hide_cgroup_filter = false;
+                // TODO: Focus the paper-input to make it easy for a user to start typing
                 thiz.$.cgroup_filter.addEventListener('submit', function handle_cgroup_edit_form_submit(){
                   thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                   thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                   thiz.hide_cgroup_filter = true;
-                  debugger;
                   thiz.hoodie.store.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                   .done(function(cgroup){
                     // Associate this new cgroup with the directory
@@ -242,7 +244,7 @@
         // Create a new object which has model.congregation as its prototype
         var cong_template = Object.create(thiz.$.model_object.model.congregation);
         // Import only the fields we want in our model
-        cong_template.default_attributes.forEach(function handle_attribute(attribute){
+        Object.keys(cong_template.default_attributes).forEach(function handle_attribute(attribute){
             // Only join if it is of type = array
             new_cong[attribute] = Array.isArray(cong[attribute]) ? cong[attribute].join('<br />') : cong[attribute];
         });
