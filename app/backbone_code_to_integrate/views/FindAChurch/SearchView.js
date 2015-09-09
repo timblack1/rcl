@@ -38,12 +38,14 @@ define([
             			// So, load one cgroup collection in Backbone into the map.
             			var cgroup = cgroups.findWhere({abbreviation:abbreviation})
             			// START HERE TODO: Figure out the right syntax to actually
-            			//   update thiz.collection and fire its change listeners
-           			 	thiz.collection.reset(cgroup.get('congregations').fetch({
-							success:function(){
+            			//   update thiz.collection and fire its change event.
+            			//  Is reset the right method to call?  Is cgroup.get congregations the right syntax? Does it return any data?	
+            			// After clicking on a filter, the error "Uncaught TypeErrpr: Cannot read property 'prototype' of undefined" appears.
+            			cgroup.get('congregations').fetch({
+							success:function(cgroup){
 								thiz.collection.reset(cgroup.get('congregations'))
 							}
-           			 	}))
+           			 	})
    //      			 	thiz.collection = cgroup.get('congregations') //this should update the map automatically.
                  	})
   				});
