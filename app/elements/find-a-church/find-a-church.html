@@ -1,5 +1,8 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../elements.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+
 
 <dom-module id="find-a-church" hoodie="{{hoodie}}">
   <style>
@@ -21,6 +24,13 @@
     cgroup-filter {
       margin-top: 1em;
     }
+/*  This places the microphone icon to the right size of the text box. */
+    iron-icon {
+      display: inline-block;
+      position: relative;
+      float:right;
+      top: -2em;
+    }
   </style>
   <template>
 
@@ -30,6 +40,7 @@
         label="Search for a church..."
         value="{{search_string}}">
       </paper-input>
+      <iron-icon icon="av:mic-off" id="av_mic_icon"></iron-icon>
       <proximity-controls></proximity-controls>
       
       <voice-recognition id="voice_recognition"
@@ -138,10 +149,12 @@
       if (this.voice_recognition_state === 'ON'){
         this.$.voice_recognition.stop();
         this.voice_recognition_state = 'OFF';
+        this.$.av_mic_icon.setAttribute("icon","av:mic-off")
       }else{
         this.$.search_for_a_church.value = '';
         this.$.voice_recognition.start();
         this.voice_recognition_state = 'ON';
+        this.$.av_mic_icon.setAttribute("icon","av:mic") 
       }
     },
     voice_recognition_result:function(event){
