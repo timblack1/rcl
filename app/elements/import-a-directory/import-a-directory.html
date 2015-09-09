@@ -81,7 +81,7 @@
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
         
         // Configure listener to congregation:change events
-        this.hoodie.store.on('congregation:change', function(cong){
+        this.hoodie.store.on('congregation:change', function(eventName, cong){
           // Handle congs with regeocode === true
           if (cong.regeocode === true){
             thiz._geocode_congs(0, [cong]);
@@ -133,8 +133,9 @@
         //  Use the importio_guid to determine this
         var importio_guid = congs_obj.data[0]._source[0];
         // Get this directory if it exists in the db
-        thiz.hoodie.store.removeAll('directory');
-        return;
+//         thiz.hoodie.store.removeAll('directory');
+//         thiz.hoodie.store.removeAll('congregation');
+//         return;
         thiz.hoodie.store.findAll(function(object){
           if (object.type === 'directory' && object.importio_guid === importio_guid){
             return true;
