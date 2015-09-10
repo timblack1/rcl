@@ -146,12 +146,12 @@
 
       function populate_available_cgroups(){
         cf.push('available_cgroups',
-          {abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
-          {abbreviation:'URC', name:'United Reformed Churches in North America'},
-          {abbreviation:'PCA', name:'Presbyterian Church in America'},
-          {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
-          {abbreviation:'RCUS', name:'Reformed Church of the United States'},
-          {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
+          {id: '1', abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
+          {id: '2', abbreviation:'URC', name:'United Reformed Churches in North America'},
+          {id: '3', abbreviation:'PCA', name:'Presbyterian Church in America'},
+          {id: '4', abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
+          {id: '5', abbreviation:'RCUS', name:'Reformed Church of the United States'},
+          {id: '6', abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
         );
       }
 
@@ -175,7 +175,7 @@
           var opc = cf.$.available_filtered.querySelector('#OPC');
           opc.fire('tap');
           flush(function(){
-            assert.include(cf.selected_cgroups, {abbreviation:'OPC', name: 'Orthodox Presbyterian Church'});
+            assert.include(cf.selected_cgroups, {id: '1', abbreviation:'OPC', name: 'Orthodox Presbyterian Church'});
             assert.include(cf.$.selected.textContent, 'OPC');
             done();
           });
@@ -331,12 +331,12 @@
 
       function populate_available_cgroups(){
         cf.push('available_cgroups',
-          {abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
-          {abbreviation:'URC', name:'United Reformed Churches in North America'},
-          {abbreviation:'PCA', name:'Presbyterian Church in America'},
-          {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
-          {abbreviation:'RCUS', name:'Reformed Church of the United States'},
-          {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
+          {id: '1', abbreviation:'OPC', name:'Orthodox Presbyterian Church'},
+          {id: '2', abbreviation:'URC', name:'United Reformed Churches in North America'},
+          {id: '3', abbreviation:'PCA', name:'Presbyterian Church in America'},
+          {id: '4', abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'},
+          {id: '5', abbreviation:'RCUS', name:'Reformed Church of the United States'},
+          {id: '6', abbreviation:'KAPC', name:'Korean-American Presbyterian Church'}
         );
       }
 
@@ -400,6 +400,8 @@
            'it should display a button to add a cgroup, ' +
            'and hide the two checkboxes', function(done){
         cf.select_one_mode = true;
+        // Stipulate this is not the case where a cgroup has been selected
+        cf.selected_cgroups = [];
         cf.$.filter_input.value = 'Cumberland Presbyterian Church';
         cf.$.filter_input.fire('input');
         cf.async(function(){
@@ -420,6 +422,38 @@
           assert.equal(cf.$.add_cgroup_button.hidden, true);
           assert.equal(cf.$.list_all_groups.hidden, false);
           assert.equal(cf.$.show_full_names.hidden, false);
+          done();
+        }, 300);
+      });
+
+      test('in select_one_mode, if text is entered which matches a cgroup, ' +
+           'and a cgroup is selected, ' +
+           'it should NOT display a button to add a cgroup', function(done){
+        cf.select_one_mode = true;
+        cf.$.filter_input.value = 'OPC';
+        cf.$.filter_input.fire('input');
+        cf.async(function(){
+          cf.$.available_filtered.querySelector('#OPC').fire('tap');
+          cf.async(function(){
+            cf.$.filter_input.value = 'OPCDEF';
+            cf.$.filter_input.fire('input');
+            cf.async(function(){
+              assert.equal(cf.$.add_cgroup_button.hidden, true);
+              done();
+            }, 300);
+          }, 300);
+        }, 300);
+      });
+
+      test('In select_one_mode, when there are no selected cgroups, ' +
+           'and the filter text does not match any existing cgroups, ' +
+           'it should display the button to add a cgroup', function(done){
+        cf.select_one_mode = true;
+        cf.$.filter_input.value = 'opcd';
+        cf.$.filter_input.fire('input');
+        cf.selected_cgroups = [];
+        cf.async(function(){
+          assert.equal(cf.$.add_cgroup_button.hidden, false);
           done();
         }, 300);
       });

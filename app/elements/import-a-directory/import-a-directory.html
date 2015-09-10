@@ -4,7 +4,7 @@
 <link rel="import" href="../../elements/model-object/model-object.html">
 <link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
 
-<dom-module id="import-a-directory" hoodie="{{hoodie}}" map="{{map}}">
+<dom-module id="import-a-directory" hoodie="{{hoodie}}">
   <style>
     :host {
       display: block;
@@ -12,6 +12,9 @@
     }
     paper-material {
       padding: 1em;
+    }
+    #continue_button {
+      margin-top: 1em;
     }
   </style>
   <template>
@@ -21,14 +24,27 @@
       <div>Select an import.io file</div>
       <paper-input type="file" on-change="_handle_file_selected"></paper-input>
       <div hidden="{{hide_cgroup_filter}}">
-        <p>Which denomination does this directory represent?</p>
+        <p>
+          Which denomination does this directory represent?
+        </p>
+        <p>
+          Please type its name, click on its button when it appears, 
+          then click the "Continue" button. If this denomination is not yet in the database,
+          please add it in order to continue.
+        </p>
         <cgroup-filter id="cgroup_filter"
-          select_one_mode></cgroup-filter>
+          select_one_mode
+          selected_cgroups="{{selected_cgroups}}"></cgroup-filter>
         <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
+        <paper-button id="continue_button"
+          hidden="{{hide_continue_button}}"
+          raised>
+          Continue
+        </paper-button>
       </div>
       <geocode-stats hidden="{{hide_geocode_stats}}" id="geocode_stats"></geocode-stats>
     </paper-material>
-
+    <google-maps-api id="maps_api" libraries="places"></google-maps-api>
   </template>
 </dom-module>
 <script>
@@ -65,16 +81,42 @@
         value: {},
         notify: true
       },
-      map: {
+      geocoder: {
         type: Object,
+        value: {},
+        notify: true
+      },
+      hide_continue_button: {
+        type: Boolean,
+        value: true,
+        notify: true
+      },
+      selected_cgroups: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+      congs_to_geocode: {
+        type: Array,
+        value: [],
         notify: true
       }
     },
+    observers: [
+      '_show_hide_continue_button(selected_cgroups.splices)',
+      '_geocode_congs(congs_to_geocode.splices)'
+    ],
     ready:function(){
       // TODO: Delete API key above, and ask user to get and enter their own API key for their upload
     },
     attached:function(){
       var thiz = this;
+
+      // Configure geocoder
+      this.$.maps_api.addEventListener('api-load', function() {
+        thiz.geocoder = new thiz.$.maps_api.api.Geocoder();
+      });
+
       this.async(function(){
 
         // Get reference to Hoodie
@@ -83,8 +125,9 @@
         // Configure listener to congregation:change events
         this.hoodie.store.on('congregation:change', function(eventName, cong){
           // Handle congs with regeocode === true
-          if (cong.regeocode === true){
-            thiz._geocode_congs(0, [cong]);
+          if (eventName !== 'remove' && cong.regeocode === true){
+            // Add this cong to the queue to enable throttling to work
+            thiz.congs_to_geocode.push(cong);
           }
         });
         
@@ -97,7 +140,7 @@
           })
           .done(function(congs){
             if (congs.length > 0){
-              thiz._geocode_congs(0, congs);
+              thiz.congs_to_geocode.push(congs);
             }
           }).fail(thiz.fail_handler);
         }, 5000);
@@ -160,7 +203,7 @@
                 // Display related cgroup in <cgroup-filter>
                 thiz.$.cgroup_filter.selected_cgroups = [cgroup];
                 thiz.hide_cgroup_filter = false;
-                // TODO: Set up listener (elsewhere in the code) to handle updating the cgroup_directory
+                // TODO: Start here.  Set up listener (elsewhere in the code) to handle updating the cgroup_directory
                 //  docs with their new new cgroups.
               }).fail(thiz.fail_handler);
             }).fail(thiz.fail_handler);
@@ -187,8 +230,13 @@
               .done(function(available_cgroups){
                 thiz.$.cgroup_filter.available_cgroups = available_cgroups;
                 thiz.hide_cgroup_filter = false;
-                // TODO: Focus the paper-input to make it easy for a user to start typing
-                thiz.$.cgroup_filter.addEventListener('submit', function handle_cgroup_edit_form_submit(){
+                // Focus the paper-input to make it easy for a user to start typing
+                thiz.$.cgroup_filter.$.filter_input.$.input.focus();
+                // Note: There are two ways by which the user can select a cgroup below:
+                //  - 1) new or 2) existing
+                // 1) If the user adds a new cgroup to the database
+                // When the user clicks the button to add a new denomination, save the new cgroup
+                thiz.$.cgroup_filter.addEventListener('submit', function handle_cgroup_edit_form_submit(event){
                   thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                   thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                   thiz.hide_cgroup_filter = true;
@@ -201,32 +249,34 @@
                     }).fail(thiz.fail_handler);
                   }).fail(thiz.fail_handler);
                 });
+                // 2) Else if the user selects an existing cgroup
+                thiz.$.continue_button.addEventListener('tap', function handle_cgroup_selection(event){
+                  thiz.$.continue_button.removeEventListener(event.type, handle_cgroup_selection);
+                  var cgroup = thiz.$.cgroup_filter.selected_cgroups[0];
+                  thiz.hide_cgroup_filter = true;
+                  // Associate this cgroup with the directory
+                  thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                  .done(function(directory){
+                    thiz._translate_and_save_congs(congs_obj, directory, cgroup);
+                  }).fail(thiz.fail_handler);
+                });
               });
 
               // TODO: Does the above work when directory.cgroup_id is null? No.
               //  Or does it create multiple copies of the new cgroup? Yes.
               //  So how can we fix this?
 
-              // TODO: Write the congregations in this directory to the database
-              // TODO: Should we associate the cgroup with these congs here?
             }).fail(thiz.fail_handler);
           }
         });
-        //  Consider writing all the data to the database first, then geocoding after that
-        // TODO: Display form to let user describe this cgroup
-        // Render stats view on geocoding progress
+        // TODO: Render stats view on geocoding progress
         //thiz.hide_geocode_stats = false;
-        // TODO: Fire displaying next form fields here as needed
-        // TODO: Get the directory's identity from the cong URLs
-        // TODO: Display the form to edit the directory's name
+        
         // TODO: Display a stats view to notify the user of the following stats:
-        //  running total: X congs have been imported successfully
-        //  event: All congs' data have been imported
         //  running total: X congs have been geocoded successfully
         //  event: All congs' data have been geocoded successfully
         //  event: X congs failed geocoding (offer link to view the details)
         
-        // TODO: Prepare dirs, cgroups for determining whether this file's dir, cgroup is already in the database
       });
       reader.readAsText(file);
     },
@@ -325,13 +375,14 @@
         }).fail(thiz.fail_handler);
       });
     },
+
     _get_cong_address_to_geocode:function(cong){
       // Get cong's address to geocode
       // Pick the meeting_address[1|2] which contains a number, else just use meeting_address1
       var address_line = '';
-      if (cong.meeting_address1.search(/\d/) !== -1){
+      if (cong.meeting_address1 && cong.meeting_address1.search(/\d/) !== -1){
           address_line = cong.meeting_address1;
-      } else if (cong.meeting_address2.search(/\d/) !== -1){
+      } else if (cong.meeting_address2 && cong.meeting_address2.search(/\d/) !== -1){
           address_line = cong.meeting_address2;
       }else{
           address_line = cong.meeting_address1;
@@ -342,56 +393,83 @@
                       (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''));
       return address;      
     },
-    // Recursive function which geocodes an array of congregations, and throttles back the rate 
-    //  if the geocoder tells us we are geocoding too fast.
-    _geocode_congs:function(index, congs_array, usecs){
-      // Note that if the API takes a long time to load on a slow connection,
-      //  it is possible that it would not yet be available.  That's unlikely by
-      //  the time the user calls this method.  But if it happens, refer to the google-maps-api
-      //  docs for how to initialize the following variable only after the API loads.
+
+    /* Recursive function which geocodes an array of congregations, and throttles back the rate 
+     *  if the geocoder tells us we are geocoding too fast.
+     *
+     * Note that this function is called exclusively as a Polymer observer watching
+     *  `this.congs_to_geocode`, which functions as a queue, and should not be called
+     *  directly by users' code. That is why its first argument is `changeRecords`, 
+     *  which is provided by Polymer.
+     */
+    _geocode_congs:function(changeRecords, usecs){
+      // Don't execute if there are no congs_to_geocode
+      if (this.congs_to_geocode.length === 0){
+        return;
+      }
       var thiz = this;
+
       // Note the geocoder is limited to 2500 requests per day, then is "rate-limited on a per-second basis."
       //  See https://developers.google.com/maps/documentation/javascript/geocoding
-      var geocoder = this.map.geocoder;
+      // TODO: We aren't getting the geocoder attribute correctly.
       if (typeof usecs === 'undefined'){
         usecs = 100;
       }
 
       // Report progress to user
       this.$.geocode_stats.usecs = usecs;
-      this.$.geocode_stats.number_to_geocode = congs_array.length;
+      this.$.geocode_stats.number_to_geocode = this.congs_to_geocode.length;
+      var cong = this.congs_to_geocode[0];
+      console.log(usecs + '. Geocoding: ' + this.congs_to_geocode[0].name +', ' + 
+        this.congs_to_geocode[0].meeting_city + ', ' + this.congs_to_geocode[0].meeting_state);
       
-      var address = this._get_cong_address_to_geocode(congs_array[index]);
-      geocoder.geocode( { 'address': address }, function(results, status) {
+      var address = this._get_cong_address_to_geocode(cong);
+      this.geocoder.geocode( { 'address': address }, function(results, status) {
         // console.log(results, status)
         // TODO: Handle when Google returns multiple possible address matches (results.length > 1, 
         //  or status == 'ZERO_RESULTS'
-        if (status === thiz.map.GeocoderStatus.OK) {
+        if (status === thiz.$.maps_api.api.GeocoderStatus.OK) {
           var loc = results[0].geometry.location;
-          congs_array[index].geocode = {lat:loc.lat(), lng: loc.lng()};
+          cong.geocode = {lat:loc.lat(), lng: loc.lng()};
+          cong.regeocode = false;
           // Save cong with updated geocode
-          thiz.hoodie.store.update('congregation', congs_array[index].id, congs_array[index])
+          thiz.hoodie.store.update('congregation', cong.id, cong)
           .done(function(){
             
             // Report progress to user
-            thiz.$.geocode_stats.number_geocoded = thiz.$.geocode_stats.number_geocoded++;
+            // Show only if there are more to geocode
+            thiz.hide_geocode_stats = (thiz.$.geocode_stats.number_to_geocode === 0);
+            thiz.$.geocode_stats.number_geocoded = thiz.$.geocode_stats.number_geocoded + 1;
+
+            // Remove this cong from the thiz.congs_to_geocode
+            thiz.congs_to_geocode.splice(0, 1);
+
+            // Reduce the usecs a bit in case we backed off too far
+            usecs = usecs - 25;
 
             // Call this function recursively to geocode the next cong
-            index++;
-            thiz._geocode_congs(index, congs_array, usecs);
+            thiz._geocode_congs(thiz.congs_to_geocode, usecs);
 
           }).fail(thiz.fail_handler);
         }else{
           // If we were sending the requests to fast, try this cong again and increase the delay
-          if (status === thiz.map.GeocoderStatus.OVER_QUERY_LIMIT){
+          if (status === thiz.$.maps_api.api.GeocoderStatus.OVER_QUERY_LIMIT){
             usecs += 100;
             setTimeout(function(){
-              thiz._geocode_congs(index, congs_array, usecs);
+              thiz._geocode_congs({}, usecs);
             },usecs);
           }else{
             var reason  =   'Code ' + status;
             var msg     = 'address="' + address + '" error=' + reason + '(usecs=' + usecs + 'ms)';
-            console.error('Error: ' + msg);
+            console.log('Error: ' + msg);
+            /* TODO: Handle the following errors
+             *  Error: address="340 Calle 7NE, San Juan, PR 00922-1477" error=Code ZERO_RESULTS(usecs=900ms)
+             */
+            // Remove this cong from the congs array so it will not be geocoded this time.
+            thiz.congs_to_geocode.splice(0, 1);
+            setTimeout(function(){
+              thiz._geocode_congs({}, usecs);
+            },usecs);
           }
         }
       });
@@ -402,6 +480,13 @@
       .done(function(cong){
         return cong;
       }).fail(this.fail_handler);
+    },
+    _show_hide_continue_button:function(){
+      if (this.selected_cgroups.length === 0){
+        this.hide_continue_button = true;
+      }else{
+        this.hide_continue_button = false;
+      }
     }
 
   });

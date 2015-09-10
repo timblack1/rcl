@@ -148,12 +148,12 @@
       if (this.voice_recognition_state === 'ON'){
         this.$.voice_recognition.stop();
         this.voice_recognition_state = 'OFF';
-        this.$.av_mic_icon.setAttribute("icon","av:mic-off")
+        this.$.av_mic_icon.setAttribute('icon','av:mic-off');
       }else{
         this.$.search_for_a_church.value = '';
         this.$.voice_recognition.start();
         this.voice_recognition_state = 'ON';
-        this.$.av_mic_icon.setAttribute("icon","av:mic") 
+        this.$.av_mic_icon.setAttribute('icon','av:mic');
       }
     },
     voice_recognition_result:function(event){
