@@ -36,7 +36,7 @@
     <p id="header" hidden="{{hide_header}}">Selected denominations:</p>
     <div id="selected">
       <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
-        <paper-button on-tap="remove_cgroup">
+        <paper-button on-tap="_remove_cgroup">
           <span hidden="{{hide_abbreviation}}" class="abbreviation"><span>{{item.abbreviation}}</span> x </span>
           <span hidden="{{hide_name}}" class="name"><span>{{item.name}}</span> x </span>
         </paper-button>
@@ -44,17 +44,18 @@
     </div>
     <paper-input id="filter_input" 
       label="Filter by denomination" 
-      on-input="filter_input_changed"
+      on-input="_filter_input_changed"
       value="{{filter_value}}">
     </paper-input>
     <paper-button id="add_cgroup_button"
       hidden="{{hide_add_cgroup_button}}"
-      on-tap="_handle_add_cgroup_tapped">
+      on-tap="_handle_add_cgroup_tapped"
+      raised>
       Add this denomination
     </paper-button>
     <div id="available_filtered">
       <template id="available_list" is="dom-repeat" items="{{available_cgroups_displayed}}">
-        <paper-button on-tap="add_to_selected" id="{{item.abbreviation}}">
+        <paper-button on-tap="_add_to_selected" id="{{item.abbreviation}}">
           <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
           <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
         </paper-button>
@@ -62,12 +63,12 @@
     </div>
     <div>
       <paper-checkbox id="list_all_groups" 
-        on-tap="list_all_groups_tapped"
+        on-tap="_list_all_groups_tapped"
         hidden="{{hide_list_all_groups}}">
         List all groups
       </paper-checkbox>
       <paper-checkbox id="show_full_names"
-        on-tap="show_full_names_tapped" 
+        on-tap="_show_full_names_tapped" 
         hidden="{{hide_show_full_names}}">
         Show full names
       </paper-checkbox>
@@ -142,39 +143,39 @@
       }
     },
     observers: [
-      'show_hide_header(selected_cgroups.splices)',
+      '_show_hide_header(selected_cgroups.splices)',
       '_handle_acd_changed(available_cgroups_displayed.splices)',
       '_handle_selected_cgroups_changed(selected_cgroups.splices)'
     ],
     ready:function(){
-      this.show_hide_header();
+      this._show_hide_header();
     },
-    remove_cgroup:function(event){
+    _remove_cgroup:function(event){
       // Remove this item from selected_cgroups
       var index = this.selected_cgroups.indexOf(event.model.get('item'));
       this.splice('selected_cgroups', index, 1);
     },
-    add_to_selected:function(event){
+    _add_to_selected:function(event){
       if (this.select_one_mode === true && this.selected_cgroups.length === 1){
         // Don't add another cgroup
       }else{
         var thiz = this;
         // Don't add the cgroup if it is already in the list.
         var item = event.model.get('item');
-        if (thiz.selected_cgroups.filter(function(ob){ return ob.abbreviation === item.abbreviation; }).length === 0){
+        if (thiz.selected_cgroups.filter(function(ob){ return ob.id === item.id; }).length === 0){
           // Add the selected cgroup to the list of selected cgroups
           thiz.push('selected_cgroups', event.model.get('item'));
         }
       }
     },
-    show_hide_header:function(splices){
+    _show_hide_header:function(splices){
       if (this.selected_cgroups.length === 0){
         this.hide_header = true;
       }else{
         this.hide_header = false;
       }
     },
-    list_all_groups_tapped:function(event){
+    _list_all_groups_tapped:function(event){
       if (this.$.list_all_groups.checked === true){
         // List all groups
         this.$.filter_input.value = '';
@@ -184,20 +185,20 @@
         this._clear_available_cgroups_displayed();
       }
     },
-    show_full_names_tapped:function(event){
+    _show_full_names_tapped:function(event){
       this.hide_abbreviation = !this.hide_abbreviation;
       this.hide_name = !this.hide_name;
     },
     /* Displays the list of available cgroups which match the search term, and in select_one_mode,
      * permits a user to add a new cgroup to the available cgroups in the database.
      */
-    filter_input_changed:function(event){
+    _filter_input_changed:function(event){
       var thiz = this;
       this.debounce('filter_wait', function(){
         thiz.available_cgroups_displayed = thiz.available_cgroups.filter(function(ob){
-          if (ob.name.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
+          if (ob.name && ob.name.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
             return true;
-          }else if (ob.abbreviation.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
+          }else if (ob.abbreviation && ob.abbreviation.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1){
             return true;
           }else{
             return false;
@@ -205,13 +206,24 @@
         });
         // Handle select_one_mode
         if (thiz.select_one_mode === true){
-          if (thiz.filter_value.trim() !== '' && 
+          if (thiz.filter_value.trim() !== '' &&
+              thiz.available_cgroups_displayed.length !== 0){
+            // case: text entered, matches cgroup, so hide add button
+            thiz.hide_add_cgroup_button = true;
+            thiz.hide_show_full_names = false;
+            thiz.hide_list_all_groups = false;
+          }else if (thiz.filter_value.trim() !== '' && 
               thiz.available_cgroups_displayed.length === 0){
             // User entered a name but no cgroups are listed, so show button to add a new cgroup
             //  and hide the checkboxes since they're not needed.
-            thiz.hide_add_cgroup_button = false;
-            thiz.hide_show_full_names = true;
-            thiz.hide_list_all_groups = true;
+            if (thiz.selected_cgroups.length === 0){
+              thiz.hide_add_cgroup_button = false;  
+              thiz.hide_show_full_names = true;
+              thiz.hide_list_all_groups = true;
+            }else{
+              // Unless there are some cgroups selected, in which case hide the button to add a new cgroup
+              thiz.hide_add_cgroup_button = true;
+            }
           }else if (thiz.available_cgroups_displayed.length !== 0){
             // Some cgroups are listed, so hide the button to add a new cgroup
             //  and restore the checkboxes
@@ -224,7 +236,7 @@
     },
     // Handle changes to available_cgroups_displayed
     _handle_acd_changed:function(event){
-      this.hide_or_show_full_names();
+      this._hide_or_show_full_names();
       // Don't show all cgroups available if the user hasn't requested that
       if (this.filter_value === '' && !this.$.list_all_groups.checked){
         this._clear_available_cgroups_displayed();
@@ -233,10 +245,18 @@
     },
     // Handle changes to selected_cgroups
     _handle_selected_cgroups_changed:function(event){
-      this.hide_or_show_full_names();
+      this._hide_or_show_full_names();
+      // In select_one_mode, show add button when there are no selected cgroups, 
+      //  and the filter text doesn't match any existing cgroups
+      if (this.select_one_mode === true &&
+          this.filter_value.trim() !== '' &&
+          this.available_cgroups_displayed.length == 0 &&
+          this.selected_cgroups.length === 0){
+        this.hide_add_cgroup_button = false;
+      }
     },
     // Hide show_full_names checkbox if it's not needed
-    hide_or_show_full_names:function(){
+    _hide_or_show_full_names:function(){
       if (this.selected_cgroups.length === 0 && 
           this.available_cgroups_displayed &&
           this.available_cgroups_displayed.length === 0){
@@ -262,7 +282,10 @@
       this.$.cgroup_edit_form.$.name.value = this.filter_value;
       // TODO: This isn't working yet.  Do we need to call it after a flush() call?
       //  Read the docs, google for advice.
-      this.$.cgroup_edit_form.$.name.focus();
+      var thiz = this;
+      this.flush(function(){
+        thiz.$.cgroup_edit_form.$.name.$.input.focus();
+      });
     }
 
   });
