@@ -1,17 +1,46 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../elements/geocode-congs/geocode-congs.html">
+<link rel="import" href="../../elements/import-importio/import-importio.html">
+<link rel="import" href="../../elements/import-batchgeo/import-batchgeo.html">
 
-<dom-module id="import-a-directory" hoodie="{{hoodie}}" >
+<dom-module id="import-a-directory" hoodie="{{hoodie}}">
   <style>
     :host {
       display: block;
+      padding: 1em;
+    }
+    paper-material {
+      padding: 1em;
+    }
+    paper-material paper-material {
+      margin: 1em;
     }
   </style>
   <template>
-    <div>Hello</div>
+    <paper-button on-tap="_remove_all_imported_data" raised>Remove all imported data</paper-button>
+    <paper-material elevation="1">
+      <h1>Import a directory</h1>
+      <paper-material elevation="1" hidden="{{hide_importio}}">
+        <import-importio hoodie="{{hoodie}}"></import-importio>
+      </paper-material>
+      <div hidden="{{hide_or}}">- or -</div>
+      <paper-material elevation="1" hidden="{{hide_batchgeo}}">
+        <import-batchgeo hoodie="{{hoodie}}"></import-batchgeo>
+      </paper-material>
+      <div hidden="{{hide_or}}">- or -</div>
+      <paper-material elevation="1" hidden="{{hide_url}}">
+        <div>Enter the URL of the directory to import:</div>
+        <paper-input id="directory_url" value="{{directory_url}}" label="URL"></paper-input>
+      </paper-material>
+    </paper-material>
+    <geocode-congs hoodie="{{hoodie}}"></geocode-congs>
   </template>
 </dom-module>
 <script>
 (function() {
+  
+  'use strict';
+
   Polymer({
     is: 'import-a-directory',
 
@@ -20,8 +49,67 @@
         type: Object,
         notify: true,
         reflectToAttribute: true
+      },
+      hide_importio: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      hide_batchgeo: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      hide_url: {
+        type: Boolean,
+        value: false,
+        notify: true
+      },
+      directory_url: {
+        type: String,
+        value: '',
+        notify: true,
+        observer: '_directory_url_observer'
       }
+    },
+    ready:function(){
+    },
+    attached:function(){
+      var thiz = this;
+
+      this.async(function(){
+
+        // Get reference to Hoodie
+        this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+        
+      });
+
+    },
+
+    _directory_url_observer: function(oldValue, newValue){
+      var thiz = this;
+      // TODO: Start here. After refactoring is done.
+      if (typeof newValue !== 'undefined' && newValue !== ''){
+        this.debounce('url_entered', function(){
+          // Get HTML from URL and use it
+          thiz.hoodie.task.start('http-get', { url: newValue })
+          .done(function(task){
+            console.log(task.data);
+          })
+          .fail(function(error){
+            // Notify the user here that the URL was not correct, and returned a '404 page not found' error.
+            console.log(error, 'Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.');
+          });
+        }, 1000);
+      }
+    },
+    _remove_all_imported_data: function(){
+      this.hoodie.store.removeAll('congregation');
+      this.hoodie.store.removeAll('directory');
+      this.hoodie.store.removeAll('cgroup_directory');
+      this.hoodie.store.removeAll('cgroup_congregation');
     }
+
   });
 })();
 </script>

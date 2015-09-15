@@ -1,0 +1,44 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="cgroup-edit-form" cgroup="{{cgroup}}">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <p>Please describe this group of congregations</p>
+    <paper-input id="name"
+      label="Full name"
+      value="{{cgroup.name}}">
+    </paper-input>
+    <paper-input id="abbreviation"
+      label="Abbreviation"
+      value="{{cgroup.abbreviation}}">
+    </paper-input>
+    <paper-button raised
+      on-tap="handle_submit">
+      Submit
+    </paper-button>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'cgroup-edit-form',
+
+      properties: {
+        cgroup: {
+          type: Object,
+          value: {},
+          notify: true
+        }
+      },
+      handle_submit:function(event){
+        this.fire('submit');
+      }
+    });
+  })();
+  </script>
+</dom-module>
