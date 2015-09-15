@@ -1,6 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<dom-module id="model-object">
+<dom-module id="model-object" model="{{model}}">
   <template>
     <style>
       :host {
@@ -13,117 +13,112 @@
     'use strict';
 
     Polymer({
+      /*
+       * This file documents the database schema, and can be imported to provide that schema
+       * to the code when needed.
+       */
       is: 'model-object',
 
       properties: {
         model: {
           type: Object,
           value: {},
-          notify: true
-        }
-      },
-      ready:function(){
-        /*
-         * Currently this file is not executed, but is only used to document
-         * the schema in the database.
-         */
+          notify: true,
+          value: {
 
-        this.model = {
+            // Join docs
 
-          // Join docs
-
-          cgroup_congregation: {
-            cgroup_id: '',
-            congregation_id: ''
-          },
-
-          congregation_person: {
-            congregation_id: '',
-            person_id: ''
-          },
-
-          // Regular docs
-
-          cgroup: {
-            default_attributes:{
-              type: 'cgroup',
-              name: '',
-              abbreviaton: '',
-              website: '',
-              parent_cgroup_id: '', // relation; permits cgroups to be arranged hierarchically
+            cgroup_congregation: {
+              cgroup_id: '',
+              congregation_id: ''
             },
-            relations:[
-              'congregations', // many-to-many, join docs are of type 'cgroup_congregation'
-              'people', // many-to-many, join docs are of type 'cgroup_person'
-              'roles', // many-to-many, join docs are of type 'cgroup_role'
-              'directories' // many-to-one
-            ]
-          },
 
-          congregation: {
-            default_attributes:{
-              name : '',
-              meeting_address1 : '',
-              meeting_address2:'',
-              meeting_city:'',
-              meeting_region:'',
-              meeting_state:'',
-              meeting_zip:'',
-              meeting_country:'',
-              geocode: {
-                lat:'',
-                lng:''
+            congregation_person: {
+              congregation_id: '',
+              person_id: ''
+            },
+
+            // Regular docs
+
+            cgroup: {
+              default_attributes:{
+                type: 'cgroup',
+                name: '',
+                abbreviaton: '',
+                website: '',
+                parent_cgroup_id: '', // relation; permits cgroups to be arranged hierarchically
               },
-              mailing_address1:'',
-              mailing_address2:'',
-              mailing_city:'',
-              mailing_state:'',
-              mailing_zip:'',
-              mailing_country:'',
-              phone:'',
-              fax:'',
-              contact_email:'',
-              website:'',
-              sermons_url:'',
-              service_info:'',
-              other_info:'',
-              presbytery_name:'',
-              pastor_name:'',
-              contact_type:'',
-              contact_name:'',
-              date_founded:'', // date
-              number_of_members:'', // integer
-              range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
-                                             //   permitted/preferred or the only available data
-              organized:'', // boolean, defines whether this is a mission work or an organized congregation
-              source_id:'', // Foreign key:  Which source this revision of this cong's data
-                            //  came from:  a directory, user, RSS feed...
-              page_url:'',  // The URL in the source's site
-              regeocode:false // Boolean. Whether to regeocode this cong
+              relations:[
+                'congregations', // many-to-many, join docs are of type 'cgroup_congregation'
+                'people', // many-to-many, join docs are of type 'cgroup_person'
+                'roles', // many-to-many, join docs are of type 'cgroup_role'
+                'directories' // many-to-one
+              ]
             },
-            relations: [
-              'cgroups', // many-to-many, join docs are of type 'cgroup_congregation'
-              'people'   // many-to-many, join docs are of type 'congregation_person'
-            ]
 
-          },
+            congregation: {
+              default_attributes:{
+                name : '',
+                meeting_address1 : '',
+                meeting_address2:'',
+                meeting_city:'',
+                meeting_region:'',
+                meeting_state:'',
+                meeting_zip:'',
+                meeting_country:'',
+                geocode: {
+                  lat:'',
+                  lng:''
+                },
+                mailing_address1:'',
+                mailing_address2:'',
+                mailing_city:'',
+                mailing_state:'',
+                mailing_zip:'',
+                mailing_country:'',
+                phone:'',
+                fax:'',
+                contact_email:'',
+                website:'',
+                sermons_url:'',
+                service_info:'',
+                other_info:'',
+                presbytery_name:'',
+                pastor_name:'',
+                contact_type:'',
+                contact_name:'',
+                date_founded:'', // date
+                number_of_members:'', // integer
+                range_of_number_of_members:'', // textual range, like '20-30' members, where estimates are 
+                                               //   permitted/preferred or the only available data
+                organized:'', // boolean, defines whether this is a mission work or an organized congregation
+                source_id:'', // Foreign key:  Which source this revision of this cong's data
+                              //  came from:  a directory, user, RSS feed...
+                page_url:'',  // The URL in the source's site
+                regeocode:false // Boolean. Whether to regeocode this cong
+              },
+              relations: [
+                'cgroups', // many-to-many, join docs are of type 'cgroup_congregation'
+                'people'   // many-to-many, join docs are of type 'congregation_person'
+              ]
 
-          directory: {
-            default_attributes:{
-              type: 'directory',
-              url:'', // url of directory's main page. As an approximation
-                      //  of the directory's main page, extract the domain name from json.data[0]._pageUrl.
-              directory_type:'', // options: ['importio', 'rss', 'html']
-              importio_guid: '', // found in json.data[0]._source[0]; should be the same 
-                                 //   for every cong from one import.io data source
-              cgroup_id: '' // relation. _id of the cgroup this directory represents. One directory represents 
-                            // one cgroup.  But one cgroup can be represented by more than one directory.
-            }
-          }  
+            },
 
-        };
-      
-      // End ready() function  
+            directory: {
+              default_attributes:{
+                type: 'directory',
+                url:'', // url of directory's main page. As an approximation
+                        //  of the directory's main page, extract the domain name from json.data[0]._pageUrl.
+                directory_type:'', // options: ['importio', 'batchgeo', 'rss', 'html']
+                importio_guid: '', // found in json.data[0]._source[0]; should be the same 
+                                   //   for every cong from one import.io data source
+                cgroup_id: '' // relation. _id of the cgroup this directory represents. One directory represents 
+                              // one cgroup.  But one cgroup can be represented by more than one directory.
+              }
+            }  
+
+          }
+        }
       }
 
     });
