@@ -252,6 +252,9 @@
           }
           // Record the source of this revision of this cong
           new_cong.source_id = directory.id;
+          // Record the denomination of which this cong is a member
+          new_cong.denomination_cgroup_id = cgroup.id;
+          new_cong.denomination_abbreviation = cgroup.abbreviation;
 
           // Save to database
           // Find out whether this cong exists in the database

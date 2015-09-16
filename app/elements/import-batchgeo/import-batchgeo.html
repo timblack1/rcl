@@ -172,6 +172,10 @@
         congs.forEach(function(cong){
           // Record the source of this revision of this cong
           cong.source_id = directory.id;
+          // Record the denomination of which this cong is a member
+          cong.denomination_cgroup_id = cgroup.id;
+          cong.denomination_abbreviation = cgroup.abbreviation;
+
           thiz.hoodie.store.add('congregation', cong)
           .done(function(cong){
             thiz.hoodie.store.add('cgroup-congregation', {

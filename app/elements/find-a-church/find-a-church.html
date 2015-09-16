@@ -78,7 +78,8 @@
 
         <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
           <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
-              draggable="true" title="{{cong.name}}"></google-map-marker>
+            draggable="true" title="{{cong.name}}, ({{cong.denomination_abbreviation}})">
+          </google-map-marker>
         </template>
 
       </google-map>
@@ -137,10 +138,8 @@
           // Load congs onto map
           var map_idle = thiz.map.addListener('idle', function(){
             // Don't load all the congs, but only those within the map's current bounds
-            // getBounds() returns:
-            // (south-west latitude, longitude),(north-east latitude, longitude)
-            // Start here.
-            var b = thiz.map.getBounds(); // TODO: Get map's bounds here.
+            // Note: getBounds() returns:
+            var b = thiz.map.getBounds();
             var lat_south = b.getSouthWest().lat();
             var lat_north = b.getNorthEast().lat();
             var lng_east =  b.getNorthEast().lng();
