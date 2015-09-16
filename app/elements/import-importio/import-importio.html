@@ -274,7 +274,7 @@
               // Update this cong's cgroups
               // First find all related cgroups
               thiz.hoodie.store.findAll(function(doc){
-                if (doc.type === 'cgroup_congregation' &&
+                if (doc.type === 'cgroup-congregation' &&
                     doc.congregation_id === congs_found[0].id && 
                     doc.cgroup_id === cgroup.id){
                   return true;
@@ -284,7 +284,7 @@
               // TODO: Is this working?
               .done(function(cgroup_congregations){
                 if (cgroup_congregations.length === 0){
-                  thiz.hoodie.store.add('cgroup_congregation', {
+                  thiz.hoodie.store.add('cgroup-congregation', {
                     cgroup_id: cgroup.id,
                     congregation_id: congs_found[0].id
                   })
@@ -303,7 +303,7 @@
               .done(function(){
 
                 // Create a join doc for this congregation's cgroup
-                thiz.hoodie.store.add('cgroup_congregation', {
+                thiz.hoodie.store.add('cgroup-congregation', {
                   cgroup_id: cgroup.id,
                   congregation_id: congs_found[0].id
                 })

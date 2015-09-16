@@ -66,16 +66,23 @@
     </div>
 
     <div id="map_container">
-      <google-map id="google_map" map="{{map}}" latitude="{{this.$.google_map_search.result.latitude}}" 
-        longitude="{{this.$.google_map_search.result.longitude}}" 
-        zoom="13" class="fit fitToMarkers">
-      </google-map>
       <google-map-search id="google_map_search"
         map="{{map}}"
+        globalSearch="true"
         query="{{search_string}}">
       </google-map-search>
-    </div>
 
+      <google-map id="google_map" map="{{map}}" latitude="{{this.$.google_map_search.result.latitude}}" 
+        longitude="{{this.$.google_map_search.result.longitude}}" 
+        zoom="13" class="fit">
+
+        <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
+          <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
+              draggable="true" title="{{cong.name}}"></google-map-marker>
+        </template>
+
+      </google-map>
+    </div>
   </template>
 </dom-module>
 <script>
@@ -106,6 +113,11 @@
       map: {
         type: Object,
         notify: true
+      },
+      congs_displayed_on_map: {
+        type: Array,
+        value: [],
+        notify: true
       }
     },
     observers: [
@@ -119,6 +131,41 @@
       this.async(function(){
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
         var thiz = this;
+
+        this.$.google_map.addEventListener('google-map-ready', function map_ready(event){
+          thiz.$.google_map.removeEventListener(event.type, map_ready);
+          // Load congs onto map
+          var map_idle = thiz.map.addListener('idle', function(){
+            // Don't load all the congs, but only those within the map's current bounds
+            // getBounds() returns:
+            // (south-west latitude, longitude),(north-east latitude, longitude)
+            // Start here.
+            var b = thiz.map.getBounds(); // TODO: Get map's bounds here.
+            var lat_south = b.getSouthWest().lat();
+            var lat_north = b.getNorthEast().lat();
+            var lng_east =  b.getNorthEast().lng();
+            var lng_west =  b.getSouthWest().lng();
+            thiz.hoodie.store.findAll(function(ob){
+              if (ob.type === 'congregation' && 
+                  ob.geocode && 
+                  ob.geocode.lat > lat_south &&
+                  ob.geocode.lat < lat_north &&
+                  ob.geocode.lng < lng_east &&
+                  ob.geocode.lng > lng_west){
+                return true;
+              }
+            })
+            .done(function(congs){
+              // Clear the array first
+              thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
+              // Then repopulate it.
+              congs.forEach(function(cong){
+                thiz.push('congs_displayed_on_map', cong);
+              });
+            }).fail(thiz.fail_handler);
+          });
+        });
+
         // Get selected_cgroups from a user preference
         this.hoodie.store.find('selected-cgroups', 'selected-cgroups')
         .then(function(selected_cgroups){
@@ -130,11 +177,13 @@
 //         this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
+        
         // TODO: Connect cgroup-filter attributes to database
         this.hoodie.store.findAll('cgroup')
         .then(function(cgroups){
           thiz.available_cgroups = cgroups;
         });
+        
         // Create handler to update available_cgroups
         this.hoodie.store('cgroup').on('add update remove change clear', function(){
           thiz.hoodie.store.findAll('cgroup')
@@ -142,7 +191,11 @@
             thiz.available_cgroups = cgroups;
           });
         });
+
       });
+    },
+    fail_handler: function(error){
+      console.log(error);
     },
     toggle_voice_recognition:function(){
       if (this.voice_recognition_state === 'ON'){

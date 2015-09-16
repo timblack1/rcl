@@ -75,8 +75,7 @@
     ready:function(){
     },
     attached:function(){
-      var thiz = this;
-
+      
       this.async(function(){
 
         // Get reference to Hoodie
@@ -106,8 +105,8 @@
     _remove_all_imported_data: function(){
       this.hoodie.store.removeAll('congregation');
       this.hoodie.store.removeAll('directory');
-      this.hoodie.store.removeAll('cgroup_directory');
-      this.hoodie.store.removeAll('cgroup_congregation');
+      this.hoodie.store.removeAll('cgroup-directory');
+      this.hoodie.store.removeAll('cgroup-congregation');
     }
 
   });
