@@ -79,7 +79,7 @@
 
         <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
           <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
-            title="{{cong.name_for_marker}}">
+            title="{{compute_cong_name_for_marker(cong)}}">
             <div>
               <b><span>{{cong.name}}</span> <span>{{cong.denomination_abbreviation}}</span></b>
             </div>
@@ -90,7 +90,7 @@
               <span>{{cong.meeting_state}}</span>
               <span>{{cong.meeting_zip}}</span>
             </div>
-            <div hidden="{{!cong.mailing_address1}}">
+            <div hidden="{{cong.meeting_address1}}">
               <div>{{cong.mailing_address1}}</div>
               <div>{{cong.mailing_address2}}</div>
               <span>{{cong.mailing_city}}</span>,
@@ -253,6 +253,10 @@
       //  https://developers.google.com/web/fundamentals/device-access/click-to-call/click-to-call
       // TODO: Convert number to hyphenated format, and prefix the country code
       return (number && number.indexOf('tel') === -1) ? 'tel:+1' + number : number;
+    },
+    // Format name for map marker
+    compute_cong_name_for_marker:function(cong){
+      return cong.name + ' (' + cong.denomination_abbreviation + ')';
     }
   });
 })();

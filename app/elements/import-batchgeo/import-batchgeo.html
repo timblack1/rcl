@@ -175,9 +175,7 @@
           // Record the denomination of which this cong is a member
           cong.denomination_cgroup_id = cgroup.id;
           cong.denomination_abbreviation = cgroup.abbreviation;
-          // Format name for map marker
-          cong.name_for_marker = cong.name + ' (' + cgroup.abbreviation + ')';
-
+          
           thiz.hoodie.store.add('congregation', cong)
           .done(function(cong){
             thiz.hoodie.store.add('cgroup-congregation', {
