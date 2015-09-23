@@ -36,6 +36,8 @@
   </style>
   <template>
 
+    <model-object id="model_object" model="{{model}}"></model-object>
+
     <div id="map_overlay" class="">
 
       <paper-input id="search_for_a_church" 
@@ -51,7 +53,7 @@
         text="{{search_string}}">
       </voice-recognition>
 
-      <paper-checkbox id="toggle_keywords_only_button" on-tap="toggle_keywords_only">
+      <paper-checkbox id="toggle_keywords_only_button">
         Keywords only
       </paper-checkbox>
       <paper-checkbox id="toggle_voice_recognition_button" on-tap="toggle_voice_recognition">
@@ -69,7 +71,7 @@
     <div id="map_container">
       <google-map-search id="google_map_search"
         map="{{map}}"
-        globalSearch="true"
+        globalSearch
         query="{{search_string}}">
       </google-map-search>
 
@@ -140,6 +142,22 @@
         type: Array,
         value: [],
         notify: true
+      },
+      search_string: {
+        type: String,
+        value: '',
+        notify: true,
+        observer: '_search_for_query'
+      },
+      model: {
+        type: Object,
+        value: {},
+        notify: true
+      },
+      searched_by_keywords: {
+        type: Boolean,
+        value: false,
+        notify: true
       }
     },
     observers: [
@@ -148,6 +166,7 @@
     ],
     ready:function(){
       this.voice_recognition_state = 'OFF';
+      this.model = this.$.model_object.properties.model.value;
     },
     attached:function(){
       this.async(function(){
@@ -156,34 +175,73 @@
 
         this.$.google_map.addEventListener('google-map-ready', function map_ready(event){
           thiz.$.google_map.removeEventListener(event.type, map_ready);
+          
           // Load congs onto map
           var map_idle = thiz.map.addListener('idle', function(){
-            // Don't load all the congs, but only those within the map's current bounds
-            // Note: getBounds() returns:
-            var b = thiz.map.getBounds();
-            var lat_south = b.getSouthWest().lat();
-            var lat_north = b.getNorthEast().lat();
-            var lng_east =  b.getNorthEast().lng();
-            var lng_west =  b.getSouthWest().lng();
-            thiz.hoodie.store.findAll(function(ob){
-              if (ob.type === 'congregation' && 
-                  ob.geocode && 
-                  ob.geocode.lat > lat_south &&
-                  ob.geocode.lat < lat_north &&
-                  ob.geocode.lng < lng_east &&
-                  ob.geocode.lng > lng_west){
-                return true;
-              }
-            })
-            .done(function(congs){
-              // Clear the array first
-              thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
-              // Then repopulate it.
-              congs.forEach(function(cong){
-                thiz.push('congs_displayed_on_map', cong);
-              });
-            }).fail(thiz.fail_handler);
+            if (thiz.searched_by_keywords === true){
+              // Then don't load all congs which would otherwise be visible on the map this time.
+              // Instead, set the flag so that next time the map idles, all such congs will be displayed.
+              thiz.searched_by_keywords = false;
+            }else{
+              // TODO: Start here. Figure out why after getting keyword search to work, now
+              //  the map keeps resizing after reloading more congs, which triggers reloading more congs,
+              //  and resizing again.
+              //  Maybe it has something to do with the google-map-search-results listener below.
+              
+              // Don't load all the congs, but only those within the map's current bounds
+              // Note: getBounds() returns:
+              var b = thiz.map.getBounds();
+              var lat_south = b.getSouthWest().lat();
+              var lat_north = b.getNorthEast().lat();
+              var lng_east =  b.getNorthEast().lng();
+              var lng_west =  b.getSouthWest().lng();
+              thiz.hoodie.store.findAll(function(ob){
+                if (ob.type === 'congregation' && 
+                    ob.geocode && 
+                    ob.geocode.lat > lat_south &&
+                    ob.geocode.lat < lat_north &&
+                    ob.geocode.lng < lng_east &&
+                    ob.geocode.lng > lng_west){
+                  return true;
+                }
+              })
+              .done(function(congs){
+                // Clear the array first
+                thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
+                // Then repopulate it.
+                congs.forEach(function(cong){
+                  thiz.push('congs_displayed_on_map', cong);
+                });
+              }).fail(thiz.fail_handler);
+            }
           });
+
+          // Listen for results returned after users enter search terms
+          thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results(event){
+            thiz.debounce('search_results', function(){
+              var results = thiz.$.google_map_search.results;
+              // Determine if this is a keyword or a location search.
+              if (results.length === 0){
+                thiz.search_by_keywords();
+              }else{
+                var lat = '';
+                var lng = '';
+                // Handle two types of results which can be returned
+                if (typeof results[0].latitude !== 'undefined'){
+                  lat = results[0].latitude;
+                  lng = results[0].longitude;
+                }else if (typeof results[0].geometry.location.lat !== 'undefined'){
+                  lat = results[0].geometry.location.lat;
+                  lng = results[0].geometry.location.lng;
+                }else{
+                  console.log('We are getting a different kind of result which we do not know how to handle yet.');
+                }
+                thiz.$.google_map.latitude = lat;
+                thiz.$.google_map.longitude = lng;
+              }
+            }, 1000);
+          });
+
         });
 
         // Get selected_cgroups from a user preference
@@ -257,6 +315,66 @@
     // Format name for map marker
     compute_cong_name_for_marker:function(cong){
       return cong.name + ' (' + cong.denomination_abbreviation + ')';
+    },
+    // Search for user-entered search terms
+    _search_for_query:function(newValue, oldValue){
+      if (this.$.toggle_keywords_only_button.checked === true){
+        this.search_by_keywords();
+      }else{
+        // I'm not sure why, but I wasn't able to set this value in the HTML.
+        this.$.google_map_search.globalSearch = true;
+        this.$.google_map_search.search();
+      }
+    },
+    // Search for congregations by keywords
+    search_by_keywords:function(){
+      var thiz = this;
+      // Notify the map idle event handler not to display all congs this time
+      this.searched_by_keywords = true;
+      this.debounce('search_by_keywords', function(){
+        var q = thiz.search_string;
+        var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
+        thiz.hoodie.store.findAll(function(ob){
+          if (ob.type === 'congregation'){
+            var new_array = fields.filter(function(field_name){
+              if (typeof ob[field_name] !== 'undefined' &&
+                  String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
+                return true;
+              }else{
+                return false;
+              }
+            });
+            if (new_array.length > 0){
+              return true;
+            }
+          }
+        })
+        .done(function(congs){
+          // Make map recenter and resize (expand) after its markers are updated
+          thiz.$.google_map.fitToMarkers = true;
+          // Clear the array first
+          thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
+          // Set the map's new center
+          thiz.$.google_map.latitude = congs[0].geocode.lat;
+          thiz.$.google_map.longitude = congs[0].geocode.lng;
+          // Then repopulate the array.
+          congs.forEach(function(cong){
+            thiz.push('congs_displayed_on_map', cong);
+          });
+          // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
+          if (congs.length === 1){
+            thiz.$.google_map.zoom = 13;
+          }else{
+            // Resize (contract) map to fit markers
+            var markers = thiz.$.google_map.markers;
+            var bounds = new thiz.$.google_map.map.LatLngBounds();
+            for(i=0;i<markers.length;i++) {
+             bounds.extend(markers[i].getPosition());
+            }
+            thiz.$.google_map.fitBounds(bounds);
+          }
+        }).fail(thiz.fail_handler);
+      }, 1000);
     }
   });
 })();
