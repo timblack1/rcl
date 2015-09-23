@@ -1,8 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../elements.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/google-map/google-map-search.html">
+<link rel="import" href="../elements.html">
 
 
 <dom-module id="find-a-church" hoodie="{{hoodie}}" map="{{map}}">
@@ -25,7 +26,7 @@
     cgroup-filter {
       margin-top: 1em;
     }
-/*  This places the microphone icon to the right size of the text box. */
+    /* This places the microphone icon to the right size of the text box. */
     iron-icon {
       display: inline-block;
       position: relative;
@@ -78,7 +79,27 @@
 
         <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
           <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
-            draggable="true" title="{{cong.name}}, ({{cong.denomination_abbreviation}})">
+            title="{{cong.name_for_marker}}">
+            <div>
+              <b><span>{{cong.name}}</span> <span>{{cong.denomination_abbreviation}}</span></b>
+            </div>
+            <div hidden="{{!cong.meeting_address1}}">
+              <div>{{cong.meeting_address1}}</div>
+              <div>{{cong.meeting_address2}}</div>
+              <span>{{cong.meeting_city}}</span>,
+              <span>{{cong.meeting_state}}</span>
+              <span>{{cong.meeting_zip}}</span>
+            </div>
+            <div hidden="{{!cong.mailing_address1}}">
+              <div>{{cong.mailing_address1}}</div>
+              <div>{{cong.mailing_address2}}</div>
+              <span>{{cong.mailing_city}}</span>,
+              <span>{{cong.mailing_state}}</span>
+              <span>{{cong.mailing_zip}}</span>
+            </div>
+            <div><a href="{{compute_website_href(cong.website)}}" target="_blank">{{cong.website}}</a></div>
+            <div><a href="{{compute_phone_href(cong.phone)}}">{{cong.phone}}</a></div>
+            <div><a href="{{compute_email_href(cong.contact_email)}}">{{cong.contact_email}}</a></div>
           </google-map-marker>
         </template>
 
@@ -217,6 +238,21 @@
       Polymer.Base.async(function(){
         thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups:thiz.selected_cgroups});
       }, 300);
+    },
+    // Fix format of email addresses
+    compute_email_href:function(address){
+      return (address && address.indexOf('mailto:') === -1) ? 'mailto:' + address : address;
+    },
+    // Fix format of website URLs
+    compute_website_href:function(url){
+      return (url && url.indexOf('http') === -1) ? 'http://' + url : url;
+    },
+    // Fix format of phone numbers
+    compute_phone_href:function(number){
+      // TODO: This probably needs some improvement per
+      //  https://developers.google.com/web/fundamentals/device-access/click-to-call/click-to-call
+      // TODO: Convert number to hyphenated format, and prefix the country code
+      return (number && number.indexOf('tel') === -1) ? 'tel:+1' + number : number;
     }
   });
 })();
