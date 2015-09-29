@@ -169,14 +169,18 @@
        */
       _save_batchgeo_congs:function(congs, directory, cgroup){
         var thiz = this;
-        var congs_modified = congs.map(function(cong){
+        congs.forEach(function(cong){
           // Record the source of this revision of this cong
           cong.source_id = directory.id;
+          // Record the denomination of which this cong is a member
+          cong.denomination_cgroup_id = cgroup.id;
+          cong.denomination_abbreviation = cgroup.abbreviation;
+          
           thiz.hoodie.store.add('congregation', cong)
           .done(function(cong){
-            thiz.hoodie.store.add('cgroup_congregation', {
+            thiz.hoodie.store.add('cgroup-congregation', {
               cgroup_id: cgroup.id,
-              congregation_id: congs_found[0].id
+              congregation_id: cong.id
             })
             .done(function(){}).fail(thiz.fail_handler);
           }).fail(thiz.fail_handler);
@@ -272,12 +276,12 @@
           //  phone, pastor_name, presbytery_name [, others?]
           // cong.d = <div><span class="l">Church Phone:</span>&nbsp;334-294-1226</div><div><span class="l">Pastor:</span>&nbsp;Rev. Brian DeWitt MacDonald</div><div><span class="l">Presbytery:</span>&nbsp;Southeast Alabama</div> 
           // Ignore errors if the match fails
-          try { cong.phone = cong.d.match(/Church Phone:.*?&nbsp;(.*?)</)[1]} catch(e){}
-          try { cong.pastor_name = cong.d.match(/Pastor:.*?&nbsp;Rev. (.*?)</)[1] } catch(e){}
-          try { cong.presbytery_name = cong.d.match(/Presbytery:.*?&nbsp;(.*?)</)[1] } catch(e){}
+          try { cong.phone = cong.d.match(/Church Phone:.*?&nbsp;(.*?)</)[1]; } catch(e){}
+          try { cong.pastor_name = cong.d.match(/Pastor:.*?&nbsp;Rev. (.*?)</)[1]; } catch(e){}
+          try { cong.presbytery_name = cong.d.match(/Presbytery:.*?&nbsp;(.*?)</)[1]; } catch(e){}
 
           // Convert geocode to RCL format
-          cong.loc = { lat:cong.lat, lng:cong.lng };
+          cong.geocode = { lat:cong.lat, lng:cong.lng };
           return cong;
         });
       },

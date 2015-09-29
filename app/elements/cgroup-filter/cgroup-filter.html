@@ -2,6 +2,8 @@
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
 
 <!-- Needed for tests -->
@@ -9,6 +11,8 @@
 <link rel="import" href="../../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../../elements/cgroup-edit-form/cgroup-edit-form.html">
 
 <dom-module id="cgroup-filter" 
@@ -30,6 +34,13 @@
       margin: 0.2em;
       margin-bottom: 1em;
     }
+    #selected iron-icon {
+      --iron-icon-width: 1em;
+      --iron-icon-height: 1em;
+      color: silver;
+      position: relative;
+      top: -0.1em;
+    }
   </style>
   <template>
     
@@ -37,8 +48,9 @@
     <div id="selected">
       <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
         <paper-button on-tap="_remove_cgroup">
-          <span hidden="{{hide_abbreviation}}" class="abbreviation"><span>{{item.abbreviation}}</span> x </span>
-          <span hidden="{{hide_name}}" class="name"><span>{{item.name}}</span> x </span>
+          <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
+          <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
+          <iron-icon icon="icons:clear"></iron-icon>
         </paper-button>
       </template>
     </div>
@@ -250,7 +262,7 @@
       //  and the filter text doesn't match any existing cgroups
       if (this.select_one_mode === true &&
           this.filter_value.trim() !== '' &&
-          this.available_cgroups_displayed.length == 0 &&
+          this.available_cgroups_displayed.length === 0 &&
           this.selected_cgroups.length === 0){
         this.hide_add_cgroup_button = false;
       }
@@ -283,7 +295,7 @@
       // TODO: This isn't working yet.  Do we need to call it after a flush() call?
       //  Read the docs, google for advice.
       var thiz = this;
-      this.flush(function(){
+      Polymer.dom.flush(function(){
         thiz.$.cgroup_edit_form.$.name.$.input.focus();
       });
     }

@@ -88,7 +88,7 @@
       ],
 
       ready:function(){
-        // I don't know why this won't create the object correctly:
+        // I don't know why this can't access the object:
         //  this.model = this.$.model_object.model;
         // but this workaround works:
         this.model = this.$.model_object.properties.model.value;
@@ -252,6 +252,9 @@
           }
           // Record the source of this revision of this cong
           new_cong.source_id = directory.id;
+          // Record the denomination of which this cong is a member
+          new_cong.denomination_cgroup_id = cgroup.id;
+          new_cong.denomination_abbreviation = cgroup.abbreviation;
 
           // Save to database
           // Find out whether this cong exists in the database
@@ -274,7 +277,7 @@
               // Update this cong's cgroups
               // First find all related cgroups
               thiz.hoodie.store.findAll(function(doc){
-                if (doc.type === 'cgroup_congregation' &&
+                if (doc.type === 'cgroup-congregation' &&
                     doc.congregation_id === congs_found[0].id && 
                     doc.cgroup_id === cgroup.id){
                   return true;
@@ -284,7 +287,7 @@
               // TODO: Is this working?
               .done(function(cgroup_congregations){
                 if (cgroup_congregations.length === 0){
-                  thiz.hoodie.store.add('cgroup_congregation', {
+                  thiz.hoodie.store.add('cgroup-congregation', {
                     cgroup_id: cgroup.id,
                     congregation_id: congs_found[0].id
                   })
@@ -303,7 +306,7 @@
               .done(function(){
 
                 // Create a join doc for this congregation's cgroup
-                thiz.hoodie.store.add('cgroup_congregation', {
+                thiz.hoodie.store.add('cgroup-congregation', {
                   cgroup_id: cgroup.id,
                   congregation_id: congs_found[0].id
                 })
