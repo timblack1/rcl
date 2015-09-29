@@ -29,4 +29,8 @@
     }
   };
 
+  app.refresh_page = function(){
+     location.reload()
+  }
+
 })(document);
