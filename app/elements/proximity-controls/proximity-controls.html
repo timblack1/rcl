@@ -1,6 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<dom-module id="proximity-controls" hoodie="{{hoodie}}">
+<dom-module id="proximity-controls" hoodie="{{hoodie}}" radius="{{radius}}" distance_units="{{distance_units}}">
   <style>
     :host {
       display: flex;
@@ -33,6 +33,14 @@
         type: Object,
         notify: true,
         reflectToAttribute: true
+      },
+      radius: {
+        type: Number,
+        notify: true
+      },
+      distance_units: {
+        type: String,
+        notify: true
       }
     },
     ready:function(){

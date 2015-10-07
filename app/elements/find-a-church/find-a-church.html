@@ -45,7 +45,13 @@
         value="{{search_string}}">
       </paper-input>
       <iron-icon icon="av:mic-off" id="av_mic_icon"></iron-icon>
-      <proximity-controls></proximity-controls>
+      <proximity-controls
+         radius="{{radius}}" 
+         distance_units="{{distance_units}}">
+         hoodie.store.find('user-preferences', 'user-preferences')
+         .done(function(doc) { /* START HERE */})
+         .fail(function(error) { console.log(error) });
+      </proximity-controls>
       
       <voice-recognition id="voice_recognition"
         continuous="false"
@@ -157,6 +163,14 @@
       searched_by_keywords: {
         type: Boolean,
         value: false,
+        notify: true
+      },
+       radius: {
+        type: Number,
+        notify: true
+      },
+      distance_units: {
+        type: String,
         notify: true
       }
     },
