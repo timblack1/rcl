@@ -91,7 +91,7 @@
         cf.push('selected_cgroups', {abbreviation:"OPC"});
         assert.equal(length + 1, cf.selected_cgroups.length);
         flush(function(){
-          assert.include(cf.$.selected.querySelector('paper-button').textContent,"OPC x ");
+          assert.include(cf.$.selected.querySelector('paper-button').textContent,"OPC");
           // Cleanup
           cf.pop('selected_cgroups');
           done();
