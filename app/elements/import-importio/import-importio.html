@@ -126,15 +126,14 @@
           //  Use the importio_guid to determine this
           var importio_guid = congs_obj.data[0]._source[0];
           // Get this directory if it exists in the db
-//           thiz.hoodie.store.removeAll('directory');
-//           thiz.hoodie.store.removeAll('congregation');
-//           return;
-          thiz.hoodie.store.findAll(function(object){
-            if (object.type === 'directory' && object.importio_guid === importio_guid){
-              return true;
-            }
-          })
+          thiz.hoodie.punk.findAll('directory')
           .done(function(directories){
+            // Workaround fact hoodie.punk.findAll(function) doesn't work
+            directories = directories.filter(function(object){
+              if (object.importio_guid === importio_guid){
+                return true;
+              }
+            });
             // TODO: Refactor from here down into reusable methods, especially because the cong 
             //  translation & geocoding block is big, and needed in both conditional blocks below.
             if (directories.length > 1){
@@ -144,11 +143,11 @@
               // Then display this directory's cgroup
               var directory = directories[0];
               // Find the cgroup which this directory represents, and display it in the <cgroup-filter>
-              thiz.hoodie.store.findAll('cgroup')
+              thiz.hoodie.punk.findAll('cgroup')
               .done(function(available_cgroups){
                 thiz.$.cgroup_filter.available_cgroups = available_cgroups;
                 // Get related cgroup
-                thiz.hoodie.store.find('cgroup', directory.cgroup_id)
+                thiz.hoodie.punk.find('cgroup', directory.cgroup_id)
                 .done(function(cgroup){
                   // Display related cgroup in <cgroup-filter>
                   thiz.$.cgroup_filter.selected_cgroups = [cgroup];
@@ -166,7 +165,7 @@
               var domain_name = a.hostname;
 
               // Create directory
-              thiz.hoodie.store.add('directory', {
+              thiz.hoodie.punk.add('directory', {
                 importio_guid: importio_guid,
                 url: domain_name, // url of directory's main page, approximated to domain name
                 directory_type:'importio'
@@ -176,7 +175,7 @@
               .done(function(directory){
 
                 // Display <cgroup-filter> to permit user to select or create the related cgroup
-                thiz.hoodie.store.findAll('cgroup')
+                thiz.hoodie.punk.findAll('cgroup')
                 .done(function(available_cgroups){
                   thiz.$.cgroup_filter.available_cgroups = available_cgroups;
                   thiz.hide_cgroup_filter = false;
@@ -190,10 +189,10 @@
                     thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                     thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                     thiz.hide_cgroup_filter = true;
-                    thiz.hoodie.store.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
+                    thiz.hoodie.punk.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                     .done(function(cgroup){
                       // Associate this new cgroup with the directory
-                      thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                      thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
                       .done(function(directory){
                         thiz._translate_and_save_congs(congs_obj, directory, cgroup);
                       }).fail(thiz.fail_handler);
@@ -205,7 +204,7 @@
                     var cgroup = thiz.$.cgroup_filter.selected_cgroups[0];
                     thiz.hide_cgroup_filter = true;
                     // Associate this cgroup with the directory
-                    thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                    thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
                     .done(function(directory){
                       thiz._translate_and_save_congs(congs_obj, directory, cgroup);
                     }).fail(thiz.fail_handler);
@@ -258,12 +257,14 @@
 
           // Save to database
           // Find out whether this cong exists in the database
-          thiz.hoodie.store.findAll(function(cong_found){
-            if (cong_found.type === 'congregation' && cong_found.page_url === new_cong.page_url){
-              return true;
-            }
-          })
+          thiz.hoodie.punk.findAll('congregation')
           .done(function(congs_found){
+            // Workaround fact hoodie.punk.findAll(function) doesn't work
+            congs_found = congs_found.filter(function(cong_found){
+              if (cong_found.page_url === new_cong.page_url){
+                return true;
+              }
+            });
             if (congs_found.length > 0){
               // Cong already exists in the database, so update with new attributes
 
@@ -276,21 +277,23 @@
 
               // Update this cong's cgroups
               // First find all related cgroups
-              thiz.hoodie.store.findAll(function(doc){
-                if (doc.type === 'cgroup-congregation' &&
-                    doc.congregation_id === congs_found[0].id && 
-                    doc.cgroup_id === cgroup.id){
-                  return true;
-                }
-              })
+              thiz.hoodie.punk.findAll('cgroup-congregation')
               // Second, add this cgroup if it has not yet been added to the cong's cgroups
               // TODO: Is this working?
               .done(function(cgroup_congregations){
+                // Workaround fact hoodie.punk.findAll(function) doesn't work
+                cgroup_congregations = cgroup_congregations.filter(function(doc){
+                  if (doc.congregation_id === congs_found[0].id && 
+                      doc.cgroup_id === cgroup.id){
+                    return true;
+                  }
+                });
                 if (cgroup_congregations.length === 0){
-                  thiz.hoodie.store.add('cgroup-congregation', {
+                  thiz.hoodie.punk.add('cgroup-congregation', {
                     cgroup_id: cgroup.id,
                     congregation_id: congs_found[0].id
                   })
+                  .publish()
                   .done(function(){}).fail(thiz.fail_handler);
                 }
               }).fail(thiz.fail_handler);
@@ -302,14 +305,16 @@
 
               // Cong does not exist in database, so flag to geocode, then create new doc
               new_cong.regeocode = true;
-              thiz.hoodie.store.add('congregation', new_cong)
+              thiz.hoodie.punk.add('congregation', new_cong)
+              .publish()
               .done(function(){
 
                 // Create a join doc for this congregation's cgroup
-                thiz.hoodie.store.add('cgroup-congregation', {
+                thiz.hoodie.punk.add('cgroup-congregation', {
                   cgroup_id: cgroup.id,
                   congregation_id: congs_found[0].id
                 })
+                .publish()
                 .done(function(){}).fail(thiz.fail_handler);
 
               }).fail(thiz.fail_handler);
@@ -320,7 +325,7 @@
       },
       update_cong:function(id, cong){
         // Update cong in database
-        return this.hoodie.store.update('congregation', id, cong)
+        return this.hoodie.punk.update('congregation', id, cong)
         .done(function(cong){
           return cong;
         }).fail(this.fail_handler);
