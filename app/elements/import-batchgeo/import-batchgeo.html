@@ -99,22 +99,8 @@
           //  So, we need to load a <cgroup-filter> here to allow the user to select the directory's cgroup.
           // TODO: Determine this by the URL of the batchgeo JSON file like we do with the importio_guid.
 
-  //         thiz.hoodie.store.findAll(function(object){
-  //           // TODO: Also permit deleting congs here
-  //           if ( (object.type === 'cgroup' && object.abbreviation === 'PCA') || 
-  //                   (object.type === 'congregation' )
-  //                 ){
-  //             return true;
-  //           }
-  //         })
-  //         .done(function(to_delete){
-  //           to_delete.forEach(function(ob){
-  //             thiz.hoodie.store.remove(ob.type, ob.id);
-  //           });
-  //         });
-
           // Create this directory
-          thiz.hoodie.store.add('directory', {
+          thiz.hoodie.punk.add('directory', {
             directory_type:'batchgeo'
           })
 
@@ -122,7 +108,7 @@
           .done(function(directory){
 
             // Display <cgroup-filter> to permit user to select or create the related cgroup
-            thiz.hoodie.store.findAll('cgroup')
+            thiz.hoodie.punk.findAll('cgroup')
             .done(function(available_cgroups){
               thiz.$.cgroup_filter.available_cgroups = available_cgroups;
               thiz.hide_cgroup_filter = false;
@@ -136,10 +122,10 @@
                 thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                 thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                 thiz.hide_cgroup_filter = true;
-                thiz.hoodie.store.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
+                thiz.hoodie.punk.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                 .done(function(cgroup){
                   // Associate this new cgroup with the directory
-                  thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                  thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
                   .done(function(directory){
                     thiz._save_batchgeo_congs(congs_array, directory, cgroup);
                   }).fail(thiz.fail_handler);
@@ -151,7 +137,7 @@
                 var cgroup = thiz.$.cgroup_filter.selected_cgroups[0];
                 thiz.hide_cgroup_filter = true;
                 // Associate this cgroup with the directory
-                thiz.hoodie.store.update('directory', directory.id, {cgroup_id: cgroup.id})
+                thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
                 .done(function(directory){
                   thiz._save_batchgeo_congs(congs_array, directory, cgroup);
                 }).fail(thiz.fail_handler);
@@ -176,9 +162,9 @@
           cong.denomination_cgroup_id = cgroup.id;
           cong.denomination_abbreviation = cgroup.abbreviation;
           
-          thiz.hoodie.store.add('congregation', cong)
+          thiz.hoodie.punk.add('congregation', cong)
           .done(function(cong){
-            thiz.hoodie.store.add('cgroup-congregation', {
+            thiz.hoodie.punk.add('cgroup-congregation', {
               cgroup_id: cgroup.id,
               congregation_id: cong.id
             })

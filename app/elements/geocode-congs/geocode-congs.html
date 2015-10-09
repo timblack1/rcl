@@ -99,37 +99,40 @@
 
         // Configure geocoder
         this.$.maps_api.addEventListener('api-load', function() {
+          
           thiz.geocoder = new thiz.$.maps_api.api.Geocoder();
-        });
 
-        this.async(function(){
+          thiz.async(function(){
 
-          // Configure listener to congregation:change events
-          this.hoodie.store.on('congregation:change', function(eventName, cong){
-            // Handle congs with regeocode === true
-            if (eventName !== 'remove' && cong.regeocode === true){
-              // Add this cong to the queue to enable throttling to work
-              thiz.push('congs_to_geocode',cong);
-            }
-          });
-
-          // Trigger regeocoding on page load, after a 5 second delay
-          this.async(function(){
-            this.hoodie.store.findAll(function(cong){
-              if (cong.regeocode === true){
-                return true;
+            // Configure listener to congregation:change events
+            thiz.hoodie.punk.on('congregation:change', function(eventName, cong){
+              // Handle congs with regeocode === true
+              if (eventName !== 'remove' && cong.regeocode === true){
+                // Add this cong to the queue to enable throttling to work
+                thiz.push('congs_to_geocode',cong);
               }
-            })
-            .done(function(congs){
-              if (congs.length > 0){
-                // Note we can't use Array.concat here since we have to notify Polymer 
-                //  of the changes to the array.
-                thiz.congs.forEach(function(cong){
-                  thiz.push('congs_to_geocode', cong);
+            });
+
+            // Trigger regeocoding on page load, after a 5 second delay
+            thiz.async(function(){
+              thiz.hoodie.punk.findAll('congregation')
+              .done(function(congs){
+                congs = congs.filter(function(cong){
+                  if (cong.regeocode === true){
+                    return true;
+                  }
                 });
-              }
-            }).fail(thiz.fail_handler);
-          }, 5000);
+                if (congs.length > 0){
+                  // Note we can't use Array.concat here since we have to notify Polymer 
+                  //  of the changes to the array.
+                  thiz.congs.forEach(function(cong){
+                    thiz.push('congs_to_geocode', cong);
+                  });
+                }
+              }).fail(thiz.fail_handler);
+            }, 5000);
+
+          });
 
         });
 
@@ -216,7 +219,7 @@
             cong.geocode = {lat:loc.lat(), lng: loc.lng()};
             cong.regeocode = false;
             // Save cong with updated geocode
-            thiz.hoodie.store.update('congregation', cong.id, cong)
+            thiz.hoodie.punk.update('congregation', cong.id, cong)
             .done(function(){
 
               // Remove this cong from the thiz.congs_to_geocode
@@ -233,7 +236,7 @@
               if (thiz.congs_to_geocode.length > 0){
                 // Reduce the usecs a bit in case we backed off too far, but don't let usecs 
                 //  be a negative value since that could prevent backing off quickly
-                usecs = Math.max(usecs - 25, 0);
+                usecs = Math.max(usecs - 10, 0);
 
                 // Call this function recursively to geocode the next cong
                 setTimeout(function(){
