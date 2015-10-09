@@ -28,7 +28,7 @@
     "hoodie": "latest",
     "hoodie-plugin-appconfig": "^2.0.1",
     "hoodie-plugin-http": "latest",
-    "hoodie-plugin-punk": "https://github.com/timblack1/hoodie-plugin-punk/tarball/master",
+    "hoodie-plugin-punk": "https://github.com/timblack1/hoodie-plugin-punk/tarball/patch-1",
     "hoodie-plugin-users": "^2.2.1",
     "hoodie-server": "^4.0.3",
     "request": "^2.64.0"
