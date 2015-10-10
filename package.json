@@ -69,7 +69,7 @@
     "serve-waterfall": "^1.1.0",
     "url": "^0.11.0",
     "vulcanize": ">= 1.4.2",
-    "web-component-tester": "^3.3.9"
+    "web-component-tester": "^3.3.25"
   },
   "engines": {
     "node": ">=0.12.0"
