@@ -80,6 +80,9 @@
 
         // Get reference to Hoodie
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
+
+        // Test the share plugin to see if two users can write to the same document.
+//         this.hoodie.store.updateOrAdd('username', 'username', {username: this.hoodie.account.username}).publish();
         
       });
 
