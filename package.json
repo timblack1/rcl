@@ -49,7 +49,7 @@
     "gulp-flatten": "0.2.0",
     "gulp-if": "^2.0.0",
     "gulp-imagemin": "^2.2.1",
-    "gulp-jshint": "^1.6.3",
+    "gulp-jshint": "^1.11.2",
     "gulp-load-plugins": "^1.0.0-rc.1",
     "gulp-minify-html": "^1.0.2",
     "gulp-rename": "^1.2.0",
