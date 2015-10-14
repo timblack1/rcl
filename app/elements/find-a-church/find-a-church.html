@@ -48,9 +48,6 @@
       <proximity-controls
          radius="{{radius}}" 
          distance_units="{{distance_units}}">
-         hoodie.store.find('user-preferences', 'user-preferences')
-         .done(function(doc) { /* START HERE */})
-         .fail(function(error) { console.log(error) });
       </proximity-controls>
       
       <voice-recognition id="voice_recognition"
@@ -181,6 +178,7 @@
     ready:function(){
       this.voice_recognition_state = 'OFF';
       this.model = this.$.model_object.properties.model.value;
+          
     },
     attached:function(){
       this.async(function(){
@@ -255,7 +253,14 @@
               }
             }, 1000);
           });
-
+          //START HERE
+    // This code gets the distance and raduis for the map from user preferences.  
+          this.hoodie.store.find('user-preferences', 'user-preferences')
+          .done(function(doc) {
+            this.distance_units = doc.distance_units;
+            this.radius = doc.radius;
+          }) 
+          .fail(function(error) {console.log(error) });
         });
 
         // Get selected_cgroups from a user preference
