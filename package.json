@@ -39,7 +39,7 @@
     "browserify": "~11.2.0",
     "del": "^2.0.2",
     "generator-polymer": "1.2.3",
-    "glob": "^5.0.6",
+    "glob": "^5.0.15",
     "gulp": "^3.9.0",
     "gulp-autoprefixer": "^3.0.2",
     "gulp-cache": "^0.3.0",
