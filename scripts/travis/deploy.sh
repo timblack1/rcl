@@ -1,5 +1,13 @@
 #!/bin/sh
 
+openssl aes-256-cbc -K $encrypted_95fb4ca130b1_key -iv $encrypted_95fb4ca130b1_iv -in scripts/travis/id_rsa.enc -out ~/.ssh/id_rsa -d
+npm i -g npm@^2.0.0
+npm install -g gulp
+npm install gulp
+npm install
+npm install -g bower
+bower install
+
 # Run gulp task to prep for deployment, and commit dist directory to git
 
 echo "Running gulp default..."
