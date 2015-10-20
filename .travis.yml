@@ -17,8 +17,6 @@ node_js:
 - '0.12'
 - '0.10'
 before_install:
-- openssl aes-256-cbc -K $encrypted_95fb4ca130b1_key -iv $encrypted_95fb4ca130b1_iv
-  -in scripts/travis/id_dsa.enc -out ~/.ssh/id_dsa -d
 - npm i -g npm@^2.0.0
 - npm install -g bower
 - bower install
@@ -33,6 +31,15 @@ after_success:
 - python travis_after_all.py
 - export $(cat .to_export_back)
 - npm run semantic-release
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_95fb4ca130b1_key -iv $encrypted_95fb4ca130b1_iv
+  -in scripts/travis/id_dsa.enc -out ~/.ssh/id_dsa -d
+- npm i -g npm@^2.0.0
+- npm install -g gulp
+- npm install gulp
+- npm install
+- npm install -g bower
+- bower install
 deploy:
   provider: script
   script: scripts/travis/deploy.sh
