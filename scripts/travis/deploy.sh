@@ -30,4 +30,5 @@ ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm update'
 
 # Restart app on production server
 
+echo "Restarting app on production server..."
 ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm run start-production'
