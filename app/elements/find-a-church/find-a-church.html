@@ -240,8 +240,7 @@
                 var lng = '';
                 // Handle two types of results which can be returned
                 if (typeof results[0].latitude !== 'undefined'){
-                  lat = results[0].latitude;
-                  lng = results[0].longitude;
+                  lat = results[0].latitude;                  lng = results[0].longitude;
                 }else if (typeof results[0].geometry.location.lat !== 'undefined'){
                   lat = results[0].geometry.location.lat;
                   lng = results[0].geometry.location.lng;
@@ -255,13 +254,21 @@
           });
           //START HERE
     // This code gets the distance and raduis for the map from user preferences.  
-          this.hoodie.store.find('user-preferences', 'user-preferences')
+          thiz.hoodie.store.find('user-preferences', 'user-preferences')
           .done(function(doc) {
-            this.distance_units = doc.distance_units;
-            this.radius = doc.radius;
+            thiz.distance_units = doc.distance_units;
+            thiz.radius = doc.radius;
           }) 
           .fail(function(error) {console.log(error) });
-        });
+        });         
+
+       _radius_changed_handler: function(){
+      var thiz = this;
+        hoodie.store.find('preferences')
+        .done(function(doc){
+        doc.search_radius = thiz.radius;
+        })
+      };
 
         // Get selected_cgroups from a user preference
         this.hoodie.store.find('selected-cgroups', 'selected-cgroups')
@@ -345,6 +352,15 @@
         this.$.google_map_search.search();
       }
     },
+
+    _radius_changed_handler: function(){
+      var thiz = this;
+        hoodie.store.find('preferences')
+        .done(function(doc){
+        doc.search_radius = thiz.radius;
+       })
+     };
+      
     // Search for congregations by keywords
     search_by_keywords:function(){
       var thiz = this;
