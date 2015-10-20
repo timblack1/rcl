@@ -24,6 +24,7 @@ before_install:
 - bower install
 - npm install -g web-component-tester
 - npm install -g gulp
+- npm install gulp
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 before_script:
