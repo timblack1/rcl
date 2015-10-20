@@ -2,8 +2,10 @@
 
 # Run gulp task to prep for deployment, and commit dist directory to git
 
+npm install
 npm install -g gulp
 npm install gulp
+echo "Running gulp default..."
 gulp default
 git add .
 git commit -am "add dist directory"
