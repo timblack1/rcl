@@ -2,7 +2,7 @@
 
 # Run gulp task to prep for deployment
 
-node node_modules/gulp/bin/gulp.js default
+node node_modules/gulp default
 git add .
 git commit -am "add dist directory"
 
