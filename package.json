@@ -36,7 +36,7 @@
   "devDependencies": {
     "apache-server-configs": "^2.7.1",
     "browser-sync": "^2.9.11",
-    "browserify": "~11.2.0",
+    "browserify": "~12.0.0",
     "del": "^2.0.2",
     "generator-polymer": "1.2.5",
     "glob": "^5.0.6",
