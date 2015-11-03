@@ -22,7 +22,7 @@ than from only one presbytery.
 Please note that older Reformed Churches Locator issues which describe the overall application 
 architecture are hosted at https://blueprints.launchpad.net/reformedchurcheslocator.
 
-Reformed Churches Locator is an "Offline first" application, meaning will run well offline, 
+Reformed Churches Locator is an "Offline first" application, meaning it will run well offline, 
 then sync its data to the server when it has an internet connection.  It uses Hoodie to store
 the app's data locally using PouchDB, and syncs to CouchDB on the server through Hoodie's 
 server-side API.
@@ -41,12 +41,35 @@ Then install and run Reformed Churches Locator by running the following commands
 
 ```bash
 $ git clone https://github.com/timblack1/rcl.git
-$ npm install
-$ bower install
+$ npm install -g gulp bower && npm install && bower install
+$ # Enter an admin password here.  If you don't, you'll need to remove the data directory with this command:
+$ # rm -rf data
+$ # then run `hoodie start` again to enter the password.
+$ hoodie start
 $ npm start
 ```
 
 This should open up a copy of the application in your web browser.
+
+# Development workflow
+
+## Serve / watch
+
+```bash
+$ npm start
+```
+
+This outputs an IP address you can use to locally test and another that can be used on devices connected to your network.
+
+## Run tests
+
+```bash
+$ npm test
+```
+
+This runs the unit tests defined in the `app/test` directory through [web-component-tester](https://github.com/Polymer/web-component-tester).
+
+To run tests Java 7 or higher is required. To update Java go to http://www.oracle.com/technetwork/java/javase/downloads/index.html and download ***JDK*** and install it.
 
 # Deployment
 
