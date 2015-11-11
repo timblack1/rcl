@@ -277,6 +277,20 @@
 //         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         
         // TODO: Connect cgroup-filter attributes to database
+
+//   added 10 NOV 2015
+//    public boolean onPreferenceChange(Preference preference, Object value)
+//    {
+//       String textValue = value.toString();
+//       ListPreference listPreference = (ListPreference) preference;
+//       int index = listPreference.findIndexOfValue(textValue)
+//       CharSequence[] entries = listPreference.getEntries();
+//       if(index >= 0)
+//           Toast.makeText(preference.getContext(), entries[index], Toast.LENGTH_LONG);
+//       return true;
+//   }
+//    end add on
+
         this.hoodie.store.findAll('cgroup')
         .then(function(cgroups){
           thiz.available_cgroups = cgroups;
@@ -401,21 +415,11 @@
 
     /* When the radius value changes, it updates the user preferences. */
     _radius_changed_handler: function(){
-      if (typeof this.hoodie !== 'undefined'){
-        var thiz = this;
-        this.hoodie.store.find('preferences')
-        .done(function(doc){
-           doc.search_radius = thiz.radius;
-        });
-      }
+      this.hoodie.store.updateOrAdd('preferences', 'preferences', {search_radius: this.radius});
     },
-        /* When the distance value changes, it updates the user preferences. */
+    /* When the distance value changes, it updates the user preferences. */
     _distance_changed_handler: function(){
-      var thiz = this;
-      hoodie.store.find('preferences')
-      .done(function(doc){
-         doc.search_radius = thiz.distance;
-      });
+      this.hoodie.store.updateOrAdd('preferences', 'preferences', {search_radius: this.radius});
     }
   });
 })();
