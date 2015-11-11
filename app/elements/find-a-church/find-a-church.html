@@ -415,11 +415,15 @@
 
     /* When the radius value changes, it updates the user preferences. */
     _radius_changed_handler: function(){
-      this.hoodie.store.updateOrAdd('preferences', 'preferences', {search_radius: this.radius});
-    },
-    /* When the distance value changes, it updates the user preferences. */
+      if(typeof this.hoodie!=="undefined"){
+        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.radius});
+      }
+     },
+    /*    When the distance value changes, it updates the user-preferences. */
     _distance_changed_handler: function(){
-      this.hoodie.store.updateOrAdd('preferences', 'preferences', {search_radius: this.radius});
+      if(typeof this.hoodie!=="undefined") {
+        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.radius});
+      }
     }
   });
 })();
