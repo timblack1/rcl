@@ -20,7 +20,7 @@
 
   <!-- Add to homescreen for Chrome on Android -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="Polymer Starter Kit">
+  <meta name="application-name" content="Reformed Churches Locator">
   <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
 
   <!-- Add to homescreen for Safari on iOS -->
@@ -69,6 +69,11 @@
                 <span>Import a directory</span>
               </a>
 
+              <a data-route="analyze-the-data" href="/analyze-the-data">
+                <iron-icon icon="editor:insert-chart"></iron-icon>
+                <span>Analyze the data</span>
+              </a>
+
           </paper-menu>
       </div>
       <paper-header-panel main mode="waterfall-tall">
@@ -101,6 +106,10 @@
 
             <section data-route="import-a-directory">
               <import-a-directory hoodie="{{hoodie}}"></import-a-directory>
+            </section>
+
+            <section data-route="analyze-the-data">
+              <analyze-the-data hoodie="{{hoodie}}"></analyze-the-data>
             </section>
 
           </iron-pages>

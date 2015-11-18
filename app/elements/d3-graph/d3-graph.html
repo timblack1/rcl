@@ -1,0 +1,272 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script src="../../bower_components/d3/d3.min.js"></script>
+
+<dom-module id="d3-graph"
+  data="{{data}}"
+  x_key="{{x_key}}"
+  y_key="{{y_key}}"
+  graph_type="{{graph_type}}"
+  >
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+<!--
+      #svgContainer {
+        /* Note: This method of scaling an SVG is taken from https://css-tricks.com/scale-svg/ */
+        position: relative; /* this makes this div the reference frame for absolutely positioned content */
+        height: 0;
+        width: 100%;
+        padding: 0;
+        padding-bottom: 100%; /* override this inline for aspect ratio other than square */
+      }
+      #svgContainer svg {
+        position: absolute; 
+        height: 1px;
+        overflow: visible; 
+        width: 100%;
+        padding-bottom: 100%;
+        left: 0; 
+        top: 0;
+      }
+-->
+    
+    <div id="svgContainer">
+    </div>
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'd3-graph',
+
+      properties: {
+        data: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        x_key: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        y_key: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        graph_type: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        svgContainer: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        w: {
+          type: Number,
+          value: 400,
+          notify: true
+        },
+        h: {
+          type: Number,
+          value: 400,
+          notify: true
+        }
+      },
+
+      observers: [
+        'update_graph(data, x_key, y_key, graph_type)'
+      ],
+
+      attached:function(){
+      },
+
+      /* Update the graph when this element's properties change
+       */
+      update_graph:function(){
+        
+        // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
+        //  to help figure out how to set the viewBox size if it is needed.  And, read
+        //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
+
+        var thiz = this;
+
+        // Don't run this when the page has just loaded.
+        if (this.x_key !== '' && this.y_key !== '' && 
+            this.data !== {} && typeof this.data.length !== 'undefined' &&
+            this.graph_type !== ''){
+          
+          // Create a bar chart
+
+          var bar_height = 20;
+          var bar_padding = 1;
+          var translate_x = 70;
+
+          // Get max frequency
+          var max_frequency = Math.max.apply(this, this.data.map(function(item){
+            return item.frequency;
+          }));
+
+          // Update SVG height to match the data, and width to match the available width
+          this.h = this.data.length * bar_height;
+          this.w = getComputedStyle(this.$.svgContainer).width.replace('px', '');
+
+          this.svgContainer = d3.select('#svgContainer')
+          .append('svg')
+          .attr({
+            width: this.w,
+            height: this.h,
+            preserveAspectRatio: 'xMinYMin slice'
+          });
+
+          this.svg = d3.select('#svgContainer svg');
+
+          this.svg
+          .append('g')
+          .selectAll("rect")
+          .data(this.data)
+          .enter()
+          .append("rect")
+          .attr({
+            x: 0,
+            y: function(d, i){
+              return i * (thiz.h / thiz.data.length);
+            },
+            width: function(d){
+              return (d.frequency / max_frequency) * thiz.w;
+            },
+            height: bar_height - bar_padding,
+            fill: 'steelblue'
+          });
+
+          this.svg
+          .append('g')
+          .attr('transform', 'translate(' + (translate_x + 30) + ',14)')
+          .selectAll("text")
+          .data(this.data)
+          .enter()
+          .append("text")
+          .text(function(d) {
+            return d.text.charAt(0).toUpperCase() + d.text.substring(1) +
+            ' (' + d.frequency + ')';
+          })
+          .attr({
+            'text-anchor': 'left',
+            x: 0,
+            y: function(d, i) {
+              return i * (thiz.h / thiz.data.length);
+            },
+            'font-family': 'sans-serif',
+            'font-size': (bar_height * 0.65) + 'px',
+            'fill': 'silver'
+          });
+
+
+//           //Create the Scale we will use for the Axis
+//           var axisScale = d3.scale.linear()
+//           .domain([0, 100])
+//           .range([0, 400]);
+          
+//           //Create the Axis
+//           var xAxis = d3.svg.axis()
+//           .scale(axisScale);
+          
+          
+//           //Create an SVG group Element for the Axis elements and call the xAxis function
+//           var xAxisGroup = this.svgContainer.append("g")
+//           .call(xAxis);
+
+
+//           //The data for our line
+//           var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
+//                            { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
+//                            { "x": 80,  "y": 5},  { "x": 100, "y": this.x2}];
+
+//           //This is the accessor function we talked about above
+//           var lineFunction = d3.svg.line()
+//                                    .x(function(d) { return d.x; })
+//                                    .y(function(d) { return d.y; })
+//                                    .interpolate("linear");
+
+//           // TODO: START HERE. Figure out how to modify this path in-place, rather than
+//           //  append a new path overlaying the existing one.
+//           //The line SVG Path we draw
+//           var lineGraph = this.svgContainer.append("path")
+//                                       .attr("d", lineFunction(lineData))
+//                                       .attr("stroke", "blue")
+//                                       .attr("stroke-width", 2)
+//                                       .attr("fill", "none");
+
+//         var jsonCircles = [
+//           {
+//            'x_axis': 30,
+//            'y_axis': 30,
+//            'radius': 20,
+//            'color' : 'green'
+//           }, {
+//            'x_axis': 70,
+//            'y_axis': 70,
+//            'radius': 20,
+//            'color' : 'purple'
+//           }, {
+//            'x_axis': 110,
+//            'y_axis': 100,
+//            'radius': 20,
+//            'color' : 'red'
+//           }
+//         ];
+
+//         var circles = svgContainer.selectAll('circle')
+//                                   .data(jsonCircles)
+//                                   .enter()
+//                                   .append('circle');
+
+//         var circleAttributes = circles
+//         .attr('cx', function(d){ return d.x_axis; })
+//         .attr('cy', function(d){ return d.y_axis; })
+//         .attr('r', function(d){ return d.radius; })
+//         .style('fill', function(d){ return d.color; })
+//         .style('stroke', 'blue')
+//         .style('stroke-width', '2px')
+
+        // var rectangle = svgContainer.append('rect')
+        // .attr('x', 10)
+        // .attr('y', 10)
+        // .attr('width', 50)
+        // .attr('height', 100)
+
+        // var ellipse = svgContainer.append('ellipse')
+        // .attr('cx', 50)
+        // .attr('cy', 10)
+        // .attr('rx', 25)
+        // .attr('ry', 10)
+
+
+        }
+
+      }
+    });
+  })();
+  </script>
+</dom-module>
+

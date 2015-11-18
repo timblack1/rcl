@@ -23,6 +23,7 @@
     "dist"
   ],
   "dependencies": {
+    "d3": "^3.5.6",
     "hoodie-accountbar": "latest",
     "iron-elements": "PolymerElements/iron-elements#1.0.0",
     "jquery": "^2.1.4",

@@ -1,5 +1,5 @@
 var proxyMiddleware = require('http-proxy-middleware');
-// var path            = require('path');
+// var path = require('path');
 // var serveWaterfall  = require('serve-waterfall');
 
 // Configure proxy for Hoodie's api

@@ -216,11 +216,11 @@ gulp.task('serve', ['hoodie_start', 'styles', 'elements', 'images'], function ()
     // https: true,
     server: {
       baseDir: ['.tmp', 'app'],
+      // Set up proxy for Hoodie's /_api
+      middleware: [proxy],
       routes: {
         '/bower_components': 'bower_components'
-      },
-      // Set up proxy for Hoodie's /_api
-      middleware: [proxy]
+      }
     }
   });
 
