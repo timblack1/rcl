@@ -63,7 +63,7 @@
     "merge-stream": "^1.0.0",
     "opn": "^3.0.2",
     "require-dir": "^0.3.0",
-    "run-sequence": "^1.0.2",
+    "run-sequence": "^1.1.4",
     "semantic-release": "^4.1.0",
     "serve-waterfall": "^1.1.0",
     "url": "^0.11.0",
