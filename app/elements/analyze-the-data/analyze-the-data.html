@@ -20,6 +20,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         margin: 2em 2em 0 2em;
         padding: 1em;
       }
+      #question_table td, #question_table th {
+        vertical-align: top;
+      }
+      #question_table th {
+        text-align: right;
+        padding-right: 1em;
+      }
     </style>
     
     <paper-card heading="Presets">
@@ -50,10 +57,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </template>
         </paper-menu>
       </paper-dropdown-menu>
-      <p hidden="{{!selected_question.item}}">
-        We'll use this formula:<br>
-        <span>{{selected_question.item.formula}}</span>
-      </p>
+      
+      <table id="question_table" hidden="{{!selected_question.item}}">
+        <tr>
+          <th>
+            Question:
+          </th>
+          <td>
+            <span>{{selected_question.item.question}}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            We'll use this formula:
+          </th>
+          <td>
+            <span>{{selected_question.item.formula}}</span>
+          </td>
+        </tr>
+      </table>
 
     </paper-card>
 

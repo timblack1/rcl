@@ -23,6 +23,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
+      .axis path,
+      .axis line { 
+        fill: none;
+        stroke: green;
+        shape-rendering: crispEdges;
+      }
+      .axis text {
+        font-family: sans-serif;
+        font-size: 11px;
+      }
+      #hidden_svg {
+        display: none;
+      }
     </style>
 
 <!--
@@ -47,6 +60,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     
     <div id="svgContainer">
     </div>
+
+    <div id="hidden_svg"></div>
 
   </template>
   <script>
@@ -99,16 +114,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       attached:function(){
+
+        this.svgContainer = d3.select('#hidden_svg')
+        .append('svg');
+        this.svg = d3.select('#hidden_svg svg');
+
+        // Append the D3-created element to the DOM following the recommendation at
+        //  https://github.com/Polymer/polymer/issues/1930#issuecomment-113853997
+//         Polymer.dom(this.$.svgContainer).insertBefore(this.svg.node(), this.svg);
+        Polymer.dom(this.$.svgContainer).appendChild(this.svg.node());
+
       },
 
       /* Update the graph when this element's properties change
        */
       update_graph:function(){
         
-        // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
-        //  to help figure out how to set the viewBox size if it is needed.  And, read
-        //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
-
         var thiz = this;
 
         // Don't run this when the page has just loaded.
@@ -120,7 +141,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           var bar_height = 20;
           var bar_padding = 1;
-          var translate_x = 70;
+          var text_translate_x = 70;
+          var vertical_padding = 30;
 
           // Get max frequency
           var max_frequency = Math.max.apply(this, this.data.map(function(item){
@@ -131,15 +153,44 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.h = this.data.length * bar_height;
           this.w = getComputedStyle(this.$.svgContainer).width.replace('px', '');
 
-          this.svgContainer = d3.select('#svgContainer')
-          .append('svg')
+          //Create the scale we will use for the axis
+          var axis_scale = d3.scale.linear()
+          .domain([0, max_frequency])
+          .range([0, this.w]);
+          
+          //Create the Axis
+          var x_axis = d3.svg.axis()
+          .scale(axis_scale)
+          .orient('top')
+//           .tickSize(1, 1);
+
+          // Create the chart
+
+          this.svg
           .attr({
             width: this.w,
-            height: this.h,
-            preserveAspectRatio: 'xMinYMin slice'
-          });
+            height: this.h + vertical_padding,
+            preserveAspectRatio: 'xMinYMin slice',
+            // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
+            //  to help figure out how to set the viewBox size if it is needed.  And, read
+            //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
+            viewBox: '-10 -30 ' + this.w + ' ' + this.h + vertical_padding
+          })
+          // Append the axis
+          .append('g')
+          .attr({
+            class: 'axis'
+          })
+          .call(x_axis);
 
-          this.svg = d3.select('#svgContainer svg');
+//           document.querySelector('.axis path').setAttribute('d', 'M0,-1V0H710V-1');
+          // TODO: Figure out why this has to be set here, and can't be set via CSS above.
+//           document.querySelector('.axis path').style.fill = 'none';
+          // Apply styles to the SVG element now and after future DOM mutations
+          //  See https://www.polymer-project.org/1.0/docs/devguide/styling.html#scope-subtree
+          // TODO: This isn't working yet.
+          this.scopeSubtree(this.$.svgContainer, true);
+          this.updateStyles();
 
           this.svg
           .append('g')
@@ -161,7 +212,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           this.svg
           .append('g')
-          .attr('transform', 'translate(' + (translate_x + 30) + ',14)')
+          .attr('transform', 'translate(' + (text_translate_x + 30) + ',14)')
           .selectAll("text")
           .data(this.data)
           .enter()
@@ -180,87 +231,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             'font-size': (bar_height * 0.65) + 'px',
             'fill': 'silver'
           });
-
-
-//           //Create the Scale we will use for the Axis
-//           var axisScale = d3.scale.linear()
-//           .domain([0, 100])
-//           .range([0, 400]);
-          
-//           //Create the Axis
-//           var xAxis = d3.svg.axis()
-//           .scale(axisScale);
-          
-          
-//           //Create an SVG group Element for the Axis elements and call the xAxis function
-//           var xAxisGroup = this.svgContainer.append("g")
-//           .call(xAxis);
-
-
-//           //The data for our line
-//           var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
-//                            { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
-//                            { "x": 80,  "y": 5},  { "x": 100, "y": this.x2}];
-
-//           //This is the accessor function we talked about above
-//           var lineFunction = d3.svg.line()
-//                                    .x(function(d) { return d.x; })
-//                                    .y(function(d) { return d.y; })
-//                                    .interpolate("linear");
-
-//           // TODO: START HERE. Figure out how to modify this path in-place, rather than
-//           //  append a new path overlaying the existing one.
-//           //The line SVG Path we draw
-//           var lineGraph = this.svgContainer.append("path")
-//                                       .attr("d", lineFunction(lineData))
-//                                       .attr("stroke", "blue")
-//                                       .attr("stroke-width", 2)
-//                                       .attr("fill", "none");
-
-//         var jsonCircles = [
-//           {
-//            'x_axis': 30,
-//            'y_axis': 30,
-//            'radius': 20,
-//            'color' : 'green'
-//           }, {
-//            'x_axis': 70,
-//            'y_axis': 70,
-//            'radius': 20,
-//            'color' : 'purple'
-//           }, {
-//            'x_axis': 110,
-//            'y_axis': 100,
-//            'radius': 20,
-//            'color' : 'red'
-//           }
-//         ];
-
-//         var circles = svgContainer.selectAll('circle')
-//                                   .data(jsonCircles)
-//                                   .enter()
-//                                   .append('circle');
-
-//         var circleAttributes = circles
-//         .attr('cx', function(d){ return d.x_axis; })
-//         .attr('cy', function(d){ return d.y_axis; })
-//         .attr('r', function(d){ return d.radius; })
-//         .style('fill', function(d){ return d.color; })
-//         .style('stroke', 'blue')
-//         .style('stroke-width', '2px')
-
-        // var rectangle = svgContainer.append('rect')
-        // .attr('x', 10)
-        // .attr('y', 10)
-        // .attr('width', 50)
-        // .attr('height', 100)
-
-        // var ellipse = svgContainer.append('ellipse')
-        // .attr('cx', 50)
-        // .attr('cy', 10)
-        // .attr('rx', 25)
-        // .attr('ry', 10)
-
 
         }
 
