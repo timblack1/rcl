@@ -46,8 +46,8 @@
       </paper-input>
       <iron-icon icon="av:mic-off" id="av_mic_icon"></iron-icon>
       <proximity-controls
-         radius="{{radius}}" 
-         distance_units="{{distance_units}}">
+         radius="{{search_radius}}" 
+         distance_units="{{search_distance_units}}">
       </proximity-controls>
       
       <voice-recognition id="voice_recognition"
@@ -162,16 +162,17 @@
         value: false,
         notify: true
       },
-       radius: {
+       search_radius: {
         type: Number,
         notify: true,
         observer: '_radius_changed_handler'
       },
-      distance_units: {
+      search_distance_units: {
         type: String,
         notify: true,
         observer: '_distance_changed_handler'
-      }
+      }        
+
     },
     observers: [
       // Needed because selected_cgroups is an array
@@ -182,6 +183,7 @@
       this.model = this.$.model_object.properties.model.value;
           
     },
+ 
     attached:function(){
       this.async(function(){
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
@@ -258,11 +260,11 @@
     // This code gets the distance and raduis for the map from user preferences.  
           thiz.hoodie.store.find('user-preferences', 'user-preferences')
           .done(function(doc) {
-            thiz.distance_units = doc.distance_units;
-            thiz.radius = doc.radius;
+            thiz.search_distance_units = doc.search_distance_units;
+            thiz.search_radius = doc.search_radius;
           }) 
           .fail(function(error) {console.log(error) });
-        });         
+        }); 
 
         // Get selected_cgroups from a user preference
         this.hoodie.store.find('selected-cgroups', 'selected-cgroups')
@@ -416,13 +418,14 @@
     /* When the radius value changes, it updates the user preferences. */
     _radius_changed_handler: function(){
       if(typeof this.hoodie!=="undefined"){
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.radius});
+        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.search_radius});
       }
      },
+     
     /*    When the distance value changes, it updates the user-preferences. */
     _distance_changed_handler: function(){
       if(typeof this.hoodie!=="undefined") {
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.radius});
+        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
       }
     }
   });
