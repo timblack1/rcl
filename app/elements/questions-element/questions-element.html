@@ -1,0 +1,380 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="questions-element" hoodie="{{hoodie}}" questions="[[questions]]">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'questions-element',
+
+      properties: {
+        questions: {
+          type: Array,
+          notify: true,
+
+          /* Weighting factors below are intended to override the defaults specified under the 'factors'
+           * property of this element.
+           * 
+           * TODO: Add 'scraper' functions to the questions below to get data from APIs, etc.
+           */
+          value: function(){
+            var thiz = this;
+            return [
+              {
+                question: 'What are the most popular words found in congregations\' names?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                data_set: 'cong_summary',
+                x: 'frequency',
+                y: 'word',
+                graph: 'vertical_bar_graph',
+                list: function(){
+
+                  // Generate the list of words and frequencies
+                  // Note this returns a promise! So call list().done(function(result){});
+                  return thiz.hoodie.punk.findAll('congregation')
+                  .then(function(congs){
+
+                    var word_list = [];
+                    var frequencies_deduplicator = [];
+
+                    // Get the word_list including duplicates, by splitting on whitespace
+                    congs.forEach(function(cong){
+                      word_list = word_list.concat(cong.name.split(/\s/));
+                    });
+
+                    // Count the frequency of each word
+                    word_list.forEach(function(word){
+                      word = word.toLowerCase().replace(new RegExp(/[,-.& ]+/), '');
+                      if (word !== ''){
+                        frequencies_deduplicator[word] = frequencies_deduplicator[word] || 0;
+                        // Handle strange case where word === 'keys' and its value in the
+                        //  frequencies_deduplicator array is NaN
+                        if (isNaN(frequencies_deduplicator[word])){
+                          frequencies_deduplicator[word] = 0;
+                        }
+                        frequencies_deduplicator[word]++;
+                      }
+                    });
+
+                    // Convert to an array of objects
+                    var frequencies_keys = Object.keys(frequencies_deduplicator);
+                    var frequencies_objects = frequencies_keys.map(function(freq){
+                      return {
+                        text:freq,
+                        scalar_value:frequencies_deduplicator[freq]
+                      };
+                    });
+                    // Sort
+                    var frequencies_sorted = frequencies_objects.sort(function (a,b) {
+                      return b.scalar_value - a.scalar_value;
+                    });
+
+                    return frequencies_sorted;
+
+                  });
+                }
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by state?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: 'state',
+                graph: 'vertical_bar_graph'
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by city?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: 'city',
+                graph: 'vertical_bar_graph'
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: 'denomination',
+                graph: 'vertical_bar_graph'
+              },
+              {
+                question: 'Which congregations\' websites need a shorter url?',
+                user_types: ['web_developer'],
+                formula: 'URL length vs. congregation',
+                data_set: 'all_naparc_congregations',
+//                 x: function(cong){ return cong.website.length; },
+                x: 'url_length',
+                y: 'name',
+                graph: 'vertical_bar_graph',
+                list: function(){
+
+                  // Generate the list of cong names and url lengths
+                  // Note this returns a promise! So call list().done(function(result){});
+                  return thiz.hoodie.punk.findAll('congregation')
+                  .then(function(congs){
+
+                    return congs.map(function(cong){
+                      if (typeof cong.website !== 'undefined'){
+                        // Remove common prefixes
+                        cong.website = cong.website.replace(/^(http(s)?:\/\/)?(www.)?/, '');
+                        return {text: cong.website, scalar_value: cong.website.length};
+                      }
+                    })
+                    // Sort in descending order
+                    .sort(function(a, b){
+                      return b.scalar_value - a.scalar_value;
+                    })
+                    // Filter out congs without websites
+                    .filter(function(item){
+                      return (
+                        typeof item !== 'undefined' &&
+                        item.scalar_value !== 0
+                      );
+                    });
+
+                  });
+
+                }
+              },
+            ];
+          }
+        },
+        future_questions: {
+          type: Array,
+          notify: true,
+
+          /* TODO: Add 'scraper' functions to the questions below to get data from APIs, etc.
+           */
+          value: [
+            {
+              question: 'What are the most popular words found in congregations\' names, segmented by region?',
+              user_types: ['church_planter'],
+              formula: 'Word vs. frequency of occurrence',
+              x: 'frequency',
+              y: 'word',
+              segment_by: 'region',
+              graph: 'bar_graph'
+            },
+            {
+              question: 'In which city should we plant a church? Considering population growth rate.',
+              user_types: ['church_planter'],
+              formula: 'Distance to nearest NAPARC congregation vs. population growth rate (in last 10 years)',
+              x: 'population_growth_rate',
+              y: 'distance_to_nearest_naparc_cong'
+            },
+            {
+              question: 'In which city should we plant a church? Considering number of churches in the city.',
+              user_types: ['church_planter'],
+              formula: 'Distance to nearest NAPARC congregation vs. number of churches',
+              x: 'number_of_churches',
+              y: 'distance_to_nearest_naparc_cong'
+            },
+            {
+              question: 'In which city should we plant a church? Considering number of colleges in the city.',
+              user_types: ['church_planter'],
+              formula: 'Distance to nearest NAPARC congregation vs. number of colleges',
+              x: 'number_of_colleges',
+              y: 'distance_to_nearest_naparc_cong'
+            },
+            {
+              question: 'Which congregations should consider starting a college ministry? Some may not have sufficient gifts to start such a ministry, but could do so with help from other congregations, and they are close to (proximity < 30 miles) a large population of students.',
+              user_types: ['church_planter'],
+              formula: 'Proximity to center of large minority language group vs. congregation',
+              x: 'congregation',
+              y: 'proximity_to_language_group',
+              graph: 'bar_graph'
+            },
+            {
+              question: 'Which congregations are most/least close to violating NAPARC\'s comity agreement?',
+              user_types: ['church_planter'],
+              formula: 'Distance to nearest NAPARC congregation vs. population density',
+              x: 'population_density',
+              y: 'distance_to_nearest_naparc_cong'
+            },
+            {
+              question: 'Which congregations\' websites don\'t use HTML5, so might need a new website?',
+              user_types: ['web_developer'],
+              formula: 'Not HTML5 vs. congregation',
+              x: 'website_uses_html5',
+              y: 'name',
+              graph: 'bar_graph'
+            },
+            {
+              question: 'Which congregations don\'t have a website?',
+              user_types: ['web_developer'],
+              formula: 'No website vs. congregation',
+              x: function(cong){
+                if (typeof cong.website !== 'undefined' && cong.website.length !== 0){
+                  return false;
+                }else{
+                  return true;
+                }
+              },
+              y: 'name',
+              graph: 'bar_graph'
+            },
+            {
+              question: 'Which congregations use Flash, or Flash on mobile?',
+              user_types: ['web_developer'],
+              formula: 'Uses Flash vs. congregation',
+              x: 'website_uses_flash',
+              y: 'name',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of their home page for Flash
+              }
+            },
+            {
+              question: 'Which congregations\' website language does not match the official language of their country?',
+              user_types: ['web_developer', 'missionary'],
+              formula: 'Minority (not official) language group vs. congregation',
+              x: 'not_official_language_group_in_country',
+              y: 'name',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of their home page for their language, and search geo data API
+                //  for the official language of their country.
+              }
+            },
+            {
+              question: 'Which congregations\' website language does not match the dominant language of their neighborhood?',
+              user_types: ['web_developer', 'missionary'],
+              formula: 'Minority language group (in neighborhood) vs. congregation',
+              x: 'minority_language_group_in_neighborhood',
+              y: 'name',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of their home page for their language, and search geo data API
+                //  for the dominant language of their neighborhood.
+              }
+            },
+            {
+              question: 'Which congregations\' website language does not match the dominant language of their city?',
+              user_types: ['web_developer', 'missionary'],
+              formula: 'Minority language group (in city) vs. congregation',
+              x: 'minority_language_group_in_city',
+              y: 'name',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of their home page for their language, and search geo data API
+                //  for the dominant language of their city.
+              }
+            },
+            {
+              // TODO: Figure out how to group by denomination
+              question: 'What percent of the denomination\'s congregations speak each language, grouped by denomination?',
+              user_types: ['church_planter'],
+              formula: 'Percent vs. language',
+              x: 'language',
+              y: 'percent',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of the denomination's congregations home pages for their language, 
+                //  and record cong.website_language in each cong.
+                // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
+                //  percent of congregations which use each language.
+              }
+            },
+            {
+              question: 'Is the denomination reaching each language group equally compared to that language group\'s size in the country?',
+              user_types: ['church_planter'],
+              formula: 'Language percent in denomination vs. language percent in country',
+              x: 'language_percent_in_denomination',
+              y: 'language_percent_in_country',
+              graph: 'bar_graph',
+              scraper: function(cong){
+                // TODO: Search the HTML of the denomination's congregations home pages for their language, 
+                //  and record cong.website_language in each cong.
+                // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
+                //  percent of congregations which use each language.
+              }
+            },
+            {
+              question: 'Is the denomination\'s outreach to each language group keeping up with, ahead of, or behind that language\'s growth?',
+              user_types: ['church_planter'],
+              formula: 'Change in language percent in denomination vs. change in language percent in country',
+              x: 'language_percent_in_denomination_change',
+              y: 'language_percent_in_country_change',
+              scraper: function(cong){
+                // TODO: Start by saving a log of changes-over-time to the languages in each cgroup
+              }
+            },
+            {
+              question: 'What percent of congregations of each language group do not have a website?',
+              user_types: ['church_planter', 'web_developer', 'missionary'],
+              formula: 'Language vs. percent without website',
+              x: 'percent_without_website',
+              y: 'language',
+              graph: 'bar_graph'
+            },
+            {
+              question: 'Which minority language group congregations are somewhat near (10 < distance < 100 miles) a large population of that language group so should consider planting a church?',
+              user_types: ['church_planter'],
+              formula: 'Proximity to center of large minority language group vs. congregation',
+              x: 'congregation',
+              y: 'proximity_to_language_group',
+              graph: 'bar_graph'
+            },
+            {
+              // TODO: Note each presbytery's denomination for the user's convenience
+              question: 'How many congregations are in each presbytery?',
+              user_types: ['statistician', 'church_planter', 'web_developer'],
+              formula: 'Presbytery vs. congregations',
+              x: 'congregations',
+              y: 'presbytery',
+              graph: 'bar_graph'
+            },
+            {
+              // TODO: Note each presbytery's denomination for the user's convenience
+              // TODO: We'd have to find coordinates for each presbytery's boundaries. These are
+              //  available for some denominations; see the textPointsPresb values at 
+              //  view-source:http://opc.org/locator.html
+              question: 'Which presbyteries have the fewest congregations per square mile?',
+              user_types: ['statistician', 'church_planter'],
+              formula: 'Congregations in presbytery vs. square miles',
+              x: 'square_miles',
+              y: 'congregations',
+              graph: 'bar_graph'
+            },
+            {
+              // TODO: Note each presbytery's denomination for the user's convenience
+              // TODO: We'd have to find coordinates for each presbytery's boundaries. These are
+              //  available for some denominations; see the textPointsPresb values at 
+              //  view-source:http://opc.org/locator.html
+              question: 'Which presbyteries have the fewest congregations per capita?',
+              user_types: ['statistician', 'church_planter'],
+              formula: 'Congregations in presbytery vs. population',
+              x: 'population',
+              y: 'congregations',
+              graph: 'bar_graph'
+            },
+          ],
+        },
+      }
+    });
+  })();
+  </script>
+</dom-module>

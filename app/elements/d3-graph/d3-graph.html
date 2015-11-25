@@ -132,105 +132,206 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         
         var thiz = this;
 
-        // Don't run this when the page has just loaded.
+        // Don't run this when the page has just loaded
         if (this.x_key !== '' && this.y_key !== '' && 
             this.data !== {} && typeof this.data.length !== 'undefined' &&
             this.graph_type !== ''){
-          
-          // Create a bar chart
 
+          // General settings
+          // Bar chart settings
           var bar_height = 20;
           var bar_padding = 1;
           var text_translate_x = 70;
           var vertical_padding = 30;
+          var transition_duration = 1500;
 
-          // Get max frequency
-          var max_frequency = Math.max.apply(this, this.data.map(function(item){
-            return item.frequency;
-          }));
+          if (this.graph_type === 'vertical_bar_graph'){
+            // Get max scalar_value
+            var max_scalar_value = Math.max.apply(this, this.data.map(function(item){
+              return item.scalar_value;
+            }));
+            // Update SVG height to match the data, and width to match the available width
+            this.h = this.data.length * bar_height;
+            this.w = getComputedStyle(this.$.svgContainer).width.replace('px', '');
 
-          // Update SVG height to match the data, and width to match the available width
-          this.h = this.data.length * bar_height;
-          this.w = getComputedStyle(this.$.svgContainer).width.replace('px', '');
+            // Create the scale we will use for the axis
+            var axis_scale = d3.scale.linear()
+            .domain([0, max_scalar_value])
+            .range([0, this.w]);
 
-          //Create the scale we will use for the axis
-          var axis_scale = d3.scale.linear()
-          .domain([0, max_frequency])
-          .range([0, this.w]);
-          
-          //Create the Axis
-          var x_axis = d3.svg.axis()
-          .scale(axis_scale)
-          .orient('top')
-//           .tickSize(1, 1);
+            // Create the axis
+            var x_axis = d3.svg.axis()
+            .scale(axis_scale)
+            .orient('top')
+  //           .tickSize(1, 1);
+          }
 
-          // Create the chart
+          // Don't run this when the SVG has already been created
+          if (this.$.svgContainer.querySelector('svg').children.length === 0){
 
-          this.svg
-          .attr({
-            width: this.w,
-            height: this.h + vertical_padding,
-            preserveAspectRatio: 'xMinYMin slice',
-            // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
-            //  to help figure out how to set the viewBox size if it is needed.  And, read
-            //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
-            viewBox: '-10 -30 ' + this.w + ' ' + this.h + vertical_padding
-          })
-          // Append the axis
-          .append('g')
-          .attr({
-            class: 'axis'
-          })
-          .call(x_axis);
+            // Vertical bar graph
+            if (this.graph_type === 'vertical_bar_graph'){
 
-//           document.querySelector('.axis path').setAttribute('d', 'M0,-1V0H710V-1');
-          // TODO: Figure out why this has to be set here, and can't be set via CSS above.
-//           document.querySelector('.axis path').style.fill = 'none';
-          // Apply styles to the SVG element now and after future DOM mutations
-          //  See https://www.polymer-project.org/1.0/docs/devguide/styling.html#scope-subtree
-          // TODO: This isn't working yet.
-          this.scopeSubtree(this.$.svgContainer, true);
-          this.updateStyles();
+              // Create a bar chart
 
-          this.svg
-          .append('g')
-          .selectAll("rect")
-          .data(this.data)
-          .enter()
-          .append("rect")
-          .attr({
-            x: 0,
-            y: function(d, i){
-              return i * (thiz.h / thiz.data.length);
-            },
-            width: function(d){
-              return (d.frequency / max_frequency) * thiz.w;
-            },
-            height: bar_height - bar_padding,
-            fill: 'steelblue'
-          });
+              // Create the chart
 
-          this.svg
-          .append('g')
-          .attr('transform', 'translate(' + (text_translate_x + 30) + ',14)')
-          .selectAll("text")
-          .data(this.data)
-          .enter()
-          .append("text")
-          .text(function(d) {
-            return d.text.charAt(0).toUpperCase() + d.text.substring(1) +
-            ' (' + d.frequency + ')';
-          })
-          .attr({
-            'text-anchor': 'left',
-            x: 0,
-            y: function(d, i) {
-              return i * (thiz.h / thiz.data.length);
-            },
-            'font-family': 'sans-serif',
-            'font-size': (bar_height * 0.65) + 'px',
-            'fill': 'silver'
-          });
+              this.svg
+              .attr({
+                width: this.w,
+                height: this.h + vertical_padding,
+                preserveAspectRatio: 'xMinYMin slice',
+                // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
+                //  to help figure out how to set the viewBox size if it is needed.  And, read
+                //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
+                viewBox: '-10 -30 ' + this.w + ' ' + this.h + vertical_padding
+              })
+              // Append the axis
+              .append('g')
+              .attr({
+                class: 'x axis'
+              })
+              .call(x_axis);
+
+    //           document.querySelector('.axis path').setAttribute('d', 'M0,-1V0H710V-1');
+              // TODO: Figure out why this has to be set here, and can't be set via CSS above.
+    //           document.querySelector('.axis path').style.fill = 'none';
+              // Apply styles to the SVG element now and after future DOM mutations
+              //  See https://www.polymer-project.org/1.0/docs/devguide/styling.html#scope-subtree
+              // TODO: This isn't working yet.
+              this.scopeSubtree(this.$.svgContainer, true);
+              this.updateStyles();
+
+              this.svg
+              .append('g')
+              .attr('class', 'rect')
+              .selectAll("rect")
+              .data(this.data)
+              .enter()
+              .append("rect")
+              .attr({
+                x: 0,
+                y: function(d, i){
+                  return i * (thiz.h / thiz.data.length);
+                },
+                width: function(d){
+                  return (d.scalar_value / max_scalar_value) * thiz.w;
+                },
+                height: bar_height - bar_padding,
+                fill: 'steelblue'
+              });
+
+              this.svg
+              .append('g')
+              .attr('transform', 'translate(' + (text_translate_x + 30) + ',14)')
+              .attr('class', 'text')
+              .selectAll("text")
+              .data(this.data)
+              .enter()
+              .append("text")
+              .text(function(d) {
+                return d.text.charAt(0).toUpperCase() + d.text.substring(1) +
+                ' (' + d.scalar_value + ')';
+              })
+              .attr({
+                'text-anchor': 'left',
+                x: 0,
+                y: function(d, i) {
+                  return i * (thiz.h / thiz.data.length);
+                },
+                'font-family': 'sans-serif',
+                'font-size': (bar_height * 0.65) + 'px',
+                'fill': 'silver'
+              });
+
+            }
+
+          }else if (this.$.svgContainer.querySelector('svg').children.length > 0){
+            // Update the existing SVG
+
+            // Vertical bar graph
+            if (this.graph_type === 'vertical_bar_graph'){
+              
+              this.svg
+              .attr({
+                height: this.h + vertical_padding,
+                // Note: Use http://sarasoueidan.com/demos/interactive-svg-coordinate-system/index.html
+                //  to help figure out how to set the viewBox size if it is needed.  And, read
+                //  http://sarasoueidan.com/blog/svg-coordinate-systems/#initial-coordinate-system.
+                viewBox: '-10 -30 ' + this.w + ' ' + this.h + vertical_padding
+              });
+
+              var bars = this.svg.selectAll('g.rect rect')
+              .data(this.data)
+
+              // TODO: Something is wrong here.  When switching from the popular congregation name words
+              //  list to the list of URLs, the URL list is not all displayed, though the graph height
+              //  seems to be right.
+              bars
+              .transition()
+              .duration(transition_duration)
+              .delay(function(d, i){
+                return i / thiz.data.length * transition_duration
+              })
+              .attr({
+                y: function(d, i){
+                  return i * (thiz.h / thiz.data.length);
+                },
+                width: function(d){
+                  return (d.scalar_value / max_scalar_value) * thiz.w;
+                }
+              });
+
+              bars
+              .exit()
+              .transition()
+              .duration(500)
+              .remove()
+
+              var labels = this.svg.selectAll('g.text text')
+              .data(this.data);
+
+              labels
+              .transition()
+              .duration(transition_duration)
+              .text(function(d) {
+                return d.text.charAt(0).toUpperCase() + d.text.substring(1) +
+                ' (' + d.scalar_value + ')';
+              })
+              .attr({
+                'text-anchor': 'left',
+                x: 0,
+                y: function(d, i) {
+                  return i * (thiz.h / thiz.data.length);
+                },
+                'font-family': 'sans-serif',
+                'font-size': (bar_height * 0.65) + 'px',
+                'fill': 'silver'
+              });
+
+              labels
+              .exit()
+              .transition()
+              .duration(500)
+              .remove();
+
+              // Update the scale
+              axis_scale
+              .domain([0, max_scalar_value]);
+
+              // Update the axis
+              x_axis
+              .scale(axis_scale);
+
+              this.svg.select('.x.axis')
+              .transition()
+              .duration(transition_duration)
+              .call(x_axis);
+
+
+            }
+
+          }
 
         }
 
