@@ -46,61 +46,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 x: 'frequency',
                 y: 'word',
                 graph: 'vertical_bar_graph',
-                list: function(){
-
-                  // Generate the list of words and frequencies
-                  // Note this returns a promise! So call list().done(function(result){});
-                  return thiz.hoodie.punk.findAll('congregation')
-                  .then(function(congs){
-
-                    var word_list = [];
-                    var frequencies_deduplicator = [];
-
-                    // Get the word_list including duplicates, by splitting on whitespace
-                    congs.forEach(function(cong){
-                      word_list = word_list.concat(cong.name.split(/\s/));
-                    });
-
-                    // Count the frequency of each word
-                    word_list.forEach(function(word){
-                      word = word.toLowerCase().replace(new RegExp(/[,-.& ]+/), '');
-                      if (word !== ''){
-                        frequencies_deduplicator[word] = frequencies_deduplicator[word] || 0;
-                        // Handle strange case where word === 'keys' and its value in the
-                        //  frequencies_deduplicator array is NaN
-                        if (isNaN(frequencies_deduplicator[word])){
-                          frequencies_deduplicator[word] = 0;
-                        }
-                        frequencies_deduplicator[word]++;
-                      }
-                    });
-
-                    // Convert to an array of objects
-                    var frequencies_keys = Object.keys(frequencies_deduplicator);
-                    var frequencies_objects = frequencies_keys.map(function(freq){
-                      return {
-                        text:freq,
-                        scalar_value:frequencies_deduplicator[freq]
-                      };
-                    });
-                    // Sort
-                    var frequencies_sorted = frequencies_objects.sort(function (a,b) {
-                      return b.scalar_value - a.scalar_value;
-                    });
-
-                    return frequencies_sorted;
-
-                  });
-                }
+                list: thiz.get_words_and_frequencies
               },
               {
+                /* TODO: Pick a graph to use.
+                 * Graph types to consider:
+                 * - Bar graph, if only one state were displayed.  That would require
+                 *    another drop-down box to select the state.  Then a transition could show the differences
+                 *    between different states.
+                 * - Hierarchy
+                 * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
+                 * - Treemap
+                 *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
+                 *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
+                 *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
+                 *   - 
+                 */
                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
                 user_types: ['church_planter'],
                 formula: 'Word vs. frequency of occurrence',
                 x: 'frequency',
                 y: 'word',
-                segment_by: 'state',
-                graph: 'vertical_bar_graph'
+                segment_by: {
+                  model_name: 'meeting_state',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
+
               },
               {
                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
@@ -108,7 +82,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 formula: 'Word vs. frequency of occurrence',
                 x: 'frequency',
                 y: 'word',
-                segment_by: 'city',
+                segment_by: {
+                  model_name: 'meeting_city',
+                  display_name: 'state'
+                },
                 graph: 'vertical_bar_graph'
               },
               {
@@ -117,7 +94,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 formula: 'Word vs. frequency of occurrence',
                 x: 'frequency',
                 y: 'word',
-                segment_by: 'denomination',
+                segment_by: {
+                  model_name: 'denomination_abbreviation',
+                  display_name: 'state'
+                },
                 graph: 'vertical_bar_graph'
               },
               {
@@ -373,7 +353,73 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
           ],
         },
+      },
+
+      get_words_and_frequencies: function(segments){
+
+        // Generate the list of words and frequencies
+        // Note this returns a promise! So call list().done(function(result){});
+        return thiz.hoodie.punk.findAll('congregation')
+        .then(function(congs){
+
+          var word_list = [];
+          var frequencies_deduplicator = [];
+
+          // TODO: Start here.  If segments argument exists, then filter the list by the specified
+          //  segment.
+
+          // Get the word_list including duplicates, by splitting on whitespace
+          congs.forEach(function(cong){
+            word_list = word_list.concat(cong.name.split(/\s/));
+          });
+
+          // Count the frequency of each word
+          word_list.forEach(function(word){
+            word = word.toLowerCase().replace(new RegExp(/[,-.& ]+/), '');
+            if (word !== ''){
+              frequencies_deduplicator[word] = frequencies_deduplicator[word] || 0;
+              // Handle strange case where word === 'keys' and its value in the
+              //  frequencies_deduplicator array is NaN
+              if (isNaN(frequencies_deduplicator[word])){
+                frequencies_deduplicator[word] = 0;
+              }
+              frequencies_deduplicator[word]++;
+            }
+          });
+
+          // Convert to an array of objects
+          var frequencies_keys = Object.keys(frequencies_deduplicator);
+          var frequencies_objects = frequencies_keys.map(function(freq){
+            return {
+              text:freq,
+              scalar_value:frequencies_deduplicator[freq]
+            };
+          });
+          // Sort
+          var frequencies_sorted = frequencies_objects.sort(function (a,b) {
+            return b.scalar_value - a.scalar_value;
+          });
+
+          return frequencies_sorted;
+
+        });
+      },
+
+      get_segments: function(segment_by){
+                  
+        return thiz.hoodie.punk.findAll('congregation')
+        then(function(congs){
+
+          // Get list of distinct segments.
+          var segments_keys = [];
+          congs.forEach(function(cong){
+            segments_keys[cong[segment_by.model_name]] = '';
+          });
+          return Object.keys(states_keys).sort();
+
+        });
       }
+
     });
   })();
   </script>
