@@ -72,7 +72,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   display_name: 'state'
                 },
                 graph: 'vertical_bar_graph',
-                segments: thiz.get_segments,
+                get_segments: thiz.get_segments,
                 list: thiz.get_words_and_frequencies
 
               },
@@ -355,11 +355,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
       },
 
-      get_words_and_frequencies: function(segments){
+      /* Generate the list of words and frequencies
+       * Note this returns a promise! So call list().done(function(result){});
+       */
+      get_words_and_frequencies: function(hoodie, segments){
 
-        // Generate the list of words and frequencies
-        // Note this returns a promise! So call list().done(function(result){});
-        return thiz.hoodie.punk.findAll('congregation')
+        return hoodie.punk.findAll('congregation')
         .then(function(congs){
 
           var word_list = [];
@@ -367,6 +368,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // TODO: Start here.  If segments argument exists, then filter the list by the specified
           //  segment.
+
+          congs = congs.filter(function(cong){
+            if (segments !== null &&
+                cong[segments.model_name] === ''
+            ){
+              return cong
+            }else{
+              return cong;
+            }
+          });
 
           // Get the word_list including duplicates, by splitting on whitespace
           congs.forEach(function(cong){
@@ -405,17 +416,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
-      get_segments: function(segment_by){
+      /* Public method to get segments used by this question.
+       * Note: this returns a promise!
+       */
+      get_segments: function(hoodie, segment_by){
                   
-        return thiz.hoodie.punk.findAll('congregation')
-        then(function(congs){
+        return hoodie.punk.findAll('congregation')
+        .then(function(congs){
 
           // Get list of distinct segments.
           var segments_keys = [];
           congs.forEach(function(cong){
-            segments_keys[cong[segment_by.model_name]] = '';
+            // TODO: Handle cases where we have both AB and Alberta, ON and Ontario
+            segments_keys[cong[segment_by.model_name].toUpperCase()] = '';
           });
-          return Object.keys(states_keys).sort();
+          segments_keys = Object.keys(segments_keys).sort();
+          
+          // Format for use in the dropdown
+          return segments_keys.map(function(segment){
+            return {
+              id: segment,
+              name: segment
+            };
+          });
 
         });
       }

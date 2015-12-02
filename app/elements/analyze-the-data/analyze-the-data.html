@@ -138,6 +138,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         </paper-menu>
       </paper-dropdown-menu>
 
+      <paper-dropdown-menu id="segments"
+        label="Segment by"
+        selected-item="{{selected_segment}}"
+        hidden="{{hide_segments}}"
+        >
+        <paper-menu 
+          selected="{{selected_segment_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <template is="dom-repeat" items="{{segments}}">
+            <paper-item id="{{item.id}}" item="{{item}}">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
       <d3-graph id="graph" 
         data="{{data}}" 
         x_key="{{selected_x_key_id}}"
@@ -216,6 +231,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         data: {
           type: Object,
           value: {},
+          notify: true
+        },
+
+        hide_segments: {
+          type: Boolean,
+          value: true,
+          notify: true
+        },
+
+        segments: {
+          type: Array,
+          value: [],
           notify: true
         },
 
@@ -329,21 +356,49 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       // Handle changes to the selected_question
       _selected_question_changed:function(){
+
         var thiz = this;
         var q = this.selected_question;
+
         if (q !== null && typeof q.item !== 'undefined'){
-          q.item.list().then(function(list){
-            // Set this question's data_set in the data_set dropdown
-            thiz.selected_data_set_id = q.item.data_set;
-            // Set this question's values in the x_keys and y_keys dropdowns
-            thiz.selected_x_key_id = q.item.x;
-            thiz.selected_y_key_id = q.item.y;
-            // Set this question's graph type
-            thiz.selected_graph_type_id = q.item.graph;
+
+          // Set this question's data_set in the data_set dropdown
+          this.selected_data_set_id = q.item.data_set;
+          // Set this question's values in the x_keys and y_keys dropdowns
+          this.selected_x_key_id = q.item.x;
+          this.selected_y_key_id = q.item.y;
+          // Set this question's graph type
+          this.selected_graph_type_id = q.item.graph;
+
+          // Handle segments if the question uses them
+          if (typeof q.item.segment_by !== 'undefined'){
+            // Get segments to display in a dropdown
+            q.item.get_segments(this.hoodie, q.item.segment_by)
+            .done(function(segments){
+              thiz.segments = segments;
+            })
+            // Show the dropdown list
+            this.hide_segments = false;
+            // TODO: Move this to an event listener on selection of an item in the segments dropdown list
+//             this._get_list(q.item, segment);
+          }else{
+            // Display graph without segments
+            this._get_list(q.item);
+            this.hide_segments = true;
+          }
+
+          q.item.list(this.hoodie, segments).then(function(list){
             // Write this question's list of data to the graph
-            thiz.data = list;
+            this.data = list;
           });
         }
+      },
+
+      /* Get the list of data to display in the graph, and set it to the property
+       *  which updates the graph.
+       */
+      _get_list:function(question, segment){
+
       }
 
     });
