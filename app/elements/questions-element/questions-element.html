@@ -48,58 +48,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 graph: 'vertical_bar_graph',
                 list: thiz.get_words_and_frequencies
               },
-              {
-                /* TODO: Pick a graph to use.
-                 * Graph types to consider:
-                 * - Bar graph, if only one state were displayed.  That would require
-                 *    another drop-down box to select the state.  Then a transition could show the differences
-                 *    between different states.
-                 * - Hierarchy
-                 * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
-                 * - Treemap
-                 *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
-                 *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
-                 *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
-                 *   - 
-                 */
-                question: 'What are the most popular words found in congregations\' names, segmented by state?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'meeting_state',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph',
-                get_segments: thiz.get_segments,
-                list: thiz.get_words_and_frequencies
+//               {
+//                 /* TODO: Pick a graph to use.
+//                  * Graph types to consider:
+//                  * - Bar graph, if only one state were displayed.  That would require
+//                  *    another drop-down box to select the state.  Then a transition could show the differences
+//                  *    between different states.
+//                  * - Hierarchy
+//                  * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
+//                  * - Treemap
+//                  *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
+//                  *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
+//                  *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
+//                  *   - 
+//                  */
+//                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'meeting_state',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph',
+//                 get_segments: thiz.get_segments,
+//                 list: thiz.get_words_and_frequencies
 
-              },
-              {
-                question: 'What are the most popular words found in congregations\' names, segmented by city?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'meeting_city',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph'
-              },
-              {
-                question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'denomination_abbreviation',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph'
-              },
+//               },
+//               {
+//                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'meeting_city',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph'
+//               },
+//               {
+//                 question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'denomination_abbreviation',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph'
+//               },
               {
                 question: 'Which congregations\' websites need a shorter url?',
                 user_types: ['web_developer'],
