@@ -1,5 +1,12 @@
-sudo: false
 language: node_js
+sudo: false
+addons:
+  firefox: latest
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
 services:
 - couchdb
 branches:
@@ -15,18 +22,22 @@ node_js:
 - iojs-v2
 - iojs-v1
 - '0.12'
-- '0.10'
+- '4.2'
+- '5.1'
 before_install:
+- 'export DISPLAY=:99.0'
+- sh -e /etc/init.d/xvfb start
+- sleep 3
 - npm i -g npm@^2.0.0
-- npm install -g bower
+- npm i -g bower gulp
 - bower install
 - npm install -g web-component-tester
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-before_script:
 - npm prune
 - curl -Lo travis_after_all.py https://git.io/vLSON
-script: npm test
+script:
+  - npm test
+#  - ./travis-runner.sh
+
 after_success:
 - python travis_after_all.py
 - export $(cat .to_export_back)
@@ -34,3 +45,6 @@ after_success:
 deploy:
   provider: script
   script: scripts/travis/deploy.sh
+env:
+  global:
+    secure: SbcQ7plU7aRGQlaAG2ffMhSvEs84073YSljOQ62DZAjRxgizMhF4xM7H2mPrmac9YRM4IBrQRvBKMMZy3L6OhN8gwpm8o+w2zV+5Q1fwpY9V8bilznnhp1JUY6jrB2l7aLTOFxt/cG+5ABxiupwWz/n+I7BaByYhBiHWntIBgDc528eecRNDYI5R36KWjLO/yr+SdElvyxDlDOdJGaluPvgMItbinFGcE1hYb/Jqrkkw8zpE6CTDmvMOq1aRBWSo9afgh2zDeKc02lTYP/4N0xcn8CqzHF7k5zGWHjN9DR8Ep8Bp1ff/sM7zHGZBqgVhn5WGv305jBQY6eOxiTp5cDP0WVIOjgJeM5rBu9hBQxhZSaMKBPr2B1NYUjIwTVQkBsnR4sr095Ugjg8JCZAmEevf/Ysl4CzQyW3gT+WcEluqjxUuicQWDclH6L/kOVPBJ+Eqdo/LY3G1tpLcc6fsvj4FlVO6LPTrbMyCagwQvnjX3uIdFyuthqtWWrHKQMGx2Ow9suNUi8Hyvk7WboS1Z6jrLIcs1rvXSX8rQmlMR5vJBK3Ejg6fS1OHxn/lrtLhj4lDLB9r/Fcu2PEHT1lcvQqsTa3W+t4Fk1qaShUlBDiwMbZWZgmlf1SdG5OzK1yrPLjTTdRFdqJGgb6TANCdetgczRWynvjIhr5IDMxvfJg=

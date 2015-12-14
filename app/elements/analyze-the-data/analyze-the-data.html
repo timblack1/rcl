@@ -290,11 +290,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      ready:function(){
+      ready: function(){
         this.questions = this.$.questions.questions;
       },
 
-      attached:function(){
+      attached: function(){
         this.async(function(){
 
           // Initialize Hoodie
@@ -305,7 +305,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       /* Calculate the available keys, depending on which model object is being plotted.
        */
-      get_available_keys:function(){
+      get_available_keys: function(){
         if (this.selected_data_set !== null && typeof this.selected_data_set.id !== 'undefined'){
 
           var types = [];
@@ -323,7 +323,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Get the list of all data type keys, deduplicated, with underscores replaced by spaces,
        * and first letter capitalized.
        */
-      _get_keys_deduplicated_and_formatted:function(data_set, types){
+      _get_keys_deduplicated_and_formatted: function(data_set, types){
         // Get list of all data types in this data_set
         // TODO: How should we store this data so it's accessible here?  q.data_set works
         //  when q.x is not a function, but how can we handle when q.x is a function?
@@ -337,8 +337,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Get the list, deduplicated, with underscores replaced by spaces, and first letter capitalized
         types = Object.keys(types).map(function(type){
-          var nicely_formatted_name = type.replace(new RegExp('_', 'g'), ' ')
-          var nicely_formatted_name = nicely_formatted_name.charAt(0).toUpperCase() + nicely_formatted_name.slice(1);
+          var nicely_formatted_name = type.replace(new RegExp('_', 'g'), ' ');
+          nicely_formatted_name = nicely_formatted_name.charAt(0).toUpperCase() + nicely_formatted_name.slice(1);
           return {
             name: nicely_formatted_name,
             var_name: type
@@ -350,12 +350,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       // Handle changes to the selected_data_set
-      _selected_data_set_changed:function(){
+      _selected_data_set_changed: function(){
         this.get_available_keys();
       },
 
       // Handle changes to the selected_question
-      _selected_question_changed:function(){
+      _selected_question_changed: function(){
 
         var thiz = this;
         var q = this.selected_question;
@@ -376,7 +376,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             q.item.get_segments(this.hoodie, q.item.segment_by)
             .done(function(segments){
               thiz.segments = segments;
-            })
+            });
             // Show the dropdown list
             this.hide_segments = false;
             // TODO: Move this to an event listener on selection of an item in the segments dropdown list
@@ -387,7 +387,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.hide_segments = true;
           }
 
-          q.item.list(this.hoodie, segments).then(function(list){
+          q.item.list(this.hoodie, this.segments).then(function(list){
             // Write this question's list of data to the graph
             this.data = list;
           });
@@ -397,8 +397,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Get the list of data to display in the graph, and set it to the property
        *  which updates the graph.
        */
-      _get_list:function(question, segment){
-
+      _get_list: function(question, segment){
+        // Dummy code to silence JSHint warning
+        if (question && segment){}
       }
 
     });

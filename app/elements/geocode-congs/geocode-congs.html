@@ -94,7 +94,7 @@
       observers: [
         '_geocode_congs(congs_to_geocode.splices)'
       ],
-      attached: function(){
+      attached: function() {
         var thiz = this;
 
         // Configure geocoder
@@ -102,10 +102,10 @@
           
           thiz.geocoder = new thiz.$.maps_api.api.Geocoder();
 
-          thiz.async(function(){
+          thiz.async(function() {
 
             // Configure listener to congregation:change events
-            thiz.hoodie.punk.on('congregation:change', function(eventName, cong){
+            thiz.hoodie.punk.on('congregation:change', function(eventName, cong) {
               // Handle congs with regeocode === true
               if (eventName !== 'remove' && cong.regeocode === true){
                 // Add this cong to the queue to enable throttling to work
@@ -114,10 +114,10 @@
             });
 
             // Trigger regeocoding on page load, after a 5 second delay
-            thiz.async(function(){
+            thiz.async(function() {
               thiz.hoodie.punk.findAll('congregation')
-              .done(function(congs){
-                congs = congs.filter(function(cong){
+              .done(function(congs) {
+                congs = congs.filter(function(cong) {
                   if (cong.regeocode === true){
                     return true;
                   }
@@ -125,7 +125,7 @@
                 if (congs.length > 0){
                   // Note we can't use Array.concat here since we have to notify Polymer 
                   //  of the changes to the array.
-                  thiz.congs.forEach(function(cong){
+                  thiz.congs.forEach(function(cong) {
                     thiz.push('congs_to_geocode', cong);
                   });
                 }
@@ -137,7 +137,7 @@
         });
 
       },
-      get_cong_address_to_geocode:function(cong){
+      get_cong_address_to_geocode: function(cong) {
         if (typeof cong === 'undefined'){
           return;
         }
@@ -148,28 +148,28 @@
         var opc_bug = false;
         var address_line = '';
         if (cong.meeting_address1 && cong.meeting_address1.search(/\d/) !== -1){
-            address_line = cong.meeting_address1;
+          address_line = cong.meeting_address1;
         } else if (cong.meeting_address2 && cong.meeting_address2.search(/\d/) !== -1){
-            address_line = cong.meeting_address2;
+          address_line = cong.meeting_address2;
         } else if (cong.mailing_address1 && cong.mailing_address1.search(/\d/) !== -1){
-            address_line = cong.mailing_address1;
+          address_line = cong.mailing_address1;
         } else if (cong.mailing_address2 && cong.mailing_address2.search(/\d/) !== -1){
-            address_line = cong.mailing_address2;
+          address_line = cong.mailing_address2;
         } else if (cong.page_url.indexOf('opc') !== -1 && cong.mailing_city && cong.mailing_city.search(/\d/) !== -1){
           // There is a bug in the OPC's import.io configuration where some congs' mailing
           //  address ends up in mailing_city. So, set flag to use further below.
-            address_line = cong.mailing_city;
-            opc_bug = true;
+          address_line = cong.mailing_city;
+          opc_bug = true;
         }else{
-            address_line = cong.meeting_address1;
+          address_line = cong.meeting_address1;
         }
         var address =   address_line + ', ';
         if (!opc_bug){
           address = address + (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ';
         }
         address = address + 
-          (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
-          (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''));
+          (cong.meeting_state?cong.meeting_state: (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
+          (cong.meeting_zip?cong.meeting_zip: (cong.mailing_zip?cong.mailing_zip:''));
         if (address.indexOf('undefined') !== -1){
           this.push('ungeocodeable_congs', cong);
         }
@@ -184,7 +184,7 @@
        *  directly by users' code. That is why its first argument is `changeRecords`, 
        *  which is provided by Polymer.
        */
-      _geocode_congs:function(changeRecords, usecs){
+      _geocode_congs: function(changeRecords, usecs) {
 
         // We fix a problem here which takes some thought to understand.  The Polymer array.splices
         //  observer calls this function
@@ -220,7 +220,7 @@
             cong.regeocode = false;
             // Save cong with updated geocode
             thiz.hoodie.punk.update('congregation', cong.id, cong)
-            .done(function(){
+            .done(function() {
 
               // Remove this cong from the thiz.congs_to_geocode
               thiz.congs_to_geocode.splice(0, 1);
@@ -239,7 +239,7 @@
                 usecs = Math.max(usecs - 10, 0);
 
                 // Call this function recursively to geocode the next cong
-                setTimeout(function(){
+                setTimeout(function() {
                   thiz._geocode_congs({}, usecs);
                 }, usecs);
               }else{
@@ -253,13 +253,13 @@
             thiz.push('ungeocodeable_congs', cong);
             // Remove this cong from the congs array so it will not be geocoded this time.
             thiz.congs_to_geocode.splice(0, 1);
-            setTimeout(function(){
+            setTimeout(function() {
               thiz._geocode_congs({}, usecs);
             },usecs);
           }else if (status === thiz.$.maps_api.api.GeocoderStatus.OVER_QUERY_LIMIT){
             // If we've been sending the requests to fast, try this cong again and increase the delay
             usecs += 100;
-            setTimeout(function(){
+            setTimeout(function() {
               thiz._geocode_congs({}, usecs);
             },usecs);
           }else{
@@ -268,13 +268,13 @@
             console.log('Error: ' + msg);
             // Remove this cong from the congs array so it will not be geocoded this time.
             thiz.congs_to_geocode.splice(0, 1);
-            setTimeout(function(){
+            setTimeout(function() {
               thiz._geocode_congs({}, usecs);
             },usecs);
           }
         });
       },
-      _ungeocodeable_congs_observer: function(newValue, oldValue){
+      _ungeocodeable_congs_observer: function() {
         if (this.ungeocodeable_congs.length > 0){
           this.hide_ungeocodable_congs_div = false;
         }else{

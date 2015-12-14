@@ -225,6 +225,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               graph: 'bar_graph',
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for Flash
+                if (cong){}
               }
             },
             {
@@ -237,6 +238,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the official language of their country.
+                if (cong){}
               }
             },
             {
@@ -249,6 +251,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the dominant language of their neighborhood.
+                if (cong){}
               }
             },
             {
@@ -261,6 +264,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the dominant language of their city.
+                if (cong){}
               }
             },
             {
@@ -276,6 +280,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 //  and record cong.website_language in each cong.
                 // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
                 //  percent of congregations which use each language.
+                if (cong){}
               }
             },
             {
@@ -290,6 +295,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 //  and record cong.website_language in each cong.
                 // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
                 //  percent of congregations which use each language.
+                if (cong){}
               }
             },
             {
@@ -300,6 +306,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               y: 'language_percent_in_country_change',
               scraper: function(cong){
                 // TODO: Start by saving a log of changes-over-time to the languages in each cgroup
+                if (cong){}
               }
             },
             {
@@ -373,7 +380,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (segments !== null &&
                 cong[segments.model_name] === ''
             ){
-              return cong
+              return cong;
             }else{
               return cong;
             }

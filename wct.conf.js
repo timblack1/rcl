@@ -1,5 +1,5 @@
 var proxyMiddleware = require('http-proxy-middleware');
-// var path = require('path');
+var path = require('path');
 // var serveWaterfall  = require('serve-waterfall');
 
 // Configure proxy for Hoodie's api
@@ -11,16 +11,17 @@ var proxy = proxyMiddleware('/_api', {
   }
 });
 
-module.exports = {
-  verbose: true,
-  root: 'app',
-  suites: ['test'],
-  plugins: {
-    local: {
-        browsers: ['firefox']
+var ret = {
+  'suites': ['app/test'],
+  'webserver': {
+    'pathMappings': []
+  },
+  'plugins': {
+    'local': {
+        'browsers': ['firefox']
     }
   },
-  registerHooks: function(wct) {
+  'registerHooks': function(wct) {
     wct.hook('prepare:webserver', function(app, done){
       app.use(proxy);
       done();
@@ -39,3 +40,13 @@ module.exports = {
 //   },
 //   urlPrefix: '/components/<basename>'
 };
+
+var mapping = {};
+var rootPath = (__dirname).split(path.sep).slice(-1)[0];
+
+mapping['/components/' + rootPath  +
+'/app/bower_components'] = 'bower_components';
+
+ret.webserver.pathMappings.push(mapping);
+
+module.exports = ret;

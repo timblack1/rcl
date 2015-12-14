@@ -68,6 +68,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   (function() {
     'use strict';
 
+    /* globals d3 */
+
     Polymer({
       is: 'd3-graph',
 
@@ -113,7 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         'update_graph(data, x_key, y_key, graph_type)'
       ],
 
-      attached:function(){
+      attached: function(){
 
         this.svgContainer = d3.select('#hidden_svg')
         .append('svg');
@@ -128,9 +130,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       /* Update the graph when this element's properties change
        */
-      update_graph:function(){
+      update_graph: function(){
         
         var thiz = this;
+        var x_axis;
+        var axis_scale;
+        var max_scalar_value;
 
         // Don't run this when the page has just loaded
         if (this.x_key !== '' && this.y_key !== '' && 
@@ -147,7 +152,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           if (this.graph_type === 'vertical_bar_graph'){
             // Get max scalar_value
-            var max_scalar_value = Math.max.apply(this, this.data.map(function(item){
+            max_scalar_value = Math.max.apply(this, this.data.map(function(item){
               return item.scalar_value;
             }));
             // Update SVG height to match the data, and width to match the available width
@@ -155,14 +160,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.w = getComputedStyle(this.$.svgContainer).width.replace('px', '');
 
             // Create the scale we will use for the axis
-            var axis_scale = d3.scale.linear()
+            axis_scale = d3.scale.linear()
             .domain([0, max_scalar_value])
             .range([0, this.w]);
 
             // Create the axis
-            var x_axis = d3.svg.axis()
+            x_axis = d3.svg.axis()
             .scale(axis_scale)
-            .orient('top')
+            .orient('top');
   //           .tickSize(1, 1);
           }
 
@@ -205,10 +210,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.svg
               .append('g')
               .attr('class', 'rect')
-              .selectAll("rect")
+              .selectAll('rect')
               .data(this.data)
               .enter()
-              .append("rect")
+              .append('rect')
               .attr({
                 x: 0,
                 y: function(d, i){
@@ -225,10 +230,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               .append('g')
               .attr('transform', 'translate(' + (text_translate_x + 30) + ',14)')
               .attr('class', 'text')
-              .selectAll("text")
+              .selectAll('text')
               .data(this.data)
               .enter()
-              .append("text")
+              .append('text')
               .text(function(d) {
                 return d.text.charAt(0).toUpperCase() + d.text.substring(1) +
                 ' (' + d.scalar_value + ')';
@@ -262,7 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               });
 
               var bars = this.svg.selectAll('g.rect rect')
-              .data(this.data)
+              .data(this.data);
 
               // TODO: Something is wrong here.  When switching from the popular congregation name words
               //  list to the list of URLs, the URL list is not all displayed, though the graph height
@@ -271,7 +276,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               .transition()
               .duration(transition_duration)
               .delay(function(d, i){
-                return i / thiz.data.length * transition_duration
+                return i / thiz.data.length * transition_duration;
               })
               .attr({
                 y: function(d, i){
@@ -286,7 +291,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               .exit()
               .transition()
               .duration(500)
-              .remove()
+              .remove();
 
               var labels = this.svg.selectAll('g.text text')
               .data(this.data);
@@ -327,7 +332,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               .transition()
               .duration(transition_duration)
               .call(x_axis);
-
 
             }
 
