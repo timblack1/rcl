@@ -11,22 +11,34 @@ var proxy = proxyMiddleware('/_api', {
   }
 });
 
-var ret = {
-  'suites': ['app/test'],
-  'webserver': {
-    'pathMappings': []
-  },
-  'plugins': {
-    'local': {
-      'browsers': ['firefox']
+var mapping = {};
+var rootPath = (__dirname).split(path.sep).slice(-1)[0];
+
+// Polymer app generator has:
+// mapping['/components/' + rootPath  + '/app/bower_components'] = 'bower_components';
+mapping['/components/' + rootPath + '/app/bower_components'] = '';
+
+module.exports = {
+  verbose: true,
+  //root: 'app',
+  suites: ['app/test'],
+  plugins: {
+    local: {
+        browsers: ['chrome', 'firefox']
     }
   },
-  'registerHooks': function(wct) {
+  registerHooks: function(wct) {
     wct.hook('prepare:webserver', function(app, done){
       app.use(proxy);
       done();
     });
   },
+  webserver: {
+    'pathMappings': [mapping]
+  },
+  environmentImports: [
+    'test-fixture/test-fixture'
+  ]
   // TODO: Are these needed, or do they need to be configured,
   //  to prevent the tests from using a different path on the command line
   //  vs. when run in the browser?
@@ -40,13 +52,3 @@ var ret = {
 //   },
 //   urlPrefix: '/components/<basename>'
 };
-
-var mapping = {};
-var rootPath = (__dirname).split(path.sep).slice(-1)[0];
-
-mapping['/components/' + rootPath  +
-'/app/bower_components'] = 'bower_components';
-
-ret.webserver.pathMappings.push(mapping);
-
-module.exports = ret;
