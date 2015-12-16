@@ -1,6 +1,5 @@
 var proxyMiddleware = require('http-proxy-middleware');
-// var path = require('path');
-// var serveWaterfall  = require('serve-waterfall');
+var path = require('path');
 
 // Configure proxy for Hoodie's api
 var proxy = proxyMiddleware('/_api', {
@@ -11,13 +10,20 @@ var proxy = proxyMiddleware('/_api', {
   }
 });
 
+var mapping = {};
+var rootPath = (__dirname).split(path.sep).slice(-1)[0];
+
+// Polymer app generator has:
+// mapping['/components/' + rootPath  + '/app/bower_components'] = 'bower_components';
+mapping['/components/' + rootPath + '/app/bower_components'] = '';
+
 module.exports = {
   verbose: true,
-  root: 'app',
-  suites: ['test'],
+  //root: 'app',
+  suites: ['app/test'],
   plugins: {
     local: {
-        browsers: ['firefox']
+        browsers: ['chrome', 'firefox']
     }
   },
   registerHooks: function(wct) {
@@ -25,7 +31,13 @@ module.exports = {
       app.use(proxy);
       done();
     });
-  }
+  },
+  webserver: {
+    'pathMappings': [mapping]
+  },
+  environmentImports: [
+    'test-fixture/test-fixture'
+  ]
   // TODO: Are these needed, or do they need to be configured,
   //  to prevent the tests from using a different path on the command line
   //  vs. when run in the browser?
