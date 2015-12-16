@@ -206,6 +206,7 @@
               
               // Don't load all the congs, but only those within the map's current bounds
               // Note: getBounds() returns:
+              
               var b = thiz.map.getBounds();
               var lat_south = b.getSouthWest().lat();
               var lat_north = b.getNorthEast().lat();
@@ -256,21 +257,22 @@
               }
             }, 1000);
           });
+
+         
           //START HERE
-    // This code gets the distance and raduis for the map from user preferences.  
+          // This code gets the distance and raduis for the map from user preferences.  
           thiz.hoodie.store.find('user-preferences', 'user-preferences')
           .done(function(doc) {
             thiz.search_distance_units = doc.search_distance_units;
             thiz.search_radius = doc.search_radius;
           }) 
-          .fail(function(error) {console.log(error) });
-        }); 
-
-        // Get selected_cgroups from a user preference
-        this.hoodie.store.find('selected-cgroups', 'selected-cgroups')
-        .then(function(selected_cgroups){
-          thiz.selected_cgroups = selected_cgroups.cgroups;
-        });
+          .fail(function(error) {console.log(error) }); 
+                 
+          // Get selected_cgroups from a user preference
+          this.hoodiestore.find('selected-cgroups', 'selected-cgroups')
+          .then(function(selected_cgroups){
+            thiz.selected_cgroups = selected_cgroups.cgroups;
+          });
 //         this.hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
@@ -278,35 +280,22 @@
 //         this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         
-        // TODO: Connect cgroup-filter attributes to database
+          // TODO: Connect cgroup-filter attributes to database
 
-//   added 10 NOV 2015
-//    public boolean onPreferenceChange(Preference preference, Object value)
-//    {
-//       String textValue = value.toString();
-//       ListPreference listPreference = (ListPreference) preference;
-//       int index = listPreference.findIndexOfValue(textValue)
-//       CharSequence[] entries = listPreference.getEntries();
-//       if(index >= 0)
-//           Toast.makeText(preference.getContext(), entries[index], Toast.LENGTH_LONG);
-//       return true;
-//   }
-//    end add on
-
-        this.hoodie.store.findAll('cgroup')
-        .then(function(cgroups){
-          thiz.available_cgroups = cgroups;
-        });
-        
-        // Create handler to update available_cgroups
-        this.hoodie.store('cgroup').on('add update remove change clear', function(){
-          thiz.hoodie.store.findAll('cgroup')
+          this.hoodie.store.findAll('cgroup')
           .then(function(cgroups){
             thiz.available_cgroups = cgroups;
           });
-        });
 
-      });
+          // Create handler to update available_cgroups
+          this.hoodie.store('cgroup').on('add update remove change clear', function(){
+            thiz.hoodie.store.findAll('cgroup')
+            .then(function(cgroups){
+              thiz.available_cgroups = cgroups;
+            });
+          });
+        }) 
+      });        
     },
     fail_handler: function(error){
       console.log(error);
@@ -424,7 +413,7 @@
      
     /*    When the distance value changes, it updates the user-preferences. */
     _distance_changed_handler: function(){
-      if(typeof this.hoodie!=="undefined") {
+      if(typeof this.hoodie!=="undefined") { debugger
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
       }
     }
