@@ -289,15 +289,6 @@ var proxy = proxyMiddleware('/_api', {
   }
 });
 
-// Configure proxy for 'serve:production' task
-var proxy_production = proxyMiddleware('/_api', {
-  // target: 'http://localhost:19500/_api'
-  target: {
-    port: 19500,
-    host: 'localhost'
-  }
-});
-
 // Watch files for changes & reload
 gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images', 'docs'], function() {
   browserSync({
@@ -366,6 +357,16 @@ gulp.task('serve:dist', ['hoodie_start', 'docs', 'default'], function() {
 
 // Build and serve the output from the dist build
 gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], function () {
+
+  // Configure proxy for 'serve:production' task
+  var proxy_production = proxyMiddleware('/_api', {
+    // target: 'http://localhost:19500/_api'
+    target: {
+      port: 19500,
+      host: 'localhost'
+    }
+  });
+
   browserSync({
     port: 19500,
     notify: false,

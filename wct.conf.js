@@ -18,7 +18,7 @@ var ret = {
   },
   'plugins': {
     'local': {
-        'browsers': ['firefox']
+      'browsers': ['firefox']
     }
   },
   'registerHooks': function(wct) {
