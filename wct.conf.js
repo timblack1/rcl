@@ -23,7 +23,7 @@ module.exports = {
   suites: ['app/test'],
   plugins: {
     local: {
-        browsers: ['chrome', 'firefox']
+        browsers: ['firefox']
     }
   },
   registerHooks: function(wct) {
