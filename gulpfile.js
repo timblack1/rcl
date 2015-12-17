@@ -260,7 +260,7 @@ gulp.task('hoodie_start', function(done){
 
 gulp.task('hoodie_start_production', function(done){
   // Start Hoodie
-  spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '19500,11504,30837']);
+  spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '20188,19911,27069']);
   done();
 });
 
@@ -363,13 +363,13 @@ gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], fu
   var proxy_production = proxyMiddleware('/_api', {
     // target: 'http://localhost:19500/_api'
     target: {
-      port: 19500,
+      port: 20188
       host: 'localhost'
     }
   });
 
   browserSync.init({
-    port: 19500,
+    port: 20188,
     notify: false,
     ghostMode: false,
     browser: false,
