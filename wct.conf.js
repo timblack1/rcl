@@ -4,11 +4,12 @@ var path = require('path');
 
 // Configure proxy for Hoodie's api
 var proxy = proxyMiddleware('/_api', {
-  // target: 'http://localhost:3002/_api'
-  target: {
-    port: 3002,
-    host: 'localhost'
-  }
+//   target: 'http://localhost:3002/_api'
+  target: 'http://localhost:3002'
+//   target: {
+//     port: 3002,
+//     host: 'localhost'
+//   }
 });
 
 var mapping = {};
@@ -24,7 +25,7 @@ module.exports = {
   suites: ['app/test'],
   plugins: {
     local: {
-        browsers: ['chrome', 'firefox']
+      browsers: ['chrome', 'firefox']
     }
   },
   registerHooks: function(wct) {

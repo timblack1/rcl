@@ -16,7 +16,7 @@ var $ = require('gulp-load-plugins')();
 /*jshint ignore:end */
 var del = require('del');
 var runSequence = require('run-sequence');
-var browserSync = require('browser-sync');
+var browserSync = require('browser-sync').create();
 var reload = browserSync.reload;
 var merge = require('merge-stream');
 var path = require('path');
@@ -282,16 +282,17 @@ gulp.task('hoodie', ['serve', 'hoodie_start'], function(){
 
 // Configure proxy for 'serve' and 'serve:dist' tasks
 var proxy = proxyMiddleware('/_api', {
-  // target: 'http://localhost:3002/_api'
-  target: {
-    port: 3002,
-    host: 'localhost'
-  }
+//   target: 'http://localhost:3002/_api'
+  target: 'http://localhost:3002'
+//   target: {
+//     port: 3002,
+//     host: 'localhost'
+//   }
 });
 
 // Watch files for changes & reload
 gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images', 'docs'], function() {
-  browserSync({
+  browserSync.init({
     port: 5000,
     notify: false,
     ghostMode: false,
@@ -329,7 +330,7 @@ gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images', 'doc
 
 // Build and serve the output from the dist build
 gulp.task('serve:dist', ['hoodie_start', 'docs', 'default'], function() {
-  browserSync({
+  browserSync.init({
     port: 5001,
     notify: false,
     ghostMode: false,
@@ -367,7 +368,7 @@ gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], fu
     }
   });
 
-  browserSync({
+  browserSync.init({
     port: 19500,
     notify: false,
     ghostMode: false,
