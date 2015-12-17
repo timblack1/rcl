@@ -228,7 +228,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Listen for results returned after users enter search terms
           thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results(event) {
-            this.$.google_map_search.removeEventListener(event.type, search_results);
+            thiz.$.google_map_search.removeEventListener(event.type, search_results);
             thiz.debounce('search_results', function() {
               var results = thiz.$.google_map_search.results;
               // Determine if this is a keyword or a location search.
