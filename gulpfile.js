@@ -81,7 +81,7 @@ var optimizeHtmlTask = function(src, dest) {
   return gulp.src(src)
     // Replace path for vulcanized assets
     .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
-    .pipe(useref({
+    .pipe($.useref({
       searchPath: ['.tmp', 'app', dist()]
     }))
     // Concatenate and minify JavaScript
