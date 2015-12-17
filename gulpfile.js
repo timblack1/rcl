@@ -74,10 +74,6 @@ var imageOptimizeTask = function(src, dest) {
 };
 
 var optimizeHtmlTask = function(src, dest) {
-//   var assets = $.useref.assets({
-//     searchPath: ['.tmp', 'app', dist()]
-//   });
-
   return gulp.src(src)
     // Replace path for vulcanized assets
     .pipe($.if('*.html', $.replace('elements/elements.html', 'elements/elements.vulcanized.html')))
