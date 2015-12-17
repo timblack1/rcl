@@ -363,7 +363,7 @@ gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], fu
   var proxy_production = proxyMiddleware('/_api', {
     // target: 'http://localhost:19500/_api'
     target: {
-      port: 20188
+      port: 20188,
       host: 'localhost'
     }
   });
