@@ -1,0 +1,288 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/google-apis/google-maps-api.html">
+
+<dom-module id="geocode-congs" hoodie="{{hoodie}}">
+
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    
+    <paper-material elevation="1">
+      <geocode-stats hidden="{{hide_geocode_stats}}" id="geocode_stats"></geocode-stats>
+
+      <div id="ungeocodeable_congs_div" hidden="{{hide_ungeocodable_congs_div}}">
+        <h4>These addresses could not be geocoded:</h4>
+        <p>Please correct them if you are able.</p>
+        <template is="dom-repeat" items="{{ungeocodeable_congs}}">
+          <div>
+            <span>{{item.name}}</span> (<span>{{item.meeting_region}}</span>)
+          </div>
+          <div>
+            <span>{{item.meeting_address1}}</span>
+          </div>
+          <div>
+            <span>{{item.meeting_address2}}</span>
+          </div>
+          <div>
+            <span>{{item.meeting_city}}</span>, <span>{{item.meeting_state}}</span> <span>{{item.meeting_zip}}</span>
+          </div>
+          <div>
+            <span>{{item.meeting_country}}</span>
+            <br />
+          </div>
+        </template>
+      </div>
+    </paper-material>
+
+    <google-maps-api id="maps_api" libraries="places"></google-maps-api>
+  
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      /* Geocodes congregations when their address changes, or when they are explicitly added
+       * to the geocode-congs.congs_to_geocode array. Displays the status of the geocoding process,
+       * and lists congregations whose addresses could not be geocoded, offering the user the
+       * opportunity to correct those addresses.
+       */
+      is: 'geocode-congs',
+
+      properties: {
+        hoodie: {
+          type: Object,
+          notify: true,
+          reflectToAttribute: true
+        },
+        hide_geocode_stats: {
+          type: Boolean,
+          value: true,
+          notify: true
+        },
+        geocoder: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        congs_to_geocode: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        geocoding_in_progress: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
+        ungeocodeable_congs: {
+          type: Array,
+          value: [],
+          notify: true,
+          observer: '_ungeocodeable_congs_observer'
+        },
+        hide_ungeocodable_congs_div: {
+          type: Boolean,
+          value: true,
+          notify: true
+        }
+      },
+      observers: [
+        '_geocode_congs(congs_to_geocode.splices)'
+      ],
+      attached: function(){
+        var thiz = this;
+
+        // Configure geocoder
+        this.$.maps_api.addEventListener('api-load', function() {
+          
+          thiz.geocoder = new thiz.$.maps_api.api.Geocoder();
+
+          thiz.async(function(){
+
+            // Configure listener to congregation:change events
+            thiz.hoodie.punk.on('congregation:change', function(eventName, cong){
+              // Handle congs with regeocode === true
+              if (eventName !== 'remove' && cong.regeocode === true){
+                // Add this cong to the queue to enable throttling to work
+                thiz.push('congs_to_geocode',cong);
+              }
+            });
+
+            // Trigger regeocoding on page load, after a 5 second delay
+            thiz.async(function(){
+              thiz.hoodie.punk.findAll('congregation')
+              .done(function(congs){
+                congs = congs.filter(function(cong){
+                  if (cong.regeocode === true){
+                    return true;
+                  }
+                });
+                if (congs.length > 0){
+                  // Note we can't use Array.concat here since we have to notify Polymer 
+                  //  of the changes to the array.
+                  thiz.congs.forEach(function(cong){
+                    thiz.push('congs_to_geocode', cong);
+                  });
+                }
+              }).fail(thiz.fail_handler);
+            }, 5000);
+
+          });
+
+        });
+
+      },
+      get_cong_address_to_geocode:function(cong){
+        if (typeof cong === 'undefined'){
+          return;
+        }
+        // Get cong's address to geocode
+        // Pick the meeting_address[1|2] | mailing_address[1|2] which contains a number, else just use meeting_address1
+        // Note that this method of determining which fields to geocode may need revision,
+        //  because some addresses may not contain a number.
+        var opc_bug = false;
+        var address_line = '';
+        if (cong.meeting_address1 && cong.meeting_address1.search(/\d/) !== -1){
+            address_line = cong.meeting_address1;
+        } else if (cong.meeting_address2 && cong.meeting_address2.search(/\d/) !== -1){
+            address_line = cong.meeting_address2;
+        } else if (cong.mailing_address1 && cong.mailing_address1.search(/\d/) !== -1){
+            address_line = cong.mailing_address1;
+        } else if (cong.mailing_address2 && cong.mailing_address2.search(/\d/) !== -1){
+            address_line = cong.mailing_address2;
+        } else if (cong.page_url.indexOf('opc') !== -1 && cong.mailing_city && cong.mailing_city.search(/\d/) !== -1){
+          // There is a bug in the OPC's import.io configuration where some congs' mailing
+          //  address ends up in mailing_city. So, set flag to use further below.
+            address_line = cong.mailing_city;
+            opc_bug = true;
+        }else{
+            address_line = cong.meeting_address1;
+        }
+        var address =   address_line + ', ';
+        if (!opc_bug){
+          address = address + (cong.meeting_city?cong.meeting_city: (cong.mailing_city?cong.mailing_city:'')) + ', ';
+        }
+        address = address + 
+          (cong.meeting_state?cong.meeting_state:  (cong.mailing_state?cong.mailing_state:'')) + ' ' + 
+          (cong.meeting_zip?cong.meeting_zip:  (cong.mailing_zip?cong.mailing_zip:''));
+        if (address.indexOf('undefined') !== -1){
+          this.push('ungeocodeable_congs', cong);
+        }
+        return address;      
+      },
+
+      /* Recursive function which geocodes an array of congregations, and throttles back the rate 
+       *  if the geocoder tells us we are geocoding too fast.
+       *
+       * Note that this function is called exclusively as a Polymer observer watching
+       *  `this.congs_to_geocode`, which functions as a queue, and should not be called
+       *  directly by users' code. That is why its first argument is `changeRecords`, 
+       *  which is provided by Polymer.
+       */
+      _geocode_congs:function(changeRecords, usecs){
+
+        // We fix a problem here which takes some thought to understand.  The Polymer array.splices
+        //  observer calls this function
+        //  more than one time, but this function is not intended to have more than one copy running
+        //  simultaneously.  So we need to check this.geocoding_in_progress here to find out whether
+        //  this function has already been called and is still running (recursively calling itself),
+        //  and when all congs in the queue have been geocoded, we need to set this.geocoding_in_progress = false.
+        // So, we only check this.geocoding_in_progress if usecs is undefined, since usecs is
+        //  undefined only on the first call to this function.
+
+        // Don't execute if geocoding is in progress, or there are no congs_to_geocode
+        if ( (typeof usecs === 'undefined' && this.geocoding_in_progress === true) ||
+            this.congs_to_geocode.length === 0 ){
+          return;
+        }
+        this.geocoding_in_progress = true;
+        var thiz = this;
+
+        // Note the geocoder is limited to 2500 requests per day, then is "rate-limited on a per-second basis."
+        //  See https://developers.google.com/maps/documentation/javascript/geocoding
+        if (typeof usecs === 'undefined'){
+          usecs = 100;
+        }
+
+        var cong = this.congs_to_geocode[0];
+        var address = this.get_cong_address_to_geocode(cong);
+
+        // Geocode
+        this.geocoder.geocode( { 'address': address }, function(results, status) {
+          if (status === thiz.$.maps_api.api.GeocoderStatus.OK) {
+            var loc = results[0].geometry.location;
+            cong.geocode = {lat:loc.lat(), lng: loc.lng()};
+            cong.regeocode = false;
+            // Save cong with updated geocode
+            thiz.hoodie.punk.update('congregation', cong.id, cong)
+            .done(function(){
+
+              // Remove this cong from the thiz.congs_to_geocode
+              thiz.congs_to_geocode.splice(0, 1);
+
+              // Report progress to user
+              thiz.$.geocode_stats.usecs = usecs;
+              // TODO: Should this be moved out to an observer handler?
+              thiz.$.geocode_stats.number_to_geocode = thiz.congs_to_geocode.length;
+              // Show only if there are more to geocode
+              thiz.hide_geocode_stats = (thiz.$.geocode_stats.number_to_geocode === 0);
+              thiz.$.geocode_stats.number_geocoded = thiz.$.geocode_stats.number_geocoded + 1;
+
+              if (thiz.congs_to_geocode.length > 0){
+                // Reduce the usecs a bit in case we backed off too far, but don't let usecs 
+                //  be a negative value since that could prevent backing off quickly
+                usecs = Math.max(usecs - 10, 0);
+
+                // Call this function recursively to geocode the next cong
+                setTimeout(function(){
+                  thiz._geocode_congs({}, usecs);
+                }, usecs);
+              }else{
+                thiz.geocoding_in_progress = false;
+              }
+
+            }).fail(thiz.fail_handler);
+          }else if (status === thiz.$.maps_api.api.GeocoderStatus.ZERO_RESULTS || 
+                    (results !== null && results.length > 1) ){
+            // Handle when Google returns multiple possible, or zero, address matches
+            thiz.push('ungeocodeable_congs', cong);
+            // Remove this cong from the congs array so it will not be geocoded this time.
+            thiz.congs_to_geocode.splice(0, 1);
+            setTimeout(function(){
+              thiz._geocode_congs({}, usecs);
+            },usecs);
+          }else if (status === thiz.$.maps_api.api.GeocoderStatus.OVER_QUERY_LIMIT){
+            // If we've been sending the requests to fast, try this cong again and increase the delay
+            usecs += 100;
+            setTimeout(function(){
+              thiz._geocode_congs({}, usecs);
+            },usecs);
+          }else{
+            var reason  =   'Code ' + status;
+            var msg     = 'address="' + address + '" error=' + reason + '(usecs=' + usecs + 'ms)';
+            console.log('Error: ' + msg);
+            // Remove this cong from the congs array so it will not be geocoded this time.
+            thiz.congs_to_geocode.splice(0, 1);
+            setTimeout(function(){
+              thiz._geocode_congs({}, usecs);
+            },usecs);
+          }
+        });
+      },
+      _ungeocodeable_congs_observer: function(newValue, oldValue){
+        if (this.ungeocodeable_congs.length > 0){
+          this.hide_ungeocodable_congs_div = false;
+        }else{
+          this.hide_ungeocodable_congs_div = true;
+        }
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

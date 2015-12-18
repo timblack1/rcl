@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="Polymer Starter Kit" />
+  <title>Reformed Churches Locator</title>
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+  <!-- Chrome for Android theme color -->
+  <meta name="theme-color" content="#303F9F">
+
+  <!-- Web Application Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tile color for Win8 -->
+  <meta name="msapplication-TileColor" content="#3372DF">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Reformed Churches Locator">
+  <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Reformed Churches Locator">
+  <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+
+  <!-- Tile icon for Win8 (144x144) -->
+  <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild-->
+
+  <!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <!-- endbuild -->
+
+  <!-- will be replaced with elements/elements.vulcanized.html -->
+  <link rel="import" href="elements/elements.html">
+  <!-- endreplace-->
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+  <span id="browser-sync-binding"></span>
+  <template is="dom-bind" id="app">
+
+    <paper-drawer-panel id="paperDrawerPanel">
+      <div drawer>
+
+        <!-- Drawer Toolbar -->
+        <paper-toolbar id="drawerToolbar">
+          <span class="paper-font-title">Menu</span>
+        </paper-toolbar>
+
+        <!-- Drawer Content -->
+          <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}" on-iron-select="onMenuSelect">
+              <a data-route="find-a-church" href="/">
+                <iron-icon icon="icons:search"></iron-icon>
+                <span>Find a church</span>
+              </a>
+
+              <a data-route="import-a-directory" href="/import-a-directory">
+                <iron-icon icon="icons:file-upload"></iron-icon>
+                <span>Import a directory</span>
+              </a>
+
+              <a data-route="analyze-the-data" href="/analyze-the-data">
+                <iron-icon icon="editor:insert-chart"></iron-icon>
+                <span>Analyze the data</span>
+              </a>
+
+          </paper-menu>
+      </div>
+      <paper-header-panel main mode="waterfall-tall">
+
+        <!-- Main Toolbar -->
+        <paper-toolbar id="mainToolbar">
+          <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
+          <span class="flex"></span>
+
+          <hoodie-accountbar id="hoodie_accountbar" hoodie="{{hoodie}}"></hoodie-accountbar>
+          <!-- Toolbar icons -->
+          <paper-icon-button icon="refresh"></paper-icon-button>
+          <paper-icon-button icon="search"></paper-icon-button>
+
+          <!-- Application name -->
+          <div class="middle paper-font-display2 app-name">Reformed Churches Locator</div>
+
+          <!-- Application sub title -->
+          <div class="bottom title"></div>
+
+        </paper-toolbar>
+
+        <!-- Main Content -->
+        <div class="content">
+          <iron-pages attr-for-selected="data-route" selected="{{route}}">
+
+            <section data-route="find-a-church">
+              <find-a-church hoodie="{{hoodie}}"></find-a-church>
+            </section>
+
+            <section data-route="import-a-directory">
+              <import-a-directory hoodie="{{hoodie}}"></import-a-directory>
+            </section>
+
+            <section data-route="analyze-the-data">
+              <analyze-the-data hoodie="{{hoodie}}"></analyze-the-data>
+            </section>
+
+          </iron-pages>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+
+    <paper-toast id="caching-complete"
+                 duration="6000"
+                 text="Caching complete! This app will work offline.">
+    </paper-toast>
+
+    <platinum-sw-register auto-register
+                          clients-claim
+                          skip-waiting
+                          on-service-worker-installed="displayInstalledToast">
+      <platinum-sw-import-script href="custom-fetch-handler.js"></platinum-sw-import-script>
+      <platinum-sw-fetch handler="HoodieAPIFetchHandler"
+                     path="/_api(.*)"></platinum-sw-fetch>
+      <platinum-sw-cache default-cache-strategy="networkFirst"
+                         precache-file="precache.json">
+      </platinum-sw-cache>
+    </platinum-sw-register>
+
+<!-- 
+        // TODO: Integrate the following:
+//         <script data-main="assets/js/main" src="assets/vendor/requirejs/require.js"
+//         <script src="//cdn.import.io/js/2.0.0/importio.js">
+//         <script>
+//             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+//             (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+//             g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+//             s.parentNode.insertBefore(g,s)}(document,'script'));
+//         /script>
+
+ -->
+  </template>
+
+  <!-- build:js scripts/app.js -->
+  <script src="scripts/app.js"></script>
+  <!-- endbuild-->
+</body>
+
+</html>
