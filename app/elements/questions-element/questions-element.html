@@ -377,7 +377,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           //  segment.
 
           congs = congs.filter(function(cong){
-            if (segments !== null &&
+            // TODO: Is this first condition correct?  It would seem the cong[segments.model_name] should not be empty.
+            //  Aha.  When segments are used, we need to know what particular segment_name (e.g.,
+            //  'meeting_state') to use and what segment value (e.g., 'WA') the user selected.
+            //  So that is going to need to be another argument, or put into an argument which is an object.
+            //  I think an object is best, and it should be renamed to the singular "segment".
+            if (typeof segments !== 'undefined' &&
                 cong[segments.model_name] === ''
             ){
               return cong;

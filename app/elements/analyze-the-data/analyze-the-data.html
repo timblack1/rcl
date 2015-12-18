@@ -294,15 +294,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.questions = this.$.questions.questions;
       },
 
-      attached: function(){
-        this.async(function(){
-
-          // Initialize Hoodie
-          this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
-
-        });
-      },
-
       /* Calculate the available keys, depending on which model object is being plotted.
        */
       get_available_keys: function(){
@@ -379,27 +370,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
             // Show the dropdown list
             this.hide_segments = false;
-            // TODO: Move this to an event listener on selection of an item in the segments dropdown list
-//             this._get_list(q.item, segment);
           }else{
-            // Display graph without segments
-            this._get_list(q.item);
             this.hide_segments = true;
+            // Display graph without segments
+            q.item.list(this.hoodie).then(function(list){
+              // Write this question's list of data to the graph
+              this.data = list;
+            });
           }
 
-          q.item.list(this.hoodie, this.segments).then(function(list){
-            // Write this question's list of data to the graph
-            this.data = list;
-          });
         }
       },
 
-      /* Get the list of data to display in the graph, and set it to the property
-       *  which updates the graph.
+      /* Get one segment's data, and display it in the graph. Note: this function is meant to be
+       *  called by a property mutation observer.
        */
-      _get_list: function(question, segment){
-        // Dummy code to silence JSHint warning
-        if (question && segment){}
+      _get_list: function(){
+        // Display graph with segments
+        this.selected_question.item.list(this.hoodie, this.segments).then(function(list){
+          // Write this question's list of data to the graph
+          this.data = list;
+        });
       }
 
     });
