@@ -48,58 +48,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 graph: 'vertical_bar_graph',
                 list: thiz.get_words_and_frequencies
               },
-              {
-                /* TODO: Pick a graph to use.
-                 * Graph types to consider:
-                 * - Bar graph, if only one state were displayed.  That would require
-                 *    another drop-down box to select the state.  Then a transition could show the differences
-                 *    between different states.
-                 * - Hierarchy
-                 * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
-                 * - Treemap
-                 *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
-                 *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
-                 *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
-                 *   - 
-                 */
-                question: 'What are the most popular words found in congregations\' names, segmented by state?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'meeting_state',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph',
-                segments: thiz.get_segments,
-                list: thiz.get_words_and_frequencies
+//               {
+//                 /* TODO: Pick a graph to use.
+//                  * Graph types to consider:
+//                  * - Bar graph, if only one state were displayed.  That would require
+//                  *    another drop-down box to select the state.  Then a transition could show the differences
+//                  *    between different states.
+//                  * - Hierarchy
+//                  * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
+//                  * - Treemap
+//                  *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
+//                  *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
+//                  *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
+//                  *   - 
+//                  */
+//                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'meeting_state',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph',
+//                 get_segments: thiz.get_segments,
+//                 list: thiz.get_words_and_frequencies
 
-              },
-              {
-                question: 'What are the most popular words found in congregations\' names, segmented by city?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'meeting_city',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph'
-              },
-              {
-                question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
-                user_types: ['church_planter'],
-                formula: 'Word vs. frequency of occurrence',
-                x: 'frequency',
-                y: 'word',
-                segment_by: {
-                  model_name: 'denomination_abbreviation',
-                  display_name: 'state'
-                },
-                graph: 'vertical_bar_graph'
-              },
+//               },
+//               {
+//                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'meeting_city',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph'
+//               },
+//               {
+//                 question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
+//                 user_types: ['church_planter'],
+//                 formula: 'Word vs. frequency of occurrence',
+//                 x: 'frequency',
+//                 y: 'word',
+//                 segment_by: {
+//                   model_name: 'denomination_abbreviation',
+//                   display_name: 'state'
+//                 },
+//                 graph: 'vertical_bar_graph'
+//               },
               {
                 question: 'Which congregations\' websites need a shorter url?',
                 user_types: ['web_developer'],
@@ -355,11 +355,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
       },
 
-      get_words_and_frequencies: function(segments){
+      /* Generate the list of words and frequencies
+       * Note this returns a promise! So call list().done(function(result){});
+       */
+      get_words_and_frequencies: function(hoodie, segments){
 
-        // Generate the list of words and frequencies
-        // Note this returns a promise! So call list().done(function(result){});
-        return thiz.hoodie.punk.findAll('congregation')
+        return hoodie.punk.findAll('congregation')
         .then(function(congs){
 
           var word_list = [];
@@ -367,6 +368,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // TODO: Start here.  If segments argument exists, then filter the list by the specified
           //  segment.
+
+          congs = congs.filter(function(cong){
+            if (segments !== null &&
+                cong[segments.model_name] === ''
+            ){
+              return cong
+            }else{
+              return cong;
+            }
+          });
 
           // Get the word_list including duplicates, by splitting on whitespace
           congs.forEach(function(cong){
@@ -405,17 +416,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
-      get_segments: function(segment_by){
+      /* Public method to get segments used by this question.
+       * Note: this returns a promise!
+       */
+      get_segments: function(hoodie, segment_by){
                   
-        return thiz.hoodie.punk.findAll('congregation')
-        then(function(congs){
+        return hoodie.punk.findAll('congregation')
+        .then(function(congs){
 
           // Get list of distinct segments.
           var segments_keys = [];
           congs.forEach(function(cong){
-            segments_keys[cong[segment_by.model_name]] = '';
+            // TODO: Handle cases where we have both AB and Alberta, ON and Ontario
+            segments_keys[cong[segment_by.model_name].toUpperCase()] = '';
           });
-          return Object.keys(states_keys).sort();
+          segments_keys = Object.keys(segments_keys).sort();
+          
+          // Format for use in the dropdown
+          return segments_keys.map(function(segment){
+            return {
+              id: segment,
+              name: segment
+            };
+          });
 
         });
       }
