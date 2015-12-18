@@ -375,7 +375,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // Display graph without segments
             q.item.list(this.hoodie).then(function(list){
               // Write this question's list of data to the graph
-              this.data = list;
+              thiz.data = list;
             });
           }
 
@@ -389,7 +389,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         // Display graph with segments
         this.selected_question.item.list(this.hoodie, this.segments).then(function(list){
           // Write this question's list of data to the graph
-          this.data = list;
+          thiz.data = list;
         });
       }
 
