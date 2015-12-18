@@ -18,12 +18,12 @@ echo "Running gulp default to create dist directory..."
 gulp default
 
 git push deploy
-rsync -avz dist timblack1@timblack1.webfactional.com/webapps/rcl/
+rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
 
 echo "Installing dependencies on production server..."
-ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && git checkout && npm install --production && bower install'
+ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && npm install --production && bower install'
 
 echo "Restarting app on production server..."
-ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && git checkout && npm run start-production'
+ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && npm run start-production'
 
 git checkout -f develop
