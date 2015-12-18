@@ -174,13 +174,6 @@ gulp.task('copy', function() {
     }));
 });
 
-// Copy top-level docs to app directory to serve as in-app help files
-gulp.task('docs', function () {
-  return gulp.src(['docs/**'])
-    .pipe(gulp.dest('app/docs'))
-    .pipe($.size({title: 'docs'}));
-});
-
 // Copy web fonts to dist
 gulp.task('fonts', function() {
   return gulp.src(['app/fonts/**'])
@@ -289,7 +282,7 @@ var proxy = proxyMiddleware('/_api', {
 });
 
 // Watch files for changes & reload
-gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images', 'docs'], function() {
+gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images'], function() {
   browserSync.init({
     port: 5000,
     notify: false,
@@ -323,11 +316,11 @@ gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images', 'doc
   gulp.watch(['app/elements/**/*.css'], ['elements', reload]);
   gulp.watch(['app/{scripts,elements}/**/{*.js,*.html}'], ['lint']);
   gulp.watch(['app/images/**/*'], reload);
-  gulp.watch(['docs/**/*'], ['docs', reload]);
+  gulp.watch(['docs/**/*', 'app/docs/**/*'], [reload]);
 });
 
 // Build and serve the output from the dist build
-gulp.task('serve:dist', ['hoodie_start', 'docs', 'default'], function() {
+gulp.task('serve:dist', ['hoodie_start', 'default'], function() {
   browserSync.init({
     port: 5001,
     notify: false,
@@ -355,7 +348,7 @@ gulp.task('serve:dist', ['hoodie_start', 'docs', 'default'], function() {
 });
 
 // Build and serve the output from the dist build
-gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], function () {
+gulp.task('serve:production', ['hoodie_start_production', 'default'], function () {
 
   // Configure proxy for 'serve:production' task
   var proxy_production = proxyMiddleware('/_api', {
@@ -394,7 +387,7 @@ gulp.task('serve:production', ['hoodie_start_production', 'docs', 'default'], fu
 });
 
 // Build production files, the default task
-gulp.task('default', ['clean', 'docs'], function (cb) {
+gulp.task('default', ['clean'], function (cb) {
   // Uncomment 'cache-config' if you are going to use service workers.
   runSequence(
     ['copy', 'styles'],

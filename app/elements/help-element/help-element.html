@@ -17,18 +17,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
-      paper-material {
-        padding: 0.5em 1em 0.5em 1em;
-        background-color: white;
-      }
-      thead, th {
-        border-bottom: 1px solid black;
-      }
-      th, td {
-        border: 1px solid silver;
-      }
-      table {
-        border-collapse: collapse;
+      paper-card {
+        margin: 2em 2em 0 2em;
+        padding: 1em;
       }
 
     </style>
@@ -42,11 +33,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       >
     </iron-ajax>
 
-    <paper-material elevation="1">
+    <paper-card>
       <marked-element id="help_element" markdown="{{response}}">
         <div class="markdown-html"></div>
       </marked-element>
-    </paper-material>
+    </paper-card>
 
   </template>
   <script>
