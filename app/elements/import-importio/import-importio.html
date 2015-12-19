@@ -249,6 +249,17 @@
               // TODO: This doesn't work with names including words like 'of'. Maybe that's why they are ALLCAPS.
               new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
           }
+          // Normalize state names
+          [
+            {long: 'ontario', short: 'on'},
+            {long: 'alberta', short: 'ab'}
+          ].forEach(function(state){
+            ['meeting_state', 'mailing_state'].forEach(function(field){
+              if (new_cong[field].toLowerCase() === state.long){
+                new_cong[field] = state.short.toUpperCase();
+              }
+            });
+          });
           // Record the source of this revision of this cong
           new_cong.source_id = directory.id;
           // Record the denomination of which this cong is a member

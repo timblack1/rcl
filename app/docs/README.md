@@ -1,5 +1,10 @@
 # Reformed Churches Locator Help
 
+## Development status
+
+This software is currently **alpha quality**.  We are working to produce a minimal working version,
+but aren't there yet.  A number of features in the existing interface do not work yet.
+
 ## Usage
 
 Reformed Churches Locator contains the following pages:

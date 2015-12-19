@@ -48,58 +48,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 graph: 'vertical_bar_graph',
                 list: thiz.get_words_and_frequencies
               },
-//               {
-//                 /* TODO: Pick a graph to use.
-//                  * Graph types to consider:
-//                  * - Bar graph, if only one state were displayed.  That would require
-//                  *    another drop-down box to select the state.  Then a transition could show the differences
-//                  *    between different states.
-//                  * - Hierarchy
-//                  * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
-//                  * - Treemap
-//                  *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
-//                  *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
-//                  *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
-//                  *   - 
-//                  */
-//                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'meeting_state',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph',
-//                 get_segments: thiz.get_segments,
-//                 list: thiz.get_words_and_frequencies
+              {
+                /* TODO: Pick a graph to use.
+                 * Graph types to consider:
+                 * - Bar graph, if only one state were displayed.  That would require
+                 *    another drop-down box to select the state.  Then a transition could show the differences
+                 *    between different states.
+                 * - Hierarchy
+                 * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
+                 * - Treemap
+                 *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
+                 *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
+                 *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
+                 *   - 
+                 */
+                question: 'What are the most popular words found in congregations\' names, segmented by state?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'meeting_state',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
 
-//               },
-//               {
-//                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'meeting_city',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph'
-//               },
-//               {
-//                 question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'denomination_abbreviation',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph'
-//               },
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by city?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'meeting_city',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'denomination_abbreviation',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
+              },
               {
                 question: 'Which congregations\' websites need a shorter url?',
                 user_types: ['web_developer'],
@@ -365,7 +369,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Generate the list of words and frequencies
        * Note this returns a promise! So call list().done(function(result){});
        */
-      get_words_and_frequencies: function(hoodie, segments){
+      get_words_and_frequencies: function(hoodie, segment){
 
         return hoodie.punk.findAll('congregation')
         .then(function(congs){
@@ -373,23 +377,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var word_list = [];
           var frequencies_deduplicator = [];
 
-          // TODO: Start here.  If segments argument exists, then filter the list by the specified
+          // If segments argument exists, then filter the list by the specified
           //  segment.
-
-          congs = congs.filter(function(cong){
-            // TODO: Is this first condition correct?  It would seem the cong[segments.model_name] should not be empty.
-            //  Aha.  When segments are used, we need to know what particular segment_name (e.g.,
-            //  'meeting_state') to use and what segment value (e.g., 'WA') the user selected.
-            //  So that is going to need to be another argument, or put into an argument which is an object.
-            //  I think an object is best, and it should be renamed to the singular "segment".
-            if (typeof segments !== 'undefined' &&
-                cong[segments.model_name] === ''
-            ){
-              return cong;
-            }else{
-              return cong;
-            }
-          });
+          if (typeof segment !== 'undefined'){
+            congs = congs.filter(function(cong){
+              if (typeof segments !== 'undefined' &&
+                  cong[segment.name].toLowerCase() === segment.value.toLowerCase()
+              ){
+                return cong;
+              }
+            });
+          }
 
           // Get the word_list including duplicates, by splitting on whitespace
           congs.forEach(function(cong){
@@ -428,7 +426,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
-      /* Public method to get segments used by this question.
+      /* Public method to get segments used by this question.  The intent is to then display
+       *  the available segments in a drop-down box.
        * Note: this returns a promise!
        */
       get_segments: function(hoodie, segment_by){
@@ -439,8 +438,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // Get list of distinct segments.
           var segments_keys = [];
           congs.forEach(function(cong){
-            // TODO: Handle cases where we have both AB and Alberta, ON and Ontario
-            segments_keys[cong[segment_by.model_name].toUpperCase()] = '';
+            var segment_text = cong[segment_by.model_name];
+            // Make state names be all uppercase, but nothing else
+            if (segment_by.model_name.indexOf('state') !== -1){
+              segment_text = segment_text.toUpperCase();
+            }
+            segments_keys[segment_text] = '';
           });
           segments_keys = Object.keys(segments_keys).sort();
           

@@ -250,8 +250,11 @@
             new:'lng'
           }
         ];
-        // Convert each cong's data to use RCL fieldnames
+        
         return congs.map(function(cong){
+          
+          // Convert each cong's data to use RCL fieldnames
+
           // For each key name
           replacements.forEach(function(repl){
             // Replace each key name
@@ -265,6 +268,18 @@
           try { cong.phone = cong.d.match(/Church Phone:.*?&nbsp;(.*?)</)[1]; } catch(e){}
           try { cong.pastor_name = cong.d.match(/Pastor:.*?&nbsp;Rev. (.*?)</)[1]; } catch(e){}
           try { cong.presbytery_name = cong.d.match(/Presbytery:.*?&nbsp;(.*?)</)[1]; } catch(e){}
+
+          // Normalize state names
+          [
+            {long: 'ontario', short: 'on'},
+            {long: 'alberta', short: 'ab'}
+          ].forEach(function(state){
+            ['meeting_state', 'mailing_state'].forEach(function(field){
+              if (cong[field].toLowerCase() === state.long){
+                cong[field] = state.short.toUpperCase();
+              }
+            });
+          });
 
           // Convert geocode to RCL format
           cong.geocode = { lat:cong.lat, lng:cong.lng };
