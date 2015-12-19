@@ -48,58 +48,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 graph: 'vertical_bar_graph',
                 list: thiz.get_words_and_frequencies
               },
-//               {
-//                 /* TODO: Pick a graph to use.
-//                  * Graph types to consider:
-//                  * - Bar graph, if only one state were displayed.  That would require
-//                  *    another drop-down box to select the state.  Then a transition could show the differences
-//                  *    between different states.
-//                  * - Hierarchy
-//                  * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
-//                  * - Treemap
-//                  *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
-//                  *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
-//                  *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
-//                  *   - 
-//                  */
-//                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'meeting_state',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph',
-//                 get_segments: thiz.get_segments,
-//                 list: thiz.get_words_and_frequencies
+              {
+                /* TODO: Pick a graph to use.
+                 * Graph types to consider:
+                 * - Bar graph, if only one state were displayed.  That would require
+                 *    another drop-down box to select the state.  Then a transition could show the differences
+                 *    between different states.
+                 * - Hierarchy
+                 * - Pack hierarchy http://mbostock.github.io/d3/talk/20111116/pack-hierarchy.html
+                 * - Treemap
+                 *   - Dendogram http://bl.ocks.org/mbostock/4063570, radial layout http://bl.ocks.org/mbostock/4339607
+                 *   - Force-directed graph http://bl.ocks.org/mbostock/4062045 (not sure this would be useful.)
+                 *   - Collapsible indented tree http://bl.ocks.org/mbostock/1093025
+                 *   - 
+                 */
+                question: 'What are the most popular words found in congregations\' names, segmented by state?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'meeting_state',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
 
-//               },
-//               {
-//                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'meeting_city',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph'
-//               },
-//               {
-//                 question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
-//                 user_types: ['church_planter'],
-//                 formula: 'Word vs. frequency of occurrence',
-//                 x: 'frequency',
-//                 y: 'word',
-//                 segment_by: {
-//                   model_name: 'denomination_abbreviation',
-//                   display_name: 'state'
-//                 },
-//                 graph: 'vertical_bar_graph'
-//               },
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by city?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'meeting_city',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
+              },
+              {
+                question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
+                user_types: ['church_planter'],
+                formula: 'Word vs. frequency of occurrence',
+                x: 'frequency',
+                y: 'word',
+                segment_by: {
+                  model_name: 'denomination_abbreviation',
+                  display_name: 'state'
+                },
+                graph: 'vertical_bar_graph',
+                get_segments: thiz.get_segments,
+                list: thiz.get_words_and_frequencies
+              },
               {
                 question: 'Which congregations\' websites need a shorter url?',
                 user_types: ['web_developer'],
@@ -225,6 +229,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               graph: 'bar_graph',
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for Flash
+                if (cong){}
               }
             },
             {
@@ -237,6 +242,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the official language of their country.
+                if (cong){}
               }
             },
             {
@@ -249,6 +255,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the dominant language of their neighborhood.
+                if (cong){}
               }
             },
             {
@@ -261,6 +268,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               scraper: function(cong){
                 // TODO: Search the HTML of their home page for their language, and search geo data API
                 //  for the dominant language of their city.
+                if (cong){}
               }
             },
             {
@@ -276,6 +284,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 //  and record cong.website_language in each cong.
                 // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
                 //  percent of congregations which use each language.
+                if (cong){}
               }
             },
             {
@@ -290,6 +299,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 //  and record cong.website_language in each cong.
                 // TODO: Then write a function somewhere (maybe attach it to the cgroup) to calculate the 
                 //  percent of congregations which use each language.
+                if (cong){}
               }
             },
             {
@@ -300,6 +310,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               y: 'language_percent_in_country_change',
               scraper: function(cong){
                 // TODO: Start by saving a log of changes-over-time to the languages in each cgroup
+                if (cong){}
               }
             },
             {
@@ -358,7 +369,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Generate the list of words and frequencies
        * Note this returns a promise! So call list().done(function(result){});
        */
-      get_words_and_frequencies: function(hoodie, segments){
+      get_words_and_frequencies: function(hoodie, segment){
 
         return hoodie.punk.findAll('congregation')
         .then(function(congs){
@@ -366,18 +377,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var word_list = [];
           var frequencies_deduplicator = [];
 
-          // TODO: Start here.  If segments argument exists, then filter the list by the specified
+          // If segment argument exists, then filter the list by the specified
           //  segment.
-
-          congs = congs.filter(function(cong){
-            if (segments !== null &&
-                cong[segments.model_name] === ''
-            ){
-              return cong
-            }else{
-              return cong;
-            }
-          });
+          if (typeof segment !== 'undefined'){
+            congs = congs.filter(function(cong){
+              var comma_index = segment.value.indexOf(',');
+              if (comma_index !== -1){
+                // This segment is a city, and more than one city can have the same name.
+                //  So we have to search by both city and state
+                var city_name = segment.value.substr(0, comma_index);
+                var state_name = segment.value.substr(comma_index+1).trim();
+                if (cong[segment.name].toLowerCase() === city_name.toLowerCase() &&
+                    cong.meeting_state.toUpperCase() === state_name.toUpperCase())
+                {
+                  return cong;
+                }
+              }else if (cong[segment.name].toLowerCase() === segment.value.toLowerCase()) {
+                // This segment is not a city
+                return cong;
+              }
+            });
+          }
 
           // Get the word_list including duplicates, by splitting on whitespace
           congs.forEach(function(cong){
@@ -416,7 +436,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
-      /* Public method to get segments used by this question.
+      /* Public method to get segments used by this question.  The intent is to then display
+       *  the available segments in a drop-down box.
        * Note: this returns a promise!
        */
       get_segments: function(hoodie, segment_by){
@@ -427,13 +448,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // Get list of distinct segments.
           var segments_keys = [];
           congs.forEach(function(cong){
-            // TODO: Handle cases where we have both AB and Alberta, ON and Ontario
-            segments_keys[cong[segment_by.model_name].toUpperCase()] = '';
+            var segment_text = cong[segment_by.model_name];
+            // Make state names be all uppercase, but nothing else
+            if (segment_by.model_name.indexOf('state') !== -1){
+              segment_text = segment_text.toUpperCase();
+            }
+            // For cities, add the state name to display to the user
+            if (segment_by.model_name.indexOf('city') !== -1){
+              segment_text += ', ' + cong.meeting_state;
+            }
+            segments_keys[segment_text] = '';
           });
           segments_keys = Object.keys(segments_keys).sort();
           
           // Format for use in the dropdown
           return segments_keys.map(function(segment){
+
+            // id is for the drop-down box option element's id, and is used to search for congs matching that segment.
+            // name is for displaying to the user in the drop-down box.
             return {
               id: segment,
               name: segment

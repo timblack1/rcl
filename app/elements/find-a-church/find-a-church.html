@@ -1,3 +1,13 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
@@ -164,20 +174,20 @@
       // Needed because selected_cgroups is an array
       '_selected_cgroups_changed(selected_cgroups.splices)'
     ],
-    ready:function(){
+    ready: function() {
       this.voice_recognition_state = 'OFF';
       this.model = this.$.model_object.properties.model.value;
     },
-    attached:function(){
-      this.async(function(){
+    attached: function() {
+      this.async(function() {
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
         var thiz = this;
 
-        this.$.google_map.addEventListener('google-map-ready', function map_ready(event){
+        this.$.google_map.addEventListener('google-map-ready', function map_ready(event) {
           thiz.$.google_map.removeEventListener(event.type, map_ready);
           
           // Load congs onto map
-          var map_idle = thiz.map.addListener('idle', function(){
+          thiz.map.addListener('idle', function() {
             if (thiz.searched_by_keywords === true){
               // Then don't load all congs which would otherwise be visible on the map this time.
               // Instead, set the flag so that next time the map idles, all such congs will be displayed.
@@ -196,8 +206,8 @@
               var lng_east =  b.getNorthEast().lng();
               var lng_west =  b.getSouthWest().lng();
               thiz.hoodie.punk.findAll('congregation')
-              .done(function(congs){
-                congs = congs.filter(function(ob){
+              .done(function(congs) {
+                congs = congs.filter(function(ob) {
                   if (ob.geocode && 
                       ob.geocode.lat > lat_south &&
                       ob.geocode.lat < lat_north &&
@@ -209,7 +219,7 @@
                 // Clear the array first
                 thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
                 // Then repopulate it.
-                congs.forEach(function(cong){
+                congs.forEach(function(cong) {
                   thiz.push('congs_displayed_on_map', cong);
                 });
               }).fail(thiz.fail_handler);
@@ -217,8 +227,9 @@
           });
 
           // Listen for results returned after users enter search terms
-          thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results(event){
-            thiz.debounce('search_results', function(){
+          thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results(event) {
+            thiz.$.google_map_search.removeEventListener(event.type, search_results);
+            thiz.debounce('search_results', function() {
               var results = thiz.$.google_map_search.results;
               // Determine if this is a keyword or a location search.
               if (results.length === 0){
@@ -246,36 +257,38 @@
 
         // Get selected_cgroups from a user preference
         this.hoodie.punk.find('selected-cgroups', 'selected-cgroups')
-        .then(function(selected_cgroups){
+        .then(function(selected_cgroups) {
           thiz.selected_cgroups = selected_cgroups.cgroups;
         });
-//         this.hoodie.punk.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
-//         this.hoodie.punk.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
-//         this.hoodie.punk.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
-//         this.hoodie.punk.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
-//         this.hoodie.punk.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
-//         this.hoodie.punk.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
+        /*
+        this.hoodie.punk.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
+        this.hoodie.punk.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
+        this.hoodie.punk.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
+        this.hoodie.punk.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
+        this.hoodie.punk.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
+        this.hoodie.punk.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
+        */
         
         // TODO: Connect cgroup-filter attributes to database
         this.hoodie.punk.findAll('cgroup')
-        .then(function(cgroups){
+        .then(function(cgroups) {
           thiz.available_cgroups = cgroups;
         });
         
         // Create handler to update available_cgroups
-        this.hoodie.punk('cgroup').on('add update remove change clear', function(){
+        this.hoodie.punk('cgroup').on('add update remove change clear', function() {
           thiz.hoodie.punk.findAll('cgroup')
-          .then(function(cgroups){
+          .then(function(cgroups) {
             thiz.available_cgroups = cgroups;
           });
         });
 
       });
     },
-    fail_handler: function(error){
+    fail_handler: function(error) {
       console.log(error);
     },
-    toggle_voice_recognition:function(){
+    toggle_voice_recognition: function() {
       if (this.voice_recognition_state === 'ON'){
         this.$.voice_recognition.stop();
         this.voice_recognition_state = 'OFF';
@@ -287,37 +300,37 @@
         this.$.av_mic_icon.setAttribute('icon','av:mic');
       }
     },
-    voice_recognition_result:function(event){
+    voice_recognition_result: function(event) {
       this.search_string = event.detail.result;
     },
-    _selected_cgroups_changed:function(changeRecord){
+    _selected_cgroups_changed: function() {
       var thiz = this;
       // We have to wait until all properties have been initialized
-      Polymer.Base.async(function(){
-        thiz.hoodie.punk.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups:thiz.selected_cgroups});
+      Polymer.Base.async(function() {
+        thiz.hoodie.punk.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
       }, 300);
     },
     // Fix format of email addresses
-    compute_email_href:function(address){
+    compute_email_href: function(address) {
       return (address && address.indexOf('mailto:') === -1) ? 'mailto:' + address : address;
     },
     // Fix format of website URLs
-    compute_website_href:function(url){
+    compute_website_href: function(url) {
       return (url && url.indexOf('http') === -1) ? 'http://' + url : url;
     },
     // Fix format of phone numbers
-    compute_phone_href:function(number){
+    compute_phone_href: function(number) {
       // TODO: This probably needs some improvement per
       //  https://developers.google.com/web/fundamentals/device-access/click-to-call/click-to-call
       // TODO: Convert number to hyphenated format, and prefix the country code
       return (number && number.indexOf('tel') === -1) ? 'tel:+1' + number : number;
     },
     // Format name for map marker
-    compute_cong_name_for_marker:function(cong){
+    compute_cong_name_for_marker: function(cong) {
       return cong.name + ' (' + cong.denomination_abbreviation + ')';
     },
     // Search for user-entered search terms
-    _search_for_query:function(newValue, oldValue){
+    _search_for_query: function() {
       if (this.$.toggle_keywords_only_button.checked === true){
         this.search_by_keywords();
       }else{
@@ -327,17 +340,17 @@
       }
     },
     // Search for congregations by keywords
-    search_by_keywords:function(){
+    search_by_keywords: function() {
       var thiz = this;
       // Notify the map idle event handler not to display all congs this time
       this.searched_by_keywords = true;
-      this.debounce('search_by_keywords', function(){
+      this.debounce('search_by_keywords', function() {
         var q = thiz.search_string;
         var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
         thiz.hoodie.punk.findAll('congregation')
-        .done(function(congs){
-          congs = congs.filter(function(ob){
-            var new_array = fields.filter(function(field_name){
+        .done(function(congs) {
+          congs = congs.filter(function(ob) {
+            var new_array = fields.filter(function(field_name) {
               if (typeof ob[field_name] !== 'undefined' &&
                   String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
                 return true;
@@ -357,7 +370,7 @@
           thiz.$.google_map.latitude = congs[0].geocode.lat;
           thiz.$.google_map.longitude = congs[0].geocode.lng;
           // Then repopulate the array.
-          congs.forEach(function(cong){
+          congs.forEach(function(cong) {
             thiz.push('congs_displayed_on_map', cong);
           });
           // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
@@ -367,8 +380,8 @@
             // Resize (contract) map to fit markers
             var markers = thiz.$.google_map.markers;
             var bounds = new thiz.$.google_map.map.LatLngBounds();
-            for(i=0;i<markers.length;i++) {
-             bounds.extend(markers[i].getPosition());
+            for(var i = 0; i < markers.length; i++) {
+              bounds.extend(markers[i].getPosition());
             }
             thiz.$.google_map.fitBounds(bounds);
           }

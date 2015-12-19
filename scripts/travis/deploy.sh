@@ -7,15 +7,10 @@ npm install
 npm install -g bower
 bower install
 
-# Run gulp task to prep for deployment, and commit dist directory to git
+# Run gulp task to prep for deployment to create dist directory
 
 echo "Running gulp default..."
 gulp default
-echo "Removing dist from .gitignore..."
-sed -i.bak '/dist/d' ./.gitignore
-
-git add dist
-git commit -am "add dist directory"
 
 # Copy files to production server
 
@@ -36,15 +31,14 @@ ssh -vvv timblack1@timblack1.webfactional.com 'ls'
 exit
 
 git remote add deploy timblack1@timblack1.webfactional.com:webapps/rcl
-git checkout production
-git merge master
-echo "Pushing to 'production' branch on production server..."
-git push deploy production
+echo "Pushing to master on production server..."
+git push deploy master
+rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
 
 # Update npm dependencies on production server
 
 echo "Updating npm & bower dependencies on production server..."
-ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install && bower install'
+ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production && bower install'
 
 # Restart app on production server
 

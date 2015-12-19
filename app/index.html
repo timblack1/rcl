@@ -1,4 +1,14 @@
 <!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
 <html lang="">
 
 <head>
@@ -7,10 +17,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="generator" content="Polymer Starter Kit" />
   <title>Reformed Churches Locator</title>
-  <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+  <!-- Place favicon.ico in the `app/` directory -->
 
   <!-- Chrome for Android theme color -->
-  <meta name="theme-color" content="#303F9F">
+  <meta name="theme-color" content="#2E3AA1">
 
   <!-- Web Application Manifest -->
   <link rel="manifest" href="manifest.json">
@@ -43,6 +53,10 @@
   <!-- will be replaced with elements/elements.vulcanized.html -->
   <link rel="import" href="elements/elements.html">
   <!-- endreplace-->
+
+  <!-- For shared styles, shared-styles.html import in elements.html -->
+  <style is="custom-style" include="shared-styles"></style>
+
 </head>
 
 <body unresolved class="fullbleed layout vertical">
@@ -50,7 +64,8 @@
   <template is="dom-bind" id="app">
 
     <paper-drawer-panel id="paperDrawerPanel">
-      <div drawer>
+      <!-- Drawer Scroll Header Panel -->
+      <paper-scroll-header-panel drawer fixed>
 
         <!-- Drawer Toolbar -->
         <paper-toolbar id="drawerToolbar">
@@ -58,41 +73,55 @@
         </paper-toolbar>
 
         <!-- Drawer Content -->
-          <paper-menu class="list" attr-for-selected="data-route" selected="{{route}}" on-iron-select="onMenuSelect">
-              <a data-route="find-a-church" href="/">
+          <paper-menu class="list" attr-for-selected="data-route" selected="[[route]]">
+              <a data-route="find-a-church" href="{{baseUrl}}">
                 <iron-icon icon="icons:search"></iron-icon>
                 <span>Find a church</span>
               </a>
 
-              <a data-route="import-a-directory" href="/import-a-directory">
+              <a data-route="import-a-directory" href="{{baseUrl}}import-a-directory">
                 <iron-icon icon="icons:file-upload"></iron-icon>
                 <span>Import a directory</span>
               </a>
 
-              <a data-route="analyze-the-data" href="/analyze-the-data">
+              <a data-route="analyze-the-data" href="{{baseUrl}}analyze-the-data">
                 <iron-icon icon="editor:insert-chart"></iron-icon>
                 <span>Analyze the data</span>
               </a>
 
+	      <a data-route="help" href="{{baseUrl}}help">
+	        <iron-icon icon="info"></iron-icon>
+                <span>Help</span>
+	      </a>
+
           </paper-menu>
-      </div>
-      <paper-header-panel main mode="waterfall-tall">
+      </paper-scroll-header-panel>
+
+      <!-- Main Area -->
+      <paper-scroll-header-panel main id="headerPanelMain" condenses keep-condensed-header>
 
         <!-- Main Toolbar -->
-        <paper-toolbar id="mainToolbar">
+        <paper-toolbar id="mainToolbar" class="tall">
           <paper-icon-button id="paperToggle" icon="menu" paper-drawer-toggle></paper-icon-button>
           <span class="flex"></span>
 
           <hoodie-accountbar id="hoodie_accountbar" hoodie="{{hoodie}}"></hoodie-accountbar>
+          
           <!-- Toolbar icons -->
+          <!--           
           <paper-icon-button icon="refresh"></paper-icon-button>
           <paper-icon-button icon="search"></paper-icon-button>
+          -->
 
           <!-- Application name -->
-          <div class="middle paper-font-display2 app-name">Reformed Churches Locator</div>
+          <div class="middle middle-container center horizontal layout">
+            <div class="app-name">Reformed Churches Locator</div>
+          </div>
 
           <!-- Application sub title -->
-          <div class="bottom title"></div>
+          <div class="bottom bottom-container center horizontal layout">
+            <div class="bottom-title paper-font-subhead">The ultimate directory of Reformed churches worldwide</div>
+          </div>
 
         </paper-toolbar>
 
@@ -112,10 +141,18 @@
               <analyze-the-data hoodie="{{hoodie}}"></analyze-the-data>
             </section>
 
+            <section data-route="help">
+              <help-element></help-element>
+            </section>
+
           </iron-pages>
         </div>
-      </paper-header-panel>
+      </paper-scroll-header-panel>
     </paper-drawer-panel>
+
+    <paper-toast id="toast">
+      <span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">Ok</span>
+    </paper-toast>
 
     <paper-toast id="caching-complete"
                  duration="6000"
@@ -130,7 +167,7 @@
       <platinum-sw-fetch handler="HoodieAPIFetchHandler"
                      path="/_api(.*)"></platinum-sw-fetch>
       <platinum-sw-cache default-cache-strategy="networkFirst"
-                         precache-file="precache.json">
+                         cache-config-file="cache-config.json">
       </platinum-sw-cache>
     </platinum-sw-register>
 
