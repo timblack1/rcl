@@ -192,6 +192,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           notify: true,
           observer: '_selected_question_changed'
         },
+        selected_segment: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_segment_changed'
+        },
         selected_data_set: {
           type: Object,
           value: {},
@@ -371,6 +377,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // Show the dropdown list
             this.hide_segments = false;
           }else{
+            // Hide the dropdown list
             this.hide_segments = true;
             // Display graph without segments
             q.item.list(this.hoodie).then(function(list){
@@ -385,12 +392,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Get one segment's data, and display it in the graph. Note: this function is meant to be
        *  called by a property mutation observer.
        */
-      _get_list: function(){
-        // Display graph with segments
-        this.selected_question.item.list(this.hoodie, this.segments).then(function(list){
-          // Write this question's list of data to the graph
-          thiz.data = list;
-        });
+      _selected_segment_changed: function(){
+        var thiz = this;
+        if (this.selected_question.item &&
+            typeof this.selected_question.item.segment_by !== 'undefined'){
+          // Get the:
+          //  - segment name specified by this question, and the 
+          //  - segment value selected by the user
+          var segment = {
+            name: this.selected_question.item.segment_by.model_name,
+            value: this.selected_segment_id
+          }
+          // Display graph with segments
+          this.selected_question.item.list(this.hoodie, segment).then(function(list){
+            // Write this question's list of data to the graph
+            thiz.data = list;
+          });
+        }
       }
 
     });

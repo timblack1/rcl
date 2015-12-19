@@ -37,7 +37,7 @@ rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
 
 # Update npm dependencies on production server
 
-echo "Updating npm dependencies on production server..."
+echo "Updating npm & bower dependencies on production server..."
 ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production && bower install'
 
 # Restart app on production server
