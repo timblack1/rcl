@@ -377,13 +377,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var word_list = [];
           var frequencies_deduplicator = [];
 
-          // If segments argument exists, then filter the list by the specified
+          // If segment argument exists, then filter the list by the specified
           //  segment.
           if (typeof segment !== 'undefined'){
             congs = congs.filter(function(cong){
-              if (typeof segments !== 'undefined' &&
-                  cong[segment.name].toLowerCase() === segment.value.toLowerCase()
-              ){
+              var comma_index = segment.value.indexOf(',');
+              if (comma_index !== -1){
+                // This segment is a city, and more than one city can have the same name.
+                //  So we have to search by both city and state
+                var city_name = segment.value.substr(0, comma_index);
+                var state_name = segment.value.substr(comma_index+1).trim();
+                if (cong[segment.name].toLowerCase() === city_name.toLowerCase() &&
+                    cong.meeting_state.toUpperCase() === state_name.toUpperCase())
+                {
+                  return cong;
+                }
+              }else if (cong[segment.name].toLowerCase() === segment.value.toLowerCase()) {
+                // This segment is not a city
                 return cong;
               }
             });
@@ -443,12 +453,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (segment_by.model_name.indexOf('state') !== -1){
               segment_text = segment_text.toUpperCase();
             }
+            // For cities, add the state name to display to the user
+            if (segment_by.model_name.indexOf('city') !== -1){
+              segment_text += ', ' + cong.meeting_state;
+            }
             segments_keys[segment_text] = '';
           });
           segments_keys = Object.keys(segments_keys).sort();
           
           // Format for use in the dropdown
           return segments_keys.map(function(segment){
+
+            // id is for the drop-down box option element's id, and is used to search for congs matching that segment.
+            // name is for displaying to the user in the drop-down box.
             return {
               id: segment,
               name: segment
