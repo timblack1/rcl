@@ -26,4 +26,4 @@ ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && npm install --prod
 echo "Restarting app on production server..."
 ssh timblack1@timblack1.webfactional.com 'cd ~/webapps/rcl && npm run start-production'
 
-git checkout -f develop
+# git checkout -f develop
