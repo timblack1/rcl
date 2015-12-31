@@ -142,6 +142,9 @@ gulp.task('images', function() {
 gulp.task('copy', function() {
   var app = gulp.src([
     'app/*',
+    // This is needed to copy the "docs" directory's contents, for some reason.  It also results
+    //  in copying the "tests" directory, but that doesn't seem harmful.
+    'app/**/*',
     '!app/test',
     '!app/cache-config.json'
   ], {
