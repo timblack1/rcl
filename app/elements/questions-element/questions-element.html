@@ -401,6 +401,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Get the word_list including duplicates, by splitting on whitespace
           congs.forEach(function(cong){
+            // TODO: This code is a little slow; it takes 72ms.
             word_list = word_list.concat(cong.name.split(/\s/));
           });
 
