@@ -159,35 +159,35 @@
       '_handle_acd_changed(available_cgroups_displayed.splices)',
       '_handle_selected_cgroups_changed(selected_cgroups.splices)'
     ],
-    ready: function(){
+    ready: function() {
       this._show_hide_header();
     },
-    _remove_cgroup: function(event){
+    _remove_cgroup: function(event) {
       // Remove this item from selected_cgroups
       var index = this.selected_cgroups.indexOf(event.model.get('item'));
       this.splice('selected_cgroups', index, 1);
     },
-    _add_to_selected: function(event){
+    _add_to_selected: function(event) {
       if (this.select_one_mode === true && this.selected_cgroups.length === 1){
         // Don't add another cgroup
       }else{
         var thiz = this;
         // Don't add the cgroup if it is already in the list.
         var item = event.model.get('item');
-        if (thiz.selected_cgroups.filter(function(ob){ return ob.id === item.id; }).length === 0){
+        if (thiz.selected_cgroups.filter(function(ob) { return ob.id === item.id; }).length === 0){
           // Add the selected cgroup to the list of selected cgroups
           thiz.push('selected_cgroups', event.model.get('item'));
         }
       }
     },
-    _show_hide_header: function(){
+    _show_hide_header: function() {
       if (this.selected_cgroups.length === 0){
         this.hide_header = true;
       }else{
         this.hide_header = false;
       }
     },
-    _list_all_groups_tapped: function(){
+    _list_all_groups_tapped: function() {
       if (this.$.list_all_groups.checked === true){
         // List all groups
         this.$.filter_input.value = '';
@@ -197,17 +197,17 @@
         this._clear_available_cgroups_displayed();
       }
     },
-    _show_full_names_tapped: function(){
+    _show_full_names_tapped: function() {
       this.hide_abbreviation = !this.hide_abbreviation;
       this.hide_name = !this.hide_name;
     },
     /* Displays the list of available cgroups which match the search term, and in select_one_mode,
      * permits a user to add a new cgroup to the available cgroups in the database.
      */
-    _filter_input_changed: function(){
+    _filter_input_changed: function() {
       var thiz = this;
-      this.debounce('filter_wait', function(){
-        thiz.available_cgroups_displayed = thiz.available_cgroups.filter(function(ob){
+      this.debounce('filter_wait', function() {
+        thiz.available_cgroups_displayed = thiz.available_cgroups.filter(function(ob) {
           if (
             ob.name && 
             ob.name.toLowerCase().indexOf(thiz.filter_value.toLowerCase()) !== -1
@@ -254,7 +254,7 @@
       }, 100);
     },
     // Handle changes to available_cgroups_displayed
-    _handle_acd_changed: function(){
+    _handle_acd_changed: function() {
       this._hide_or_show_full_names();
       // Don't show all cgroups available if the user hasn't requested that
       if (this.filter_value === '' && !this.$.list_all_groups.checked){
@@ -263,7 +263,7 @@
       this.fire('available-cgroups-displayed-changed');
     },
     // Handle changes to selected_cgroups
-    _handle_selected_cgroups_changed: function(){
+    _handle_selected_cgroups_changed: function() {
       this._hide_or_show_full_names();
       // In select_one_mode, show add button when there are no selected cgroups, 
       //  and the filter text doesn't match any existing cgroups
@@ -275,7 +275,7 @@
       }
     },
     // Hide show_full_names checkbox if it's not needed
-    _hide_or_show_full_names: function(){
+    _hide_or_show_full_names: function() {
       if (this.selected_cgroups.length === 0 && 
           this.available_cgroups_displayed &&
           this.available_cgroups_displayed.length === 0){
@@ -286,23 +286,23 @@
       }
     },
     // Hide all groups
-    _clear_available_cgroups_displayed: function(){
+    _clear_available_cgroups_displayed: function() {
       // Clear the array in a way that Polymer will notice
       this.splice('available_cgroups_displayed', 0, this.available_cgroups_displayed.length);
     },
     // Unselect all groups
-    _clear_selected_cgroups: function(){
+    _clear_selected_cgroups: function() {
       // Clear the array in a way that Polymer will notice
       this.splice('selected_cgroups', 0, this.selected_cgroups.length);
     },
-    _handle_add_cgroup_tapped: function(){
+    _handle_add_cgroup_tapped: function() {
       this.$.cgroup_edit_dialog.open();
       // Prepopulate the form to help the user
       this.$.cgroup_edit_form.$.name.value = this.filter_value;
       // TODO: This isn't working yet.  Do we need to call it after a flush() call?
       //  Read the docs, google for advice.
       var thiz = this;
-      Polymer.dom.flush(function(){
+      Polymer.dom.flush(function() {
         thiz.$.cgroup_edit_form.$.name.$.input.focus();
       });
     }

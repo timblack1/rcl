@@ -246,26 +246,26 @@ gulp.task('clean', function() {
   return del(['.tmp', dist()]);
 });
 
-gulp.task('hoodie_start', function(done){
+gulp.task('hoodie_start', function(done) {
   // Start Hoodie
   spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '3002,3003,3004']);
   done();
 });
 
-gulp.task('hoodie_start_production', function(done){
+gulp.task('hoodie_start_production', function(done) {
   // Start Hoodie
   spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '20188,19911,27069']);
   done();
 });
 
-gulp.task('hoodie', ['serve', 'hoodie_start'], function(){
+gulp.task('hoodie', ['serve', 'hoodie_start'], function() {
   /*
   Copy dynamically-generated
     /_api/_files/hoodie.js
   to
     bower_components/hoodie-service/hoodie.js
   */
-  setTimeout(function(){
+  setTimeout(function() {
     var file = fs.createWriteStream('bower_components/hoodie-service/hoodie.js');
     // Note:  Use `var request = http.get(...)` if you need it
     http.get('http://localhost:3002/_api/_files/hoodie.js', function(response) {
@@ -276,12 +276,12 @@ gulp.task('hoodie', ['serve', 'hoodie_start'], function(){
 
 // Configure proxy for 'serve' and 'serve:dist' tasks
 var proxy = proxyMiddleware('/_api', {
-//   target: 'http://localhost:3002/_api'
+  // target: 'http://localhost:3002/_api'
   target: 'http://localhost:3002'
-//   target: {
-//     port: 3002,
-//     host: 'localhost'
-//   }
+  // target: {
+  //   port: 3002,
+  //   host: 'localhost'
+  // }
 });
 
 // Watch files for changes & reload
@@ -351,7 +351,7 @@ gulp.task('serve:dist', ['hoodie_start', 'default'], function() {
 });
 
 // Build and serve the output from the dist build
-gulp.task('serve:production', ['hoodie_start_production', 'default'], function () {
+gulp.task('serve:production', ['hoodie_start_production', 'default'], function() {
 
   // Configure proxy for 'serve:production' task
   var proxy_production = proxyMiddleware('/_api', {
@@ -371,7 +371,7 @@ gulp.task('serve:production', ['hoodie_start_production', 'default'], function (
     snippetOptions: {
       rule: {
         match: '<span id="browser-sync-binding"></span>',
-        fn: function (snippet) {
+        fn: function(snippet) {
           return snippet;
         }
       }
@@ -390,7 +390,7 @@ gulp.task('serve:production', ['hoodie_start_production', 'default'], function (
 });
 
 // Build production files, the default task
-gulp.task('default', ['clean'], function (cb) {
+gulp.task('default', ['clean'], function(cb) {
   // Uncomment 'cache-config' if you are going to use service workers.
   runSequence(
     ['copy', 'styles'],

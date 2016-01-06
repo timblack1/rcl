@@ -296,13 +296,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       },
 
-      ready: function(){
+      ready: function() {
         this.questions = this.$.questions.questions;
       },
 
       /* Calculate the available keys, depending on which model object is being plotted.
        */
-      get_available_keys: function(){
+      get_available_keys: function() {
         if (this.selected_data_set !== null && typeof this.selected_data_set.id !== 'undefined'){
 
           var types = [];
@@ -320,12 +320,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Get the list of all data type keys, deduplicated, with underscores replaced by spaces,
        * and first letter capitalized.
        */
-      _get_keys_deduplicated_and_formatted: function(data_set, types){
+      _get_keys_deduplicated_and_formatted: function(data_set, types) {
         // Get list of all data types in this data_set
         // TODO: How should we store this data so it's accessible here?  q.data_set works
         //  when q.x is not a function, but how can we handle when q.x is a function?
         //  We aren't using a function for q.x until we figure this out.
-        this.questions.map(function(q){
+        this.questions.map(function(q) {
           if (q.data_set === data_set){
             types[q.x] = '';
             types[q.y] = '';
@@ -333,7 +333,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         // Get the list, deduplicated, with underscores replaced by spaces, and first letter capitalized
-        types = Object.keys(types).map(function(type){
+        types = Object.keys(types).map(function(type) {
           var nicely_formatted_name = type.replace(new RegExp('_', 'g'), ' ');
           nicely_formatted_name = nicely_formatted_name.charAt(0).toUpperCase() + nicely_formatted_name.slice(1);
           return {
@@ -347,12 +347,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       // Handle changes to the selected_data_set
-      _selected_data_set_changed: function(){
+      _selected_data_set_changed: function() {
         this.get_available_keys();
       },
 
       // Handle changes to the selected_question
-      _selected_question_changed: function(){
+      _selected_question_changed: function() {
 
         var thiz = this;
         var q = this.selected_question;
@@ -371,7 +371,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (typeof q.item.segment_by !== 'undefined'){
             // Get segments to display in a dropdown
             q.item.get_segments(this.hoodie, q.item.segment_by)
-            .done(function(segments){
+            .done(function(segments) {
               thiz.segments = segments;
             });
             // Show the dropdown list
@@ -380,7 +380,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // Hide the dropdown list
             this.hide_segments = true;
             // Display graph without segments
-            q.item.list(this.hoodie).then(function(list){
+            q.item.list(this.hoodie).then(function(list) {
               // Write this question's list of data to the graph
               thiz.data = list;
             });
@@ -392,7 +392,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /* Get one segment's data, and display it in the graph. Note: this function is meant to be
        *  called by a property mutation observer.
        */
-      _selected_segment_changed: function(){
+      _selected_segment_changed: function() {
         var thiz = this;
         if (this.selected_question.item &&
             typeof this.selected_question.item.segment_by !== 'undefined'){
@@ -402,9 +402,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var segment = {
             name: this.selected_question.item.segment_by.model_name,
             value: this.selected_segment_id
-          }
+          };
           // Display graph with segments
-          this.selected_question.item.list(this.hoodie, segment).then(function(list){
+          this.selected_question.item.list(this.hoodie, segment).then(function(list) {
             // Write this question's list of data to the graph
             thiz.data = list;
           });

@@ -78,11 +78,11 @@
         observer: '_directory_url_observer'
       }
     },
-    ready:function(){
+    ready: function() {
     },
-    attached:function(){
+    attached: function() {
       
-      this.async(function(){
+      this.async(function() {
 
         // Get reference to Hoodie
         this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
@@ -91,24 +91,25 @@
 
     },
 
-    _directory_url_observer: function(oldValue, newValue){
+    _directory_url_observer: function(oldValue, newValue) {
       var thiz = this;
       // TODO: Start here. After refactoring is done.
       if (typeof newValue !== 'undefined' && newValue !== ''){
-        this.debounce('url_entered', function(){
+        this.debounce('url_entered', function() {
           // Get HTML from URL and use it
-          thiz.hoodie.task.start('http-get', { url: newValue })
-          .done(function(task){
+          thiz.hoodie.task.start('http-get', {url: newValue})
+          .done(function(task) {
             console.log(task.data);
           })
-          .fail(function(error){
+          .fail(function(error) {
             // Notify the user here that the URL was not correct, and returned a '404 page not found' error.
-            console.log(error, 'Is that URL correct?  It returns a "404 page not found" error.  Please enter a valid URL.');
+            console.log(error, 'Is that URL correct?  It returns a "404 page not found" error.  ' +
+              'Please enter a valid URL.');
           });
         }, 1000);
       }
     },
-    _remove_all_imported_data: function(){
+    _remove_all_imported_data: function() {
       this.hoodie.punk.removeAll('congregation');
       this.hoodie.punk.removeAll('directory');
       this.hoodie.punk.removeAll('cgroup-directory');
