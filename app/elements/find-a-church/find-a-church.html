@@ -269,11 +269,11 @@
           .fail(function(error) {console.log(error) }); 
                  
           // Get selected_cgroups from a user preference
-          this.hoodiestore.find('selected-cgroups', 'selected-cgroups')
+          thiz.hoodie.store.find('selected-cgroups', 'selected-cgroups')
           .then(function(selected_cgroups){
             thiz.selected_cgroups = selected_cgroups.cgroups;
           });
-//         this.hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
+//         this.hoodie.storemil.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
 //         this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
@@ -282,13 +282,13 @@
         
           // TODO: Connect cgroup-filter attributes to database
 
-          this.hoodie.store.findAll('cgroup')
+          thiz.hoodie.store.findAll('cgroup')
           .then(function(cgroups){
             thiz.available_cgroups = cgroups;
           });
 
           // Create handler to update available_cgroups
-          this.hoodie.store('cgroup').on('add update remove change clear', function(){
+          thiz.hoodie.store('cgroup').on('add update remove change clear', function(){
             thiz.hoodie.store.findAll('cgroup')
             .then(function(cgroups){
               thiz.available_cgroups = cgroups;
@@ -406,14 +406,18 @@
 
     /* When the radius value changes, it updates the user preferences. */
     _radius_changed_handler: function(){
+      debugger
       if(typeof this.hoodie!=="undefined"){
+        debugger 
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.search_radius});
       }
      },
      
     /*    When the distance value changes, it updates the user-preferences. */
     _distance_changed_handler: function(){
+      debugger
       if(typeof this.hoodie!=="undefined") { debugger
+      debugger
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
       }
     }
