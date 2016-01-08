@@ -5,6 +5,9 @@
 This software is currently **alpha quality**.  We are working to produce a minimal working version,
 but aren't there yet.  A number of features in the existing interface do not work yet.
 
+You may view a list of known bugs and report bugs or feature requests at
+https://github.com/timblack1/rcl/issues?q=is%3Aopen+is%3Aissue+label%3Abug.
+
 ## Usage
 
 Reformed Churches Locator contains the following pages:
