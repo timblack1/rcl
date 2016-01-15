@@ -2,11 +2,6 @@ sudo: false
 language: node_js
 addons:
   firefox: latest
-  apt:
-    sources:
-      - google-chrome
-    packages:
-      - google-chrome-stable
 services:
 - couchdb
 branches:
