@@ -272,10 +272,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var bars = this.svg.select('g.rect').selectAll('rect')
               .data(this.data);
 
-              // TODO: Something is wrong here.  When switching from the popular congregation name words
-              //  list to the list of URLs, the URL list is not all displayed, though the graph height
-              //  seems to be right.
-              //  https://github.com/timblack1/rcl/issues/127
               // Handle the bars' "enter" selection
               bars
               .enter()
