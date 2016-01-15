@@ -361,6 +361,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           // Set this question's data_set in the data_set dropdown
           this.selected_data_set_id = q.item.data_set;
+          // Populate the x_keys & y_keys dropdowns with available_keys
+          this.get_available_keys();
           // Set this question's values in the x_keys and y_keys dropdowns
           this.selected_x_key_id = q.item.x;
           this.selected_y_key_id = q.item.y;
