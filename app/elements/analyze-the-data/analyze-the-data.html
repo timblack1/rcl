@@ -37,13 +37,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         What kind of user are you?  Choose your user type here if you'd like to narrow the 
         list of preset questions below.
       </p>
-      <paper-dropdown-menu label="I am a..." id="user_type">
+      <paper-dropdown-menu id="user_type"
+        label="I am a..."
+        selected-item="{{selected_user_type}}">
         <paper-menu class="dropdown-content">
-          <paper-item>Church planter</paper-item>
-          <paper-item>Missionary</paper-item>
-          <paper-item>Denominational statistician</paper-item>
-          <paper-item>Web developer</paper-item>
-          <paper-item>Curious person (doesn't narrow down the list)</paper-item>
+          <template is="dom-repeat" items="{{user_types}}">
+            <paper-item item="{{item}}">{{item.name}}</paper-item>
+          </template>
         </paper-menu>
       </paper-dropdown-menu>
 
@@ -186,6 +186,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: {},
           notify: true
         },
+        user_types: {
+          type: Array,
+          value: [
+            {name: 'Church planter', id: 'church_planter'},
+            // {name: 'Missionary', id: 'missionary'},
+            // {name: 'Denominational statistician', id: 'denominational_statistician'},
+            {name: 'Web developer', id: 'web_developer'},
+            {name: 'Curious person (doesn\'t narrow down the list', id: 'curious_person'}
+          ],
+          notify: true
+        },
+        selected_user_type: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_user_type_changed'
+        },
         selected_question: {
           type: Object,
           value: {},
@@ -239,19 +256,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           value: {},
           notify: true
         },
-
         hide_segments: {
           type: Boolean,
           value: true,
           notify: true
         },
-
         segments: {
           type: Array,
           value: [],
           notify: true
         },
-
         questions: {
           type: Array,
           value: [],
@@ -410,6 +424,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // Write this question's list of data to the graph
             thiz.data = list;
           });
+        }
+      },
+
+      /* Filter the list of questions to only those of interest to the selected user type.
+       */
+      _selected_user_type_changed: function() {
+        var thiz = this;
+        if (this.selected_user_type &&
+            this.selected_user_type.item){
+          // Filter the list of questions. Note that we use the questions from their original source
+          //  in order not to filter a set which has already been filtered and so lose some questions.
+          var filtered_questions = this.$.questions.questions.filter(function(q) {
+            // See if this question is of interest to the selected user type.
+            // Note: in ES 2015 this could be just q.user_types.find().
+            if (q.user_types.filter(function(ut) {
+              var selected_user_type = thiz.selected_user_type.item.id;
+              if (selected_user_type === 'curious_person' || ut === selected_user_type){
+                return true;
+              }
+            }).length > 0){
+              return true;
+            }
+          });
+          // Populate the list of questions
+          this.set('questions', filtered_questions);
         }
       }
 
