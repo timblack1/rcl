@@ -65,6 +65,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 question: 'What are the most popular words found in congregations\' names, segmented by state?',
                 user_types: ['church_planter'],
                 formula: 'Word vs. frequency of occurrence',
+                data_set: 'cong_summary',
                 x: 'frequency',
                 y: 'word',
                 segment_by: {
@@ -80,6 +81,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 question: 'What are the most popular words found in congregations\' names, segmented by city?',
                 user_types: ['church_planter'],
                 formula: 'Word vs. frequency of occurrence',
+                data_set: 'cong_summary',
                 x: 'frequency',
                 y: 'word',
                 segment_by: {
@@ -94,6 +96,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 question: 'What are the most popular words found in congregations\' names, segmented by denomination?',
                 user_types: ['church_planter'],
                 formula: 'Word vs. frequency of occurrence',
+                data_set: 'cong_summary',
                 x: 'frequency',
                 y: 'word',
                 segment_by: {
@@ -105,7 +108,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 list: thiz.get_words_and_frequencies
               },
               {
-                question: 'Which congregations\' websites need a shorter url?',
+                question: 'Which congregations\' websites may need a shorter url?',
                 user_types: ['web_developer'],
                 formula: 'URL length vs. congregation',
                 data_set: 'all_naparc_congregations',
