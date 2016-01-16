@@ -25,25 +25,15 @@ ssh-add ~/.ssh/id_dsa
 echo "|1|Ir1HlMdB5oucEii9jvTIbRuY1TU=|sVHs8cU0jpD/AHbahW80xtZmsSs= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA3V+waEkDMazM7oWm3dpqr8YXMUD86NJgcOl2N9UkPQmozqnHVvrFhABoEwnFb3oreTRrXG/NTyevpvs7eOwWzXkBvGHCwcr70CISWM3do9KreQBBKoYFXW5fUe2/z2wYwrLydPMsnKUBtyiSggsOdWRBnJYI4M0Wdh49TnhNktVbV+i2N/FQnGUNTm/YwI3Lykjy7qMIE8WUMeifpHh3md8c51WK8gzIqsjej614uWFn4q0LqRx2QhpvLKHVicUfACzkF3GfHQ9xlhdCgWqYoaI6ECS9JeZKKFOXIgfidBWZqKniQUrQFgNL2dLIWROE8yFEpxUUhQyfLI4wzqFiow==" >> /home/travis/.ssh/known_hosts
 echo "|1|eZKvaQkJbjGWGyjif5TyoyL/DIM=|jovNrJJ321mWuKjSaziYNuSPOFY= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA3V+waEkDMazM7oWm3dpqr8YXMUD86NJgcOl2N9UkPQmozqnHVvrFhABoEwnFb3oreTRrXG/NTyevpvs7eOwWzXkBvGHCwcr70CISWM3do9KreQBBKoYFXW5fUe2/z2wYwrLydPMsnKUBtyiSggsOdWRBnJYI4M0Wdh49TnhNktVbV+i2N/FQnGUNTm/YwI3Lykjy7qMIE8WUMeifpHh3md8c51WK8gzIqsjej614uWFn4q0LqRx2QhpvLKHVicUfACzkF3GfHQ9xlhdCgWqYoaI6ECS9JeZKKFOXIgfidBWZqKniQUrQFgNL2dLIWROE8yFEpxUUhQyfLI4wzqFiow==" >> /home/travis/.ssh/known_hosts
 
-# The following is commented out because Git seems to be making the Travis CI log too long.
-# Another option would be to redirect output to /dev/null.
-# git remote add deploy timblack1@timblack1.webfactional.com:webapps/rcl
-# echo "Pushing to master on production server..."
-# git push deploy master
+git remote add deploy timblack1@timblack1.webfactional.com:webapps/rcl
+echo "Pushing to master on production server..."
+git push deploy master
 
-echo "Rsyncing files to production..."
-rsync -avz package.json timblack1@timblack1.webfactional.com:webapps/rcl/
-rsync -avz bower.json timblack1@timblack1.webfactional.com:webapps/rcl/
-rsync -avz scripts/pm2/rcl_start.sh timblack1@timblack1.webfactional.com:webapps/rcl/scripts/pm2/rcl_start.sh
+echo "Rsyncing 'dist' directory to production..."
 rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
 
 # Update npm dependencies on production server
 
-# The following is commented out because it seems unnecessary to update bower dependencies on the server
-# since the app is vulcanized into the "dist" directory on Travis, so shouldn't use the "bower_components"
-# directory on the production server.
-# echo "Updating npm & bower dependencies on production server..."
-#ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production && bower install'
 echo "Updating npm dependencies on production server..."
 ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production'
 
