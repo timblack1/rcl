@@ -1,11 +1,14 @@
 #!/bin/sh
 
+# Note: The output of many of the commands below is redirected to /dev/null to
+# prevent the Travis CI log from getting too long and causing the build to fail.
+
 npm i -g npm@^2.0.0
-npm install -g gulp
-npm install gulp
-npm install
-npm install -g bower
-bower install
+npm install -g gulp &> /dev/null
+npm install gulp &> /dev/null
+npm install &> /dev/null
+npm install -g bower &> /dev/null
+bower install &> /dev/null
 
 # Run gulp task to prep for deployment to create dist directory
 
@@ -30,7 +33,7 @@ echo "Pushing to master on production server..."
 git push deploy master
 
 echo "Rsyncing 'dist' directory to production..."
-rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
+rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/ &> /dev/null
 
 # Update npm dependencies on production server
 
