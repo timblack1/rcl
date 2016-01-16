@@ -39,8 +39,13 @@ rsync -avz dist timblack1@timblack1.webfactional.com:webapps/rcl/
 
 # Update npm dependencies on production server
 
-echo "Updating npm & bower dependencies on production server..."
-ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production && bower install'
+# The following is commented out because it seems unnecessary to update bower dependencies on the server
+# since the app is vulcanized into the "dist" directory on Travis, so shouldn't use the "bower_components"
+# directory on the production server.
+# echo "Updating npm & bower dependencies on production server..."
+#ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production && bower install'
+echo "Updating npm dependencies on production server..."
+ssh timblack1@timblack1.webfactional.com 'cd webapps/rcl && npm install --production'
 
 # Restart app on production server
 
