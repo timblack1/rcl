@@ -180,11 +180,7 @@
     ],
     ready:function(){
       this.voice_recognition_state = 'OFF';
-      this.model = this.$.model_object.properties.model.value;
-      Object.observe(this.search_radius,function(){
-        debugger;
-        //this is just for testing
-      })    
+      this.model = this.$.model_object.properties.model.value;   
     },
  
     attached:function(){
@@ -264,12 +260,12 @@
          
           //START HERE
           // This code gets the distance and raduis for the map from user preferences.  
-          thiz.hoodie.store.find('user-preferences', 'user-preferences')
-          .done(function(doc) {
-            thiz.search_distance_units = doc.search_distance_units;
-            thiz.search_radius = doc.search_radius;
-          }) 
-          .fail(function(error) {console.log(error) }); 
+//           thiz.hoodie.store.find('user-preferences', 'user-preferences')
+//           .done(function(doc) {
+//             thiz.search_distance_units = doc.search_distance_units;
+//             thiz.search_radius = doc.search_radius;
+//           }) 
+//           .fail(function(error) {console.log(error) }); 
                  
           // Get selected_cgroups from a user preference
           thiz.hoodie.store.find('selected-cgroups', 'selected-cgroups')
@@ -297,7 +293,7 @@
               thiz.available_cgroups = cgroups;
             });
           });
-        }) 
+        }); 
       });        
     },
     fail_handler: function(error){
@@ -412,7 +408,7 @@
       debugger
       if(typeof this.hoodie!=="undefined"){
         debugger 
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.search_radius});
+     //   this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.search_radius});
       }
      },
      
@@ -421,7 +417,7 @@
       debugger
       if(typeof this.hoodie!=="undefined") { debugger
       debugger
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
+   //     this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
       }
     }
   });

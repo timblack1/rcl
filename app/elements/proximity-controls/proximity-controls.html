@@ -37,6 +37,7 @@
       radius: {
         type: Number,
         notify: true,
+        value: 25,
         observer: 'radius_change_handler'
       },
       distance_units: {
@@ -46,7 +47,9 @@
     },
     ready:function(){
       this.radius = 25;
+
     },
+
     radius_change_handler: function (){
       debugger;
     }
