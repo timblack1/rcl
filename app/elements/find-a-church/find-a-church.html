@@ -55,7 +55,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value="{{search_string}}">
       </paper-input>
       <iron-icon icon="av:mic-off" id="av_mic_icon"></iron-icon>
-      <proximity-controls></proximity-controls>
+      <proximity-controls
+         radius="{{search_radius}}" 
+         distance_units="{{search_distance_units}}">
+      </proximity-controls>
       
       <voice-recognition id="voice_recognition"
         continuous="false"
@@ -168,7 +171,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         type: Boolean,
         value: false,
         notify: true
-      }
+      },
+       search_radius: {
+        type: Number,
+        notify: true,
+        observer: '_radius_changed_handler'
+      },
+      search_distance_units: {
+        type: String,
+        notify: true,
+        observer: '_distance_changed_handler'
+      }        
+
     },
     observers: [
       // Needed because selected_cgroups is an array
@@ -253,21 +267,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }, 1000);
           });
 
-        });
-
-        // Get selected_cgroups from a user preference
-        this.hoodie.punk.find('selected-cgroups', 'selected-cgroups')
-        .then(function(selected_cgroups) {
-          thiz.selected_cgroups = selected_cgroups.cgroups;
-        });
-        /*
-        this.hoodie.punk.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
-        this.hoodie.punk.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
-        this.hoodie.punk.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
-        this.hoodie.punk.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
-        this.hoodie.punk.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
-        this.hoodie.punk.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
-        */
+         
+          //START HERE
+          // This code gets the distance and raduis for the map from user preferences.  
+//           thiz.hoodie.store.find('user-preferences', 'user-preferences')
+//           .done(function(doc) {
+//             thiz.search_distance_units = doc.search_distance_units;
+//             thiz.search_radius = doc.search_radius;
+//           }) 
+//           .fail(function(error) {console.log(error) }); 
+                 
+          // Get selected_cgroups from a user preference
+          thiz.hoodie.store.find('selected-cgroups', 'selected-cgroups')
+          .then(function(selected_cgroups){
+            thiz.selected_cgroups = selected_cgroups.cgroups;
+          });
+//         this.hoodie.storemil.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
+//         this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         
         // TODO: Connect cgroup-filter attributes to database
         this.hoodie.punk.findAll('cgroup')
@@ -387,6 +407,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         }).fail(thiz.fail_handler);
       }, 1000);
+    },
+
+    /* When the radius value changes, it updates the user preferences. */
+    _radius_changed_handler: function(){
+      debugger
+      if(typeof this.hoodie!=="undefined"){
+        debugger 
+     //   this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_radius: this.search_radius});
+      }
+     },
+     
+    /*    When the distance value changes, it updates the user-preferences.  */
+    _distance_changed_handler: function(){
+      debugger
+      if(typeof this.hoodie!=="undefined") { debugger
+      debugger
+   //     this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', {search_distance_units: this.search_distance_units});
+      }
     }
   });
 })();
