@@ -181,7 +181,10 @@
     ready:function(){
       this.voice_recognition_state = 'OFF';
       this.model = this.$.model_object.properties.model.value;
-          
+      Object.observe(this.search_radius,function(){
+        debugger;
+        //this is just for testing
+      })    
     },
  
     attached:function(){
@@ -395,7 +398,7 @@
             // Resize (contract) map to fit markers
             var markers = thiz.$.google_map.markers;
             var bounds = new thiz.$.google_map.map.LatLngBounds();
-            for(i=0;i<markers.length;i++) {
+            for(var i=0;i<markers.length;i++) {
              bounds.extend(markers[i].getPosition());
             }
             thiz.$.google_map.fitBounds(bounds);
@@ -413,7 +416,7 @@
       }
      },
      
-    /*    When the distance value changes, it updates the user-preferences. */
+    /*    When the distance value changes, it updates the user-preferences.  */
     _distance_changed_handler: function(){
       debugger
       if(typeof this.hoodie!=="undefined") { debugger

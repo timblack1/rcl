@@ -36,7 +36,8 @@
       },
       radius: {
         type: Number,
-        notify: true
+        notify: true,
+        observer: 'radius_change_handler'
       },
       distance_units: {
         type: String,
@@ -45,6 +46,9 @@
     },
     ready:function(){
       this.radius = 25;
+    },
+    radius_change_handler: function (){
+      debugger;
     }
   });
 })();
