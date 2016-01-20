@@ -267,13 +267,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }, 1000);
           });
          
-          // START HERE
-          // This code gets the distance and radius for the map from user preferences.  
-          thiz.hoodie.store.find('user-preferences', 'user-preferences')
+          // This code gets the distance and radius for the map from user preferences.
+          var defaults_object = {search_distance_units: '', search_radius: 25};
+          thiz.hoodie.store.findOrAdd('user-preferences', 'user-preferences', defaults_object)
           .done(function(doc) {
             thiz.search_distance_units = doc.search_distance_units;
             thiz.search_radius = doc.search_radius;
-          }) 
+          })
           .fail(function(error) { console.log(error); }); 
                  
           // Get selected_cgroups from a user preference
@@ -412,7 +412,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     /* When the radius value changes, update the user's preferences. */
     _radius_changed_handler: function() {
       if(typeof this.hoodie !== 'undefined'){
-        debugger;
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
       }
@@ -420,9 +419,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      
     /* When the distance value changes, update the user's preferences. */
     _distance_units_changed_handler: function() {
-      debugger;
       if(typeof this.hoodie !== 'undefined') {
-        debugger;
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
       }
