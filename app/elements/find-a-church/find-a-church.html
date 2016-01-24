@@ -336,7 +336,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       // We have to wait until all properties have been initialized
       Polymer.Base.async(function() {
-        thiz.hoodie.punk.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
+        // Record user's preference in the db
+        thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
+        // TODO: Start here. Filter the list of displayed congregations to only include those in the selected cgroups
       }, 300);
     },
     // Fix format of email addresses
@@ -375,45 +377,85 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       var q = thiz.search_string;
       var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
-      thiz.hoodie.punk.findAll('congregation')
-      .done(function(congs) {
-        congs = congs.filter(function(ob) {
-          var new_array = fields.filter(function(field_name) {
-            if (typeof ob[field_name] !== 'undefined' &&
-                String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
+      thiz.hoodie.punk.findAll('cgroup_congregation')
+      .done(function(cg_congs) {
+        // TODO: Start here.  Find the cgroups which the user has selected in the cgroup-filter,
+        //  then filter the congs to only display those belonging to the selected cgroups.
+        thiz.hoodie.punk.findAll('congregation')
+        .done(function(congs) {
+          congs = congs.filter(function(ob) {
+            var new_array = fields.filter(function(field_name) {
+              if (typeof ob[field_name] !== 'undefined' &&
+                  String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
+                return true;
+              }else{
+                return false;
+              }
+            });
+            if (new_array.length > 0){
               return true;
-            }else{
-              return false;
             }
           });
-          if (new_array.length > 0){
+          // Make map recenter and resize (expand) after its markers are updated
+          thiz.$.google_map.fitToMarkers = true;
+          // Clear the array first
+          thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
+          // Set the map's new center
+          thiz.$.google_map.latitude = congs[0].geocode.lat;
+          thiz.$.google_map.longitude = congs[0].geocode.lng;
+          // Then repopulate the array.
+          congs.forEach(function(cong) {
+            thiz.push('congs_displayed_on_map', cong);
+          });
+          // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
+          if (congs.length === 1){
+            thiz.$.google_map.zoom = 13;
+          }else{
+            // Resize (contract) map to fit markers
+            var markers = thiz.$.google_map.markers;
+            var bounds = new thiz.$.google_map.map.getBounds();
+            for(var i = 0; i < markers.length; i++) {
+              bounds.extend(markers[i].getPosition());
+            }
+            thiz.$.google_map.fitBounds(bounds);
+          }
+        }).fail(thiz.fail_handler);
+      });
+    },
+
+    /* Return true if this cong is in the set of cgroups the user selected in the cgroup-filter. */
+    // TODO: Call this method in conditions which filter the list of congs on the map
+    _is_cong_in_selected_cgroups: function(cong) {
+      var thiz = this;
+      var matches = this.selected_cgroups.filter(function(cg) {
+        // Shortcut to search more quickly, in the case of a cgroup whose abbreviation is stored in the cong itself
+        if (cong.denomination_abbreviation === cg.abbreviation){
+          return true;
+        }
+      });
+      if (matches.length > 0){
+        return true;
+      }else{
+        // We try the slower search method in case a cong is in a selected cgroup but the abbreviation is
+        //  not stored in the cong.
+        // TODO: Start here.  There's a problem here.  This is an async call, but _is_cong_in_selected_cgroups
+        //  is intended to be a synchronous method.  So how can I get the boolean value I need into the contexts
+        //  I need in other methods here (in conditions) in an asynchronous manner?  It would seem I need to
+        //  put this method earlier in a promise chain than those conditions are found.
+        this.hoodie.punk.findAll('cgroup_congregation')
+        .done(function(cg_congs) {
+          var matches = cg_congs.filter(function(cg_cong) {
+            thiz.selected_cgroups.forEach(function(cg) {
+              if (cg.id === cg_cong.cgroup_id && cong.id === cg_cong.congregation_id){
+                return true;
+              }
+            });
+          });
+          if (matches.length > 0){
             return true;
           }
-        });
-        // Make map recenter and resize (expand) after its markers are updated
-        thiz.$.google_map.fitToMarkers = true;
-        // Clear the array first
-        thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
-        // Set the map's new center
-        thiz.$.google_map.latitude = congs[0].geocode.lat;
-        thiz.$.google_map.longitude = congs[0].geocode.lng;
-        // Then repopulate the array.
-        congs.forEach(function(cong) {
-          thiz.push('congs_displayed_on_map', cong);
-        });
-        // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
-        if (congs.length === 1){
-          thiz.$.google_map.zoom = 13;
-        }else{
-          // Resize (contract) map to fit markers
-          var markers = thiz.$.google_map.markers;
-          var bounds = new thiz.$.google_map.map.getBounds();
-          for(var i = 0; i < markers.length; i++) {
-            bounds.extend(markers[i].getPosition());
-          }
-          thiz.$.google_map.fitBounds(bounds);
-        }
-      }).fail(thiz.fail_handler);
+        }).fail(this.fail_handler);
+      }
     },
 
     /* When the radius value changes, update the user's preferences. */
