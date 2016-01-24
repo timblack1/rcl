@@ -197,10 +197,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           
           // Load congs onto map
           thiz.map.addListener('idle', function() {
+
             // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
             //  searched for a keyword, no new action is needed when the map's bounds have changed; the user
             //  only wants to see the searched-for congs.
             if (thiz.$.toggle_keywords_only_button.checked === false){
+
               // Don't load all the congs, but only those within the map's current bounds
               var b = thiz.map.getBounds();
               var lat_south = b.getSouthWest().lat();
@@ -218,12 +220,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     return true;
                   }
                 });
-                // Clear the array first
-                thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
-                // Then repopulate it.
-                congs.forEach(function(cong) {
-                  thiz.push('congs_displayed_on_map', cong);
+                
+                // Do a set difference in order to prevent unnecessary re-rendering of markers.
+                var displayed_cong_ids = thiz.congs_displayed_on_map.map(function(cong) {
+                  return cong.id;
                 });
+                var congs_in_bounds_ids = congs.map(function(cong) {
+                  return cong.id;
+                });
+                // Add new congs
+                congs.forEach(function(cong) {
+                  if (displayed_cong_ids.indexOf(cong.id) === -1){
+                    thiz.push('congs_displayed_on_map', cong);
+                  }
+                });
+                // Remove congs no longer within bounds
+                thiz.congs_displayed_on_map.forEach(function(displayed_cong) {
+                  if (congs_in_bounds_ids.indexOf(displayed_cong.id) === -1){
+                    thiz.splice('congs_displayed_on_map', thiz.congs_displayed_on_map.indexOf(displayed_cong), 1);
+                  }
+                });
+
               }).fail(thiz.fail_handler);
             }
           });
