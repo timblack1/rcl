@@ -1,4 +1,5 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <dom-module id="cgroup-edit-form" cgroup="{{cgroup}}">
   <template>
@@ -35,7 +36,7 @@
           notify: true
         }
       },
-      handle_submit:function(event){
+      handle_submit: function() {
         this.fire('submit');
       }
     });
