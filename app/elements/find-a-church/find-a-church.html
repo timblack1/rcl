@@ -196,42 +196,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           thiz.$.google_map.removeEventListener(event.type, map_ready);
           
           // Load congs onto map
-          thiz.map.addListener('idle', function() {
-            // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
-            //  searched for a keyword, no new action is needed when the map's bounds have changed; the user
-            //  only wants to see the searched-for congs.
-            if (thiz.$.toggle_keywords_only_button.checked === false){
-              // Don't load all the congs, but only those within the map's current bounds
-              var b = thiz.map.getBounds();
-              var lat_south = b.getSouthWest().lat();
-              var lat_north = b.getNorthEast().lat();
-              var lng_east =  b.getNorthEast().lng();
-              var lng_west =  b.getSouthWest().lng();
-              thiz.hoodie.punk.findAll('congregation')
-              .done(function(congs) {
-                congs = congs.filter(function(ob) {
-                  if (ob.geocode && 
-                      ob.geocode.lat > lat_south &&
-                      ob.geocode.lat < lat_north &&
-                      ob.geocode.lng < lng_east &&
-                      ob.geocode.lng > lng_west){
-                    return true;
-                  }
-                });
-                // Clear the array first
-                thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
-                // Then repopulate it.
-                congs.forEach(function(cong) {
-                  thiz.push('congs_displayed_on_map', cong);
-                });
-              }).fail(thiz.fail_handler);
-            }
-          });
+          thiz.map.addListener('idle', thiz._load_congs_on_map.bind(thiz));
 
           // Listen for results returned after users enter search terms
-          thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results() {
-            thiz._plot_search_results();
-          });
+          thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results.bind(thiz));
          
           // This code gets the distance and radius for the map from user preferences.
           var defaults_object = {search_distance_units: '', search_radius: 25};
@@ -273,6 +241,82 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
     fail_handler: function(error) {
       console.log(error);
+    },
+
+    /* Load congs on map every time the map's bounds change.
+     * 
+     * This function is also called when a user selects or unselects a cgroup (denomination).
+     */
+    _load_congs_on_map: function() {
+      
+      var thiz = this;
+
+      // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
+      //  searched for a keyword, no new action is needed when the map's bounds have changed; the user
+      //  only wants to see the searched-for congs.
+      if (
+        this.$.toggle_keywords_only_button.checked === false &&
+        this.map !== null &&
+        typeof this.map.getBounds() !== 'undefined'
+      ){
+
+        // Don't load all the congs, but only those within the map's current bounds
+        var b = this.map.getBounds();
+        var lat_south = b.getSouthWest().lat();
+        var lat_north = b.getNorthEast().lat();
+        var lng_east =  b.getNorthEast().lng();
+        var lng_west =  b.getSouthWest().lng();
+
+        Promise.all([
+          this.hoodie.punk.findAll('congregation'),
+          this.hoodie.punk.findAll('cgroup_congregation')
+        ]).then(function(values) {
+
+          var congs = values[0];
+          var cg_congs = values[1];
+
+          congs = congs.filter(function(cong) {
+            // First filter for whether this cong is in the user's selected_cgroups since that will
+            //  probably make for the fastest query plan.
+            if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
+              if (cong.geocode && 
+                  cong.geocode.lat > lat_south &&
+                  cong.geocode.lat < lat_north &&
+                  cong.geocode.lng < lng_east &&
+                  cong.geocode.lng > lng_west){
+                return true;
+              }
+            }
+          });
+
+          // Do a set difference in order to prevent unnecessary re-rendering of markers.
+          var displayed_cong_ids = thiz.congs_displayed_on_map.map(function(cong) {
+            return cong.id;
+          });
+          var congs_to_display_ids = congs.map(function(cong) {
+            return cong.id;
+          });
+          // Add new congs
+          congs.forEach(function(cong) {
+            if (displayed_cong_ids.indexOf(cong.id) === -1){
+              thiz.push('congs_displayed_on_map', cong);
+            }
+          });
+          // Remove congs no longer within bounds & selected_cgroups
+          thiz.congs_displayed_on_map.forEach(function(displayed_cong) {
+            if (congs_to_display_ids.indexOf(displayed_cong.id) === -1){
+              // .async() is necessary to make sure all, rather than only some, of the congs
+              //  which should be removed, are removed
+              thiz.async(function() {
+                // We use .map().indexOf() since it might not always work to call .indexOf() on an array of objects
+                var pos = thiz.congs_displayed_on_map.map(function(ob) { return ob.id; }).indexOf(displayed_cong.id);
+                thiz.splice('congs_displayed_on_map', pos, 1);
+              });
+            }
+          });
+
+        });
+      }
     },
 
     /* Plot search results on the map
@@ -319,7 +363,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       // We have to wait until all properties have been initialized
       Polymer.Base.async(function() {
-        thiz.hoodie.punk.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
+        // Record user's preference in the db
+        thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
+        // Filter the list of displayed congregations to only include those in the selected cgroups
+        if (thiz.search_string.trim() === ''){
+          // Handle case where the user changed the selected_cgroups, but has not searched
+          //  for a string.
+          thiz._load_congs_on_map();
+        }else{
+          thiz._search_for_query();
+        }
       }, 300);
     },
     // Fix format of email addresses
@@ -358,45 +411,94 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       var q = thiz.search_string;
       var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
-      thiz.hoodie.punk.findAll('congregation')
-      .done(function(congs) {
-        congs = congs.filter(function(ob) {
-          var new_array = fields.filter(function(field_name) {
-            if (typeof ob[field_name] !== 'undefined' &&
-                String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
+      Promise.all([
+        thiz.hoodie.punk.findAll('cgroup_congregation'),
+        thiz.hoodie.punk.findAll('congregation')
+      ]).then(function(values) {
+        var cg_congs = values[0];
+        var congs = values[1];
+        congs = congs.filter(function(cong) {
+          // First filter for whether this cong is in the user's selected_cgroups since that will
+          //  probably make for the fastest query plan.
+          if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
+            var new_array = fields.filter(function(field_name) {
+              if (
+                // filter for search terms
+                typeof cong[field_name] !== 'undefined' &&
+                String(cong[field_name]).toLowerCase().indexOf(q) !== -1
+              ){
+                return true;
+              }else{
+                return false;
+              }
+            });
+            if (new_array.length > 0){
               return true;
-            }else{
-              return false;
             }
+          }else{
+            return false;
+          }
+        });
+        // Do nothing if the search returns zero results
+        if (congs.length > 0){
+          // Make map recenter and resize (expand) after its markers are updated
+          thiz.$.google_map.fitToMarkers = true;
+          // Clear the array first
+          thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
+          // Set the map's new center
+          thiz.$.google_map.latitude = congs[0].geocode.lat;
+          thiz.$.google_map.longitude = congs[0].geocode.lng;
+          // Then repopulate the array.
+          congs.forEach(function(cong) {
+            thiz.push('congs_displayed_on_map', cong);
           });
-          if (new_array.length > 0){
+          // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
+          if (congs.length === 1){
+            thiz.$.google_map.zoom = 13;
+          }else{
+            // Resize (contract) map to fit markers
+            var markers = thiz.$.google_map.markers;
+            var bounds = new thiz.$.google_map.map.getBounds();
+            for(var i = 0; i < markers.length; i++) {
+              bounds.extend(markers[i].getPosition());
+            }
+            thiz.$.google_map.fitBounds(bounds);
+          }
+        }
+      });
+    },
+
+    /* Return true if this cong is in the set of cgroups the user selected in the cgroup-filter. */
+    _is_cong_in_selected_cgroups: function(cong, cg_congs) {
+      // Skip this function's logic if the user hasn't selected any cgroups
+      if (this.selected_cgroups.length === 0){
+        return true;
+      }else{
+        var thiz = this;
+        var matches;
+        matches = this.selected_cgroups.filter(function(cg) {
+          // Shortcut to search more quickly, in the case of a cgroup whose abbreviation is stored in the cong itself
+          if (cong.denomination_abbreviation === cg.abbreviation){
             return true;
           }
         });
-        // Make map recenter and resize (expand) after its markers are updated
-        thiz.$.google_map.fitToMarkers = true;
-        // Clear the array first
-        thiz.splice('congs_displayed_on_map', 0, thiz.congs_displayed_on_map.length);
-        // Set the map's new center
-        thiz.$.google_map.latitude = congs[0].geocode.lat;
-        thiz.$.google_map.longitude = congs[0].geocode.lng;
-        // Then repopulate the array.
-        congs.forEach(function(cong) {
-          thiz.push('congs_displayed_on_map', cong);
-        });
-        // Zoom to 13 if there's only one cong, otherwise zoom to fit all markers
-        if (congs.length === 1){
-          thiz.$.google_map.zoom = 13;
+        if (matches.length > 0){
+          return true;
         }else{
-          // Resize (contract) map to fit markers
-          var markers = thiz.$.google_map.markers;
-          var bounds = new thiz.$.google_map.map.getBounds();
-          for(var i = 0; i < markers.length; i++) {
-            bounds.extend(markers[i].getPosition());
+          // We try the slower search method in case a cong is in a selected cgroup but the abbreviation is
+          //  not stored in the cong.
+          matches = cg_congs.filter(function(cg_cong) {
+            thiz.selected_cgroups.forEach(function(cg) {
+              if (cg.id === cg_cong.cgroup_id && cong.id === cg_cong.congregation_id){
+                return true;
+              }
+            });
+          });
+          if (matches.length > 0){
+            return true;
           }
-          thiz.$.google_map.fitBounds(bounds);
         }
-      }).fail(thiz.fail_handler);
+      }
     },
 
     /* When the radius value changes, update the user's preferences. */
@@ -404,6 +506,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined'){
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
+        // TODO: Update the map's bounds
       }
     },
      
@@ -412,6 +515,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined') {
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
+        // TODO: Update the map's bounds
       }
     }
   });
