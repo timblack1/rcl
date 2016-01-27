@@ -1,4 +1,4 @@
-()<!--
+<!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -199,7 +199,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           thiz.map.addListener('idle', thiz._load_congs_on_map.bind(thiz));
 
           // Listen for results returned after users enter search terms
-          thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results);
+          thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results.bind(thiz));
          
           // This code gets the distance and radius for the map from user preferences.
           var defaults_object = {search_distance_units: '', search_radius: 25};
@@ -293,7 +293,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var displayed_cong_ids = thiz.congs_displayed_on_map.map(function(cong) {
             return cong.id;
           });
-          var congs_in_bounds_ids = congs.map(function(cong) {
+          var congs_to_display_ids = congs.map(function(cong) {
             return cong.id;
           });
           // Add new congs
@@ -302,15 +302,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               thiz.push('congs_displayed_on_map', cong);
             }
           });
-          // Remove congs no longer within bounds
+          // Remove congs no longer within bounds & selected_cgroups
           thiz.congs_displayed_on_map.forEach(function(displayed_cong) {
-            if (congs_in_bounds_ids.indexOf(displayed_cong.id) === -1){
-              // TODO: Start here. This seems not to remove some congs when the bounds haven't changed but the
-              //  selected_cgroups did change.  What happens is that some congs are removed, but then more
-              //  are removed when you pan the map a little.
-              // We use .map().indexOf() since it might not always work to call .indexOf() on an array of objects
-              var pos = thiz.congs_displayed_on_map.map(function(ob) { return ob.id; }).indexOf(displayed_cong.id);
-              thiz.splice('congs_displayed_on_map', pos, 1);
+            if (congs_to_display_ids.indexOf(displayed_cong.id) === -1){
+              // .async() is necessary to make sure all, rather than only some, of the congs
+              //  which should be removed, are removed
+              thiz.async(function() {
+                // We use .map().indexOf() since it might not always work to call .indexOf() on an array of objects
+                var pos = thiz.congs_displayed_on_map.map(function(ob) { return ob.id; }).indexOf(displayed_cong.id);
+                thiz.splice('congs_displayed_on_map', pos, 1);
+              });
             }
           });
 
@@ -505,6 +506,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined'){
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
+        // TODO: Update the map's bounds
       }
     },
      
@@ -513,6 +515,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined') {
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
+        // TODO: Update the map's bounds
       }
     }
   });
