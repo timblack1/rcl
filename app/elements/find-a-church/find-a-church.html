@@ -1,4 +1,4 @@
-<!--
+()<!--
 @license
 Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
@@ -196,70 +196,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           thiz.$.google_map.removeEventListener(event.type, map_ready);
           
           // Load congs onto map
-          thiz.map.addListener('idle', function() {
-
-            // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
-            //  searched for a keyword, no new action is needed when the map's bounds have changed; the user
-            //  only wants to see the searched-for congs.
-            if (thiz.$.toggle_keywords_only_button.checked === false){
-
-              // Don't load all the congs, but only those within the map's current bounds
-              var b = thiz.map.getBounds();
-              var lat_south = b.getSouthWest().lat();
-              var lat_north = b.getNorthEast().lat();
-              var lng_east =  b.getNorthEast().lng();
-              var lng_west =  b.getSouthWest().lng();
-
-              Promise.all([
-                thiz.hoodie.punk.findAll('congregation'),
-                thiz.hoodie.punk.findAll('cgroup_congregation')
-              ]).then(function(values) {
-
-                var congs = values[0];
-                var cg_congs = values[1];
-
-                congs = congs.filter(function(cong) {
-                  // First filter for whether this cong is in the user's selected_cgroups since that will
-                  //  probably make for the fastest query plan.
-                  if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
-                    if (cong.geocode && 
-                        cong.geocode.lat > lat_south &&
-                        cong.geocode.lat < lat_north &&
-                        cong.geocode.lng < lng_east &&
-                        cong.geocode.lng > lng_west){
-                      return true;
-                    }
-                  }
-                });
-                
-                // Do a set difference in order to prevent unnecessary re-rendering of markers.
-                var displayed_cong_ids = thiz.congs_displayed_on_map.map(function(cong) {
-                  return cong.id;
-                });
-                var congs_in_bounds_ids = congs.map(function(cong) {
-                  return cong.id;
-                });
-                // Add new congs
-                congs.forEach(function(cong) {
-                  if (displayed_cong_ids.indexOf(cong.id) === -1){
-                    thiz.push('congs_displayed_on_map', cong);
-                  }
-                });
-                // Remove congs no longer within bounds
-                thiz.congs_displayed_on_map.forEach(function(displayed_cong) {
-                  if (congs_in_bounds_ids.indexOf(displayed_cong.id) === -1){
-                    thiz.splice('congs_displayed_on_map', thiz.congs_displayed_on_map.indexOf(displayed_cong), 1);
-                  }
-                });
-
-              });
-            }
-          });
+          thiz.map.addListener('idle', thiz._load_congs_on_map.bind(thiz));
 
           // Listen for results returned after users enter search terms
-          thiz.$.google_map_search.addEventListener('google-map-search-results', function search_results() {
-            thiz._plot_search_results();
-          });
+          thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results);
          
           // This code gets the distance and radius for the map from user preferences.
           var defaults_object = {search_distance_units: '', search_radius: 25};
@@ -301,6 +241,81 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
     fail_handler: function(error) {
       console.log(error);
+    },
+
+    /* Load congs on map every time the map's bounds change.
+     * 
+     * This function is also called when a user selects or unselects a cgroup (denomination).
+     */
+    _load_congs_on_map: function() {
+      
+      var thiz = this;
+
+      // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
+      //  searched for a keyword, no new action is needed when the map's bounds have changed; the user
+      //  only wants to see the searched-for congs.
+      if (
+        this.$.toggle_keywords_only_button.checked === false &&
+        this.map !== null &&
+        typeof this.map.getBounds() !== 'undefined'
+      ){
+
+        // Don't load all the congs, but only those within the map's current bounds
+        var b = this.map.getBounds();
+        var lat_south = b.getSouthWest().lat();
+        var lat_north = b.getNorthEast().lat();
+        var lng_east =  b.getNorthEast().lng();
+        var lng_west =  b.getSouthWest().lng();
+
+        Promise.all([
+          this.hoodie.punk.findAll('congregation'),
+          this.hoodie.punk.findAll('cgroup_congregation')
+        ]).then(function(values) {
+
+          var congs = values[0];
+          var cg_congs = values[1];
+
+          congs = congs.filter(function(cong) {
+            // First filter for whether this cong is in the user's selected_cgroups since that will
+            //  probably make for the fastest query plan.
+            if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
+              if (cong.geocode && 
+                  cong.geocode.lat > lat_south &&
+                  cong.geocode.lat < lat_north &&
+                  cong.geocode.lng < lng_east &&
+                  cong.geocode.lng > lng_west){
+                return true;
+              }
+            }
+          });
+
+          // Do a set difference in order to prevent unnecessary re-rendering of markers.
+          var displayed_cong_ids = thiz.congs_displayed_on_map.map(function(cong) {
+            return cong.id;
+          });
+          var congs_in_bounds_ids = congs.map(function(cong) {
+            return cong.id;
+          });
+          // Add new congs
+          congs.forEach(function(cong) {
+            if (displayed_cong_ids.indexOf(cong.id) === -1){
+              thiz.push('congs_displayed_on_map', cong);
+            }
+          });
+          // Remove congs no longer within bounds
+          thiz.congs_displayed_on_map.forEach(function(displayed_cong) {
+            if (congs_in_bounds_ids.indexOf(displayed_cong.id) === -1){
+              // TODO: Start here. This seems not to remove some congs when the bounds haven't changed but the
+              //  selected_cgroups did change.  What happens is that some congs are removed, but then more
+              //  are removed when you pan the map a little.
+              // We use .map().indexOf() since it might not always work to call .indexOf() on an array of objects
+              var pos = thiz.congs_displayed_on_map.map(function(ob) { return ob.id; }).indexOf(displayed_cong.id);
+              thiz.splice('congs_displayed_on_map', pos, 1);
+            }
+          });
+
+        });
+      }
     },
 
     /* Plot search results on the map
@@ -349,7 +364,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer.Base.async(function() {
         // Record user's preference in the db
         thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
-        // TODO: Start here. Filter the list of displayed congregations to only include those in the selected cgroups
+        // Filter the list of displayed congregations to only include those in the selected cgroups
+        if (thiz.search_string.trim() === ''){
+          // Handle case where the user changed the selected_cgroups, but has not searched
+          //  for a string.
+          thiz._load_congs_on_map();
+        }else{
+          thiz._search_for_query();
+        }
       }, 300);
     },
     // Fix format of email addresses
@@ -392,7 +414,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         thiz.hoodie.punk.findAll('cgroup_congregation'),
         thiz.hoodie.punk.findAll('congregation')
       ]).then(function(values) {
-        // TODO: Start here. When you change the selected_cgroups, update the congs on the map (by firing the _plot_search_results)
         var cg_congs = values[0];
         var congs = values[1];
         congs = congs.filter(function(cong) {
@@ -447,7 +468,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /* Return true if this cong is in the set of cgroups the user selected in the cgroup-filter. */
-    // TODO: Call this method in conditions which filter the list of congs on the map
     _is_cong_in_selected_cgroups: function(cong, cg_congs) {
       // Skip this function's logic if the user hasn't selected any cgroups
       if (this.selected_cgroups.length === 0){
