@@ -209,15 +209,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               var lat_north = b.getNorthEast().lat();
               var lng_east =  b.getNorthEast().lng();
               var lng_west =  b.getSouthWest().lng();
-              thiz.hoodie.punk.findAll('congregation')
-              .done(function(congs) {
-                congs = congs.filter(function(ob) {
-                  if (ob.geocode && 
-                      ob.geocode.lat > lat_south &&
-                      ob.geocode.lat < lat_north &&
-                      ob.geocode.lng < lng_east &&
-                      ob.geocode.lng > lng_west){
-                    return true;
+
+              Promise.all([
+                thiz.hoodie.punk.findAll('congregation'),
+                thiz.hoodie.punk.findAll('cgroup_congregation')
+              ]).then(function(values) {
+
+                var congs = values[0];
+                var cg_congs = values[1];
+
+                congs = congs.filter(function(cong) {
+                  // First filter for whether this cong is in the user's selected_cgroups since that will
+                  //  probably make for the fastest query plan.
+                  if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
+                    if (cong.geocode && 
+                        cong.geocode.lat > lat_south &&
+                        cong.geocode.lat < lat_north &&
+                        cong.geocode.lng < lng_east &&
+                        cong.geocode.lng > lng_west){
+                      return true;
+                    }
                   }
                 });
                 
@@ -241,7 +252,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   }
                 });
 
-              }).fail(thiz.fail_handler);
+              });
             }
           });
 
@@ -377,16 +388,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       var q = thiz.search_string;
       var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
-      thiz.hoodie.punk.findAll('cgroup_congregation')
-      .done(function(cg_congs) {
-        // TODO: Start here.  Find the cgroups which the user has selected in the cgroup-filter,
-        //  then filter the congs to only display those belonging to the selected cgroups.
+      Promise.all([
+        thiz.hoodie.punk.findAll('cgroup_congregation'),
         thiz.hoodie.punk.findAll('congregation')
-        .done(function(congs) {
-          congs = congs.filter(function(ob) {
+      ]).then(function(values) {
+        // TODO: Start here. When you change the selected_cgroups, update the congs on the map (by firing the _plot_search_results)
+        var cg_congs = values[0];
+        var congs = values[1];
+        congs = congs.filter(function(cong) {
+          // First filter for whether this cong is in the user's selected_cgroups since that will
+          //  probably make for the fastest query plan.
+          if (thiz._is_cong_in_selected_cgroups(cong, cg_congs)){
             var new_array = fields.filter(function(field_name) {
-              if (typeof ob[field_name] !== 'undefined' &&
-                  String(ob[field_name]).toLowerCase().indexOf(q) !== -1){
+              if (
+                // filter for search terms
+                typeof cong[field_name] !== 'undefined' &&
+                String(cong[field_name]).toLowerCase().indexOf(q) !== -1
+              ){
                 return true;
               }else{
                 return false;
@@ -395,7 +413,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (new_array.length > 0){
               return true;
             }
-          });
+          }else{
+            return false;
+          }
+        });
+        // Do nothing if the search returns zero results
+        if (congs.length > 0){
           // Make map recenter and resize (expand) after its markers are updated
           thiz.$.google_map.fitToMarkers = true;
           // Clear the array first
@@ -419,32 +442,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
             thiz.$.google_map.fitBounds(bounds);
           }
-        }).fail(thiz.fail_handler);
+        }
       });
     },
 
     /* Return true if this cong is in the set of cgroups the user selected in the cgroup-filter. */
     // TODO: Call this method in conditions which filter the list of congs on the map
-    _is_cong_in_selected_cgroups: function(cong) {
-      var thiz = this;
-      var matches = this.selected_cgroups.filter(function(cg) {
-        // Shortcut to search more quickly, in the case of a cgroup whose abbreviation is stored in the cong itself
-        if (cong.denomination_abbreviation === cg.abbreviation){
-          return true;
-        }
-      });
-      if (matches.length > 0){
+    _is_cong_in_selected_cgroups: function(cong, cg_congs) {
+      // Skip this function's logic if the user hasn't selected any cgroups
+      if (this.selected_cgroups.length === 0){
         return true;
       }else{
-        // We try the slower search method in case a cong is in a selected cgroup but the abbreviation is
-        //  not stored in the cong.
-        // TODO: Start here.  There's a problem here.  This is an async call, but _is_cong_in_selected_cgroups
-        //  is intended to be a synchronous method.  So how can I get the boolean value I need into the contexts
-        //  I need in other methods here (in conditions) in an asynchronous manner?  It would seem I need to
-        //  put this method earlier in a promise chain than those conditions are found.
-        this.hoodie.punk.findAll('cgroup_congregation')
-        .done(function(cg_congs) {
-          var matches = cg_congs.filter(function(cg_cong) {
+        var thiz = this;
+        var matches;
+        matches = this.selected_cgroups.filter(function(cg) {
+          // Shortcut to search more quickly, in the case of a cgroup whose abbreviation is stored in the cong itself
+          if (cong.denomination_abbreviation === cg.abbreviation){
+            return true;
+          }
+        });
+        if (matches.length > 0){
+          return true;
+        }else{
+          // We try the slower search method in case a cong is in a selected cgroup but the abbreviation is
+          //  not stored in the cong.
+          matches = cg_congs.filter(function(cg_cong) {
             thiz.selected_cgroups.forEach(function(cg) {
               if (cg.id === cg_cong.cgroup_id && cong.id === cg_cong.congregation_id){
                 return true;
@@ -454,7 +476,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           if (matches.length > 0){
             return true;
           }
-        }).fail(this.fail_handler);
+        }
       }
     },
 
