@@ -1,0 +1,458 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="analyze-the-data" hoodie="{{hoodie}}">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      paper-card {
+        margin: 2em 2em 0 2em;
+        padding: 1em;
+      }
+      #question_table td, #question_table th {
+        vertical-align: top;
+      }
+      #question_table th {
+        text-align: right;
+        padding-right: 1em;
+      }
+    </style>
+    
+    <paper-card heading="Presets">
+
+      <questions-element id="questions" hoodie="{{hoodie}}"></questions-element>
+
+      <p>
+        What kind of user are you?  Choose your user type here if you'd like to narrow the 
+        list of preset questions below.
+      </p>
+      <paper-dropdown-menu id="user_type"
+        label="I am a..."
+        selected-item="{{selected_user_type}}">
+        <paper-menu class="dropdown-content">
+          <template is="dom-repeat" items="{{user_types}}">
+            <paper-item item="{{item}}">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <p>
+        Choose a preset question here if you like.  We'll make a graph to help answer it.
+      </p>
+      <paper-dropdown-menu id="question_selector" 
+        label="I'd like to know..."
+        selected-item="{{selected_question}}">
+        <paper-menu class="dropdown-content">
+          <template is="dom-repeat" items="{{questions}}">
+            <paper-item item="{{item}}">{{item.question}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+      
+      <table id="question_table" hidden="{{!selected_question.item}}">
+        <tr>
+          <th>
+            Question:
+          </th>
+          <td>
+            <span>{{selected_question.item.question}}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>
+            We'll use this formula:
+          </th>
+          <td>
+            <span>{{selected_question.item.formula}}</span>
+          </td>
+        </tr>
+      </table>
+
+    </paper-card>
+
+    <paper-card heading="Graph" id="graph_container">
+
+      <paper-dropdown-menu id="data_set"
+        label="Plot this kind of data"
+        selected-item="{{selected_data_set}}"
+        >
+        <paper-menu id="data_set_menu"
+          selected="{{selected_data_set_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <paper-item id="cong_summary">Summary data from all NAPARC congregations</paper-item>
+          <paper-item id="all_naparc_congregations">All NAPARC congregations</paper-item>
+          <paper-item id="all_naparc_denominations">All NAPARC denominations</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <paper-dropdown-menu id="x_key"
+        label="Plot this on the X axis"
+        selected-item="{{selected_x_key}}"
+        >
+        <paper-menu id="x_key_menu"
+          selected="{{selected_x_key_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <template is="dom-repeat" items="{{x_keys}}">
+            <paper-item id="{{item.var_name}}" item="{{item}}">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <paper-dropdown-menu id="y_key"
+        label="Plot this on the Y axis"
+        selected-item="{{selected_y_key}}"
+        >
+        <paper-menu id="y_key_menu"
+          selected="{{selected_y_key_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <template is="dom-repeat" items="{{y_keys}}">
+            <paper-item id="{{item.var_name}}" item="{{item}}">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <paper-dropdown-menu id="graph_type"
+        label="Graph type"
+        selected-item="{{selected_graph_type}}"
+        >
+        <paper-menu 
+          selected="{{selected_graph_type_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <paper-item id="scatterplot">Scatterplot</paper-item>
+          <paper-item id="vertical_bar_graph">Bar graph (vertical)</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <paper-dropdown-menu id="segments"
+        label="Segment by"
+        selected-item="{{selected_segment}}"
+        hidden="{{hide_segments}}"
+        >
+        <paper-menu 
+          selected="{{selected_segment_id}}"
+          attr-for-selected="id"
+          class="dropdown-content">
+          <template is="dom-repeat" items="{{segments}}">
+            <paper-item id="{{item.id}}" item="{{item}}">{{item.name}}</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
+
+      <d3-graph id="graph" 
+        data="{{data}}" 
+        x_key="{{selected_x_key_id}}"
+        y_key="{{selected_y_key_id}}"
+        graph_type="{{selected_graph_type_id}}"
+        >
+      </d3-graph>
+
+    </paper-card>
+
+    <paper-card heading="Details">
+      <p>
+        This will be a table showing a list of selected congregations or other data points,
+        and including a few of their details which could not be shown in the graph.
+      </p>
+    </paper-card>
+
+    <p>&nbsp;</p>
+
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'analyze-the-data',
+
+      properties: {
+        hoodie: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        user_types: {
+          type: Array,
+          value: [
+            {name: 'Church planter', id: 'church_planter'},
+            // {name: 'Missionary', id: 'missionary'},
+            // {name: 'Denominational statistician', id: 'denominational_statistician'},
+            {name: 'Web developer', id: 'web_developer'},
+            {name: 'Curious person (doesn\'t narrow down the list', id: 'curious_person'}
+          ],
+          notify: true
+        },
+        selected_user_type: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_user_type_changed'
+        },
+        selected_question: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_question_changed'
+        },
+        selected_segment: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_segment_changed'
+        },
+        selected_data_set: {
+          type: Object,
+          value: {},
+          notify: true,
+          observer: '_selected_data_set_changed'
+        },
+        selected_data_set_id: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        x_keys: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        y_keys: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        selected_x_key_id: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        selected_y_key_id: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        selected_graph_type_id: {
+          type: String,
+          value: '',
+          notify: true
+        },
+        data: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        hide_segments: {
+          type: Boolean,
+          value: true,
+          notify: true
+        },
+        segments: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+        questions: {
+          type: Array,
+          value: [],
+          notify: true
+        },
+
+        /* We let users weight the relative importance of these factors in the graph
+         */
+        factors: {
+          type: Object,
+          value: {
+
+            /* The property names below are the names used for associated values stored in
+             * congregations' documents in the database.
+             *
+             * Each property may have a weight.
+             *
+             * Sub-properties below specify the default settings for each property.
+             */
+            distance_to_nearest_naparc_cong: {
+              label: 'Distance to nearest NAPARC congregation',
+              control: 'paper-dropdown-menu',
+              range: [0, 500], // the default range to render in the dropdown
+              min: true, // permit the user to select a minimum value
+              max: true // permit the user to select a maximum value
+            },
+            population_density: {
+              label: 'Population density',
+              control: 'paper-input',
+              region: 'city' // other options are neighborhood, county, state, presbytery
+            },
+            population_growth_rate: {
+              label: 'Population growth rate',
+              control: 'paper-input',
+              region: 'city', // other options are neighborhood, county, state, presbytery
+              period_in_years: 10 // period over which the growth rate was observed
+            },
+
+          },
+
+          notify: true
+        }
+      },
+
+      ready: function() {
+        this.questions = this.$.questions.questions;
+      },
+
+      /* Calculate the available keys, depending on which model object is being plotted.
+       */
+      get_available_keys: function() {
+        if (this.selected_data_set !== null && typeof this.selected_data_set.id !== 'undefined'){
+
+          var types = [];
+          types['Custom data combination'] = '';
+
+          types = this._get_keys_deduplicated_and_formatted(this.selected_data_set.id, types);
+
+          // Output to the dropdowns
+          this.set('x_keys', types);
+          this.set('y_keys', types);
+
+        }
+      },
+
+      /* Get the list of all data type keys, deduplicated, with underscores replaced by spaces,
+       * and first letter capitalized.
+       */
+      _get_keys_deduplicated_and_formatted: function(data_set, types) {
+        // Get list of all data types in this data_set
+        // TODO: How should we store this data so it's accessible here?  q.data_set works
+        //  when q.x is not a function, but how can we handle when q.x is a function?
+        //  We aren't using a function for q.x until we figure this out.
+        this.questions.map(function(q) {
+          if (q.data_set === data_set){
+            types[q.x] = '';
+            types[q.y] = '';
+          }
+        });
+
+        // Get the list, deduplicated, with underscores replaced by spaces, and first letter capitalized
+        types = Object.keys(types).map(function(type) {
+          var nicely_formatted_name = type.replace(new RegExp('_', 'g'), ' ');
+          nicely_formatted_name = nicely_formatted_name.charAt(0).toUpperCase() + nicely_formatted_name.slice(1);
+          return {
+            name: nicely_formatted_name,
+            var_name: type
+          };
+        });
+
+        return types;
+
+      },
+
+      // Handle changes to the selected_data_set
+      _selected_data_set_changed: function() {
+        this.get_available_keys();
+      },
+
+      // Handle changes to the selected_question
+      _selected_question_changed: function() {
+
+        var thiz = this;
+        var q = this.selected_question;
+
+        if (q !== null && typeof q.item !== 'undefined'){
+
+          // Set this question's data_set in the data_set dropdown
+          this.selected_data_set_id = q.item.data_set;
+          // Populate the x_keys & y_keys dropdowns with available_keys
+          this.get_available_keys();
+          // Set this question's values in the x_keys and y_keys dropdowns
+          this.selected_x_key_id = q.item.x;
+          this.selected_y_key_id = q.item.y;
+          // Set this question's graph type
+          this.selected_graph_type_id = q.item.graph;
+
+          // Handle segments if the question uses them
+          if (typeof q.item.segment_by !== 'undefined'){
+            // Get segments to display in a dropdown
+            q.item.get_segments(this.hoodie, q.item.segment_by)
+            .done(function(segments) {
+              thiz.segments = segments;
+            });
+            // Show the dropdown list
+            this.hide_segments = false;
+          }else{
+            // Hide the dropdown list
+            this.hide_segments = true;
+            // Display graph without segments
+            q.item.list(this.hoodie).then(function(list) {
+              // Write this question's list of data to the graph
+              thiz.data = list;
+            });
+          }
+
+        }
+      },
+
+      /* Get one segment's data, and display it in the graph. Note: this function is meant to be
+       *  called by a property mutation observer.
+       */
+      _selected_segment_changed: function() {
+        var thiz = this;
+        if (this.selected_question.item &&
+            typeof this.selected_question.item.segment_by !== 'undefined'){
+          // Get the:
+          //  - segment name specified by this question, and the 
+          //  - segment value selected by the user
+          var segment = {
+            name: this.selected_question.item.segment_by.model_name,
+            value: this.selected_segment_id
+          };
+          // Display graph with segments
+          this.selected_question.item.list(this.hoodie, segment).then(function(list) {
+            // Write this question's list of data to the graph
+            thiz.data = list;
+          });
+        }
+      },
+
+      /* Filter the list of questions to only those of interest to the selected user type.
+       */
+      _selected_user_type_changed: function() {
+        var thiz = this;
+        if (this.selected_user_type &&
+            this.selected_user_type.item){
+          // Filter the list of questions. Note that we use the questions from their original source
+          //  in order not to filter a set which has already been filtered and so lose some questions.
+          var filtered_questions = this.$.questions.questions.filter(function(q) {
+            // See if this question is of interest to the selected user type.
+            // Note: in ES 2015 this could be just q.user_types.find().
+            if (q.user_types.filter(function(ut) {
+              var selected_user_type = thiz.selected_user_type.item.id;
+              if (selected_user_type === 'curious_person' || ut === selected_user_type){
+                return true;
+              }
+            }).length > 0){
+              return true;
+            }
+          });
+          // Populate the list of questions
+          this.set('questions', filtered_questions);
+        }
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

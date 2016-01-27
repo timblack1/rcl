@@ -9,15 +9,38 @@
     #radius {
       width: 4em;
     }
+    #controls paper-input {
+      vertical-align: baseline;
+      display: inline-block;
+    }
+    #radius {
+      width: 3.75em;
+    }
+    #distance_units {
+      width: 5em;
+    }
   </style>
   <template>
-    Within &nbsp;
-    <input id="radius" type="number" value="{{radius}}">
-    </input> &nbsp;
-    <select id="distance_units" selected="{{distance_units}}" >
-      <option value='miles'>miles</option>
-      <option value='km'>km</option>
-    </select>
+    <div id="controls">
+      Within
+      <paper-input id="radius" 
+        type="number"
+        value="{{radius}}"
+        >
+      </paper-input>
+      <paper-dropdown-menu id="distance_units"
+        label="miles/km"
+        selected-item="{{selected_unit}}"
+        >
+        <paper-menu class="dropdown-content"
+          selected="{{distance_units}}"
+          attr-for-selected="id"
+          >
+          <paper-item id="miles">miles</paper-item>
+          <paper-item id="km">km</paper-item>
+        </paper-menu>
+      </paper-dropdown-menu>
+    </div>
   </template>
 </dom-module>
 <script>
@@ -37,22 +60,14 @@
       radius: {
         type: Number,
         notify: true,
-        value: 25,
-        observer: 'radius_change_handler'
+        value: 25
       },
       distance_units: {
         type: String,
         notify: true
       }
-    },
-    ready:function(){
-      this.radius = 25;
-
-    },
-
-    radius_change_handler: function (){
-      debugger;
     }
+
   });
 })();
 </script>
