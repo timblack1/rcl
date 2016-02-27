@@ -82,4 +82,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     location.reload();
   };
 
+  // Maximize search box which overlays the map
+  app.search_box_maximize = function() {
+    app.$.find_a_church.fire('search-box-maximize');
+  }
+
 })(document);

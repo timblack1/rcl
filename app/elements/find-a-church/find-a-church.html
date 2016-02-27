@@ -19,15 +19,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="find-a-church" hoodie="{{hoodie}}" map="{{map}}">
   <style>
     :host {
-      display: flex;
-      justify-content: center;
+/*       display: flex;
+      justify-content: center; */
     }
     #map_overlay {
+      display: block;
       z-index: 1;
-      background-color: rgba(255,255,255,0.9);
+      /* TODO: Is this background visible enough for users when it overlays the map? */
+      background-color: rgba(255,255,255,0.5);
       border-radius: 0.5em;
+      padding: 0 1em 0em 1em;
+      margin-top: 0.5em;
+      /* Begin properties to transition */
+      position: absolute;
+      right: 0.5em;
+      width: 30%;
+      height: auto;
+      /* The rotation is pretty awesome but distracts from typing in the search box.
+/*       transform: rotate(0deg); */
+      /* End properties to transition */
+      transition: right 1s, display 1s, margin 1s, width 1s, 
+                  padding 1s, background-color 1s, transform 1s;
+    }
+    #map_overlay.maximized {
+      display: block;
+      margin: auto;
+      width: 50%;
+      right: 23%;
       padding: 0 1em 1em 1em;
       margin-top: 0.5em;
+      background-color: rgba(255,255,255,0.9);
+/*       transform: rotate(360deg); */
     }
     paper-toggle-button {
       display: block;
@@ -48,40 +70,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <model-object id="model_object" model="{{model}}"></model-object>
 
-    <div id="map_overlay" class="">
+    <div id="map_overlay" class$="{{search_box_maximized_class}}">
 
       <paper-input id="search_for_a_church" 
         label="Search for a church..."
-        value="{{search_string}}">
+        value="{{search_string}}"
+        on-tap="search_box_maximize">
       </paper-input>
       <iron-icon icon="av:mic-off" id="av_mic_icon"></iron-icon>
-      <proximity-controls
-         radius="{{search_radius}}" 
-         distance_units="{{search_distance_units}}">
-      </proximity-controls>
-      
-      <voice-recognition id="voice_recognition"
-        continuous="false"
-        on-result="voice_recognition_result"
-        text="{{search_string}}">
-      </voice-recognition>
 
-      <paper-toggle-button id="toggle_keywords_only_button">
-        Keywords only
-      </paper-toggle-button>
-      <paper-toggle-button id="toggle_voice_recognition_button" on-tap="toggle_voice_recognition">
-        Voice recognition <span>{{voice_recognition_state}}</span>
-      </paper-toggle-button>
+      <div id="hide_when_minimized" hidden="{{hide_search_box_controls}}">
 
-      <cgroup-filter id="cgroup_filter"
-        selected_cgroups="{{selected_cgroups}}"
-        available_cgroups="{{available_cgroups}}"
-        available_cgroups_displayed="{{available_cgroups_displayed}}">
-      </cgroup-filter>
+        <proximity-controls
+           radius="{{search_radius}}" 
+           distance_units="{{search_distance_units}}">
+        </proximity-controls>
+
+        <voice-recognition id="voice_recognition"
+          continuous="false"
+          on-result="voice_recognition_result"
+          text="{{search_string}}">
+        </voice-recognition>
+
+        <paper-toggle-button id="toggle_keywords_only_button">
+          Keywords only
+        </paper-toggle-button>
+        <paper-toggle-button id="toggle_voice_recognition_button" on-tap="toggle_voice_recognition">
+          Voice recognition <span>{{voice_recognition_state}}</span>
+        </paper-toggle-button>
+
+        <cgroup-filter id="cgroup_filter"
+          selected_cgroups="{{selected_cgroups}}"
+          available_cgroups="{{available_cgroups}}"
+          available_cgroups_displayed="{{available_cgroups_displayed}}">
+        </cgroup-filter>
+
+      </div>
 
     </div>
 
-    <div id="map_container">
+    <div id="map_container" on-tap="search_box_minimize">
       <google-map-search id="google_map_search"
         map="{{map}}"
         globalSearch
@@ -91,7 +119,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <google-map id="google_map" map="{{map}}" latitude="{{this.$.google_map_search.result.latitude}}" 
         single-info-window
         longitude="{{this.$.google_map_search.result.longitude}}" 
-        zoom="13" class="fit">
+        zoom="13" class="fit"
+        drag-events="true"
+        on-google-map-drag="search_box_minimize">
 
         <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
           <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
@@ -177,13 +207,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         type: String,
         notify: true,
         observer: '_distance_units_changed_handler'
-      }        
+      },
+      search_box_maximized_class: {
+        type: String,
+        value: '',
+        notify: true
+      },
+      hide_search_box_controls: {
+        type: Boolean,
+        value: true,
+        notify: true
+      }
 
     },
     observers: [
       // Needed because selected_cgroups is an array
       '_selected_cgroups_changed(selected_cgroups.splices)'
     ],
+    listeners: {
+      'search-box-maximize': 'search_box_maximize'
+    },
     ready: function() {
       this.voice_recognition_state = 'OFF';
       this.model = this.$.model_object.properties.model.value;
@@ -343,6 +386,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.google_map.latitude = lat;
         this.$.google_map.longitude = lng;
       }
+      // Minimize the search box after 10 seconds if the user hasn't interacted
+      this.async(function(){
+        this.search_box_minimize();
+      }, 5000);
     },
 
     toggle_voice_recognition: function() {
@@ -518,7 +565,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           {search_distance_units: this.search_distance_units});
         // TODO: Update the map's bounds
       }
+    },
+
+    /* Handle custom event to maximize the search box
+     */
+    search_box_maximize: function(event) {
+      this.search_box_maximized_class = 'maximized';
+      this.async(function(){
+        this.hide_search_box_controls = false;
+      }, 500);
+    },
+
+    /* Handle minimizing the search box
+     */
+    search_box_minimize: function(event) {
+      this.search_box_maximized_class = '';
+      this.hide_search_box_controls = true;
     }
+
+
   });
 })();
 </script>
