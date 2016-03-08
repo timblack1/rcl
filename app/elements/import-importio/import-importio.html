@@ -218,6 +218,7 @@
         });
         reader.readAsText(file);
       },
+
       /* Translate from importio cong format to our schema, then save the cong. Note this
        *  currently only handles an importio-formatted congs_obj.
        */
@@ -335,6 +336,7 @@
           }).fail(thiz.fail_handler);
         });
       },
+
       update_cong: function(id, cong) {
         // Update cong in database
         return this.hoodie.punk.update('congregation', id, cong)
@@ -342,6 +344,7 @@
           return cong;
         }).fail(this.fail_handler);
       },
+      
       _show_hide_continue_button: function() {
         if (this.selected_cgroups.length === 0){
           this.hide_continue_button = true;
