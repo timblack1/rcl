@@ -35,11 +35,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       right: 0.5em;
       width: 30%;
       height: auto;
-      /* The rotation is pretty awesome but distracts from typing in the search box.
-/*       transform: rotate(0deg); */
       /* End properties to transition */
       transition: right 1s, display 1s, margin 1s, width 1s, 
-                  padding 1s, background-color 1s, transform 1s;
+                  padding 1s, background-color 1s;
     }
     #map_overlay.maximized {
       display: block;
@@ -49,7 +47,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       padding: 0 1em 1em 1em;
       margin-top: 0.5em;
       background-color: rgba(255,255,255,0.9);
-/*       transform: rotate(360deg); */
     }
     paper-toggle-button {
       display: block;
@@ -262,7 +259,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // this.hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
           // this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
           // this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', name:'Reformed Presbyterian Church in North America'});
+          // this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', 
+          //    name:'Reformed Presbyterian Church in North America'});
           // this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
           // this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
         
@@ -387,7 +385,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.$.google_map.longitude = lng;
       }
       // Minimize the search box after 10 seconds if the user hasn't interacted
-      this.async(function(){
+      this.async(function() {
         this.search_box_minimize();
       }, 5000);
     },
@@ -569,20 +567,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /* Handle custom event to maximize the search box
      */
-    search_box_maximize: function(event) {
+    search_box_maximize: function() {
       this.search_box_maximized_class = 'maximized';
-      this.async(function(){
+      this.async(function() {
         this.hide_search_box_controls = false;
       }, 500);
     },
 
     /* Handle minimizing the search box
      */
-    search_box_minimize: function(event) {
+    search_box_minimize: function() {
       this.search_box_maximized_class = '';
       this.hide_search_box_controls = true;
     }
-
 
   });
 })();
