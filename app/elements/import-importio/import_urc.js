@@ -34,6 +34,7 @@ var data = Array.from(document.querySelectorAll('.thickbox')).map(function(a){
   });
   ob.contact_type = ['Pastor'];
   ob._source = ['URC'];
+  ob._pageUrl = a.href;
   return ob;
 });
 
