@@ -1,4 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+
 <link rel="import" href="../../elements/model-object/model-object.html">
 <link rel="import" href="../../elements/cgroup-edit-form/cgroup-edit-form.html">
 <link rel="import" href="../../elements/cgroup-filter/cgroup-filter.html">
@@ -13,31 +16,50 @@
         text-align: center;
       }
       #continue_button {
-        margin-top: 1em;
+        background-color: green;
+        color: white;
       }
     </style>
     <model-object id="model_object" model="{{model}}"></model-object>
     <div>Select a JSON file of data exported from import.io:</div>
     <paper-input type="file" on-change="_handle_importio_file_selected"></paper-input>
-    <div hidden="{{hide_cgroup_filter}}">
-      <p>
-        Which denomination does this directory represent?
-      </p>
-      <p>
-        Please type its name, click on its button when it appears, 
-        then click the "Continue" button. If this denomination is not yet in the database,
-        please add it in order to continue.
-      </p>
-      <cgroup-filter id="cgroup_filter"
-        select_one_mode
-        selected_cgroups="{{selected_cgroups}}"></cgroup-filter>
-      <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
-      <paper-button id="continue_button"
-        hidden="{{hide_continue_button}}"
-        raised>
-        Continue
-      </paper-button>
-    </div>
+
+    <paper-dialog id="cgroup_filter_dialog" modal>
+
+      <h2>Which denomination does this directory represent?</h2>
+
+      <paper-dialog-scrollable>
+
+        <p>
+          Please type its name, click on its button when it appears, 
+          then click the "Continue" button. If this denomination is not yet in the database,
+          please add it in order to continue.
+        </p>
+
+        <cgroup-filter id="cgroup_filter"
+          select_one_mode
+          selected_cgroups="{{selected_cgroups}}"></cgroup-filter>
+        <cgroup-edit-form id="cgroup_edit_form" hidden="{{hide_cgroup_edit_form}}" cgroup="{{cgroup}}"></cgroup-edit-form>
+
+      </paper-dialog-scrollable>
+
+      <div class="buttons">
+
+        <paper-button dialog-dismiss>Cancel</paper-button>
+
+        <paper-button id="continue_button"
+          dialog-dismiss
+          hidden="{{hide_continue_button}}"
+          on-tap="continue_tapped"
+          raised
+        >
+          Continue
+        </paper-button>
+
+      </div>
+
+    </paper-dialog>
+
   </template>
   <script>
   (function() {
@@ -57,12 +79,17 @@
           value: true,
           notify: true
         },
-        hide_cgroup_filter: {
-          type: Boolean,
-          value: true,
+        directory: {
+          type: Object,
+          value: {},
           notify: true
         },
         cgroup: {
+          type: Object,
+          value: {},
+          notify: true
+        },
+        congs_obj: {
           type: Object,
           value: {},
           notify: true
@@ -103,6 +130,7 @@
        * - gets directory and congregation data from a user-selected import.io file
        * - writes directory and associated cgroup data to the database
        * - writes congregations into the database (which triggers geocoding congregations if necessary)
+       * TODO: Refactor this into smaller functions
        */
       _handle_importio_file_selected: function(event) {
         // from old URLView.js:importio_drop_target_drop
@@ -116,7 +144,7 @@
         reader.addEventListener('load', function loadEnd() {
           reader.removeEventListener(event.type, loadEnd);
           var json = reader.result;
-          var congs_obj = JSON.parse(json);
+          thiz.congs_obj = JSON.parse(json);
           // Determine if this import.io data source is already in a directory in the database.
           // Note that
           //  - a directory object represents one remote church directory website, and
@@ -124,7 +152,7 @@
           //  - a directory represents one cgroup (not many)
           //  So, we need to load a <cgroup-filter> here to allow the user to select the directory's cgroup.
           //  Use the importio_guid to determine this
-          var importio_guid = congs_obj.data[0]._source[0];
+          var importio_guid = thiz.congs_obj.data[0]._source[0];
           // Get this directory if it exists in the db
           thiz.hoodie.punk.findAll('directory')
           .done(function(directories) {
@@ -141,27 +169,32 @@
             }
             if (directories.length === 1){
               // Then display this directory's cgroup
-              var directory = directories[0];
+              thiz.directory = directories[0];
               // Find the cgroup which this directory represents, and display it in the <cgroup-filter>
               thiz.hoodie.punk.findAll('cgroup')
               .done(function(available_cgroups) {
                 thiz.$.cgroup_filter.available_cgroups = available_cgroups;
-                // Get related cgroup
-                thiz.hoodie.punk.find('cgroup', directory.cgroup_id)
-                .done(function(cgroup) {
-                  // Display related cgroup in <cgroup-filter>
-                  thiz.$.cgroup_filter.selected_cgroups = [cgroup];
-                  thiz.hide_cgroup_filter = false;
-                  // TODO: Start here.  Set up listener (elsewhere in the code) to handle updating the cgroup_directory
-                  //  docs with their new new cgroups. https://github.com/timblack1/rcl/issues/61
-                }).fail(thiz.fail_handler);
+                // Get related cgroup if it exists
+                if (typeof thiz.directory.cgroup_id !== 'undefined'){
+                  thiz.hoodie.punk.find('cgroup', thiz.directory.cgroup_id)
+                  .done(function(cgroup) {
+                    // Display related cgroup in <cgroup-filter>
+                    thiz.$.cgroup_filter.selected_cgroups = [cgroup];
+                    thiz.$.cgroup_filter_dialog.open();
+                    // TODO: Start here.  Set up listener (elsewhere in the code) 
+                    //  to handle updating the cgroup_directory
+                    //  docs with their new cgroups. https://github.com/timblack1/rcl/issues/61
+                  }).fail(thiz.fail_handler);
+                }else{
+                  thiz.$.cgroup_filter_dialog.open();
+                }
               }).fail(thiz.fail_handler);
             }else{
               // Else create this directory
 
               // Get domain name
               var a = document.createElement('a');
-              a.href = congs_obj.data[0]._pageUrl;
+              a.href = thiz.congs_obj.data[0]._pageUrl;
               var domain_name = a.hostname;
 
               // Create directory
@@ -174,11 +207,13 @@
               // Associate one cgroup with this directory
               .done(function(directory) {
 
+                thiz.directory = directory;
+
                 // Display <cgroup-filter> to permit user to select or create the related cgroup
                 thiz.hoodie.punk.findAll('cgroup')
                 .done(function(available_cgroups) {
                   thiz.$.cgroup_filter.available_cgroups = available_cgroups;
-                  thiz.hide_cgroup_filter = false;
+                  thiz.$.cgroup_filter_dialog.open();
                   // Focus the paper-input to make it easy for a user to start typing
                   thiz.$.cgroup_filter.$.filter_input.$.input.focus();
                   // Note: There are two ways by which the user can select a cgroup below:
@@ -188,13 +223,14 @@
                   thiz.$.cgroup_filter.addEventListener('submit', function handle_cgroup_edit_form_submit(event) {
                     thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                     thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
-                    thiz.hide_cgroup_filter = true;
+                    thiz.$.cgroup_filter_dialog.open();
                     thiz.hoodie.punk.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                     .done(function(cgroup) {
                       // Associate this new cgroup with the directory
-                      thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
+                      thiz.hoodie.punk.update('directory', thiz.directory.id, {cgroup_id: cgroup.id})
                       .done(function(directory) {
-                        thiz._translate_and_save_congs(congs_obj, directory, cgroup);
+                        thiz.directory = directory;
+                        thiz._translate_and_save_congs();
                       }).fail(thiz.fail_handler);
                     }).fail(thiz.fail_handler);
                   });
@@ -202,11 +238,11 @@
                   thiz.$.continue_button.addEventListener('tap', function handle_cgroup_selection(event) {
                     thiz.$.continue_button.removeEventListener(event.type, handle_cgroup_selection);
                     var cgroup = thiz.$.cgroup_filter.selected_cgroups[0];
-                    thiz.hide_cgroup_filter = true;
+                    thiz.$.cgroup_filter_dialog.open();
                     // Associate this cgroup with the directory
-                    thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
+                    thiz.hoodie.punk.update('directory', thiz.directory.id, {cgroup_id: cgroup.id})
                     .done(function(directory) {
-                      thiz._translate_and_save_congs(congs_obj, directory, cgroup);
+                      thiz._translate_and_save_congs();
                     }).fail(thiz.fail_handler);
                   });
                 });
@@ -220,69 +256,74 @@
       },
 
       /* Translate from importio cong format to our schema, then save the cong. Note this
-       *  currently only handles an importio-formatted congs_obj.
+       *  currently only handles an importio-formatted this.congs_obj.
        */
-      _translate_and_save_congs: function(congs_obj, directory, cgroup) {
+      _translate_and_save_congs: function() {
         var thiz = this;
         // Note: The attribute which contains the list of cong data objects is called congs_obj.data
-        var congs = congs_obj.data;
-        
-        congs.forEach(function(cong) {
-          // Note: Most attributes contain lists.
-          // So if an attribute is a list is longer than 1 item, join the items together with <br />
-          var new_cong = {};
-          // Create a new object which has model.congregation as its prototype
-          var cong_template = Object.create(thiz.model.congregation);
-          // Import only the fields we want in our model
-          Object.keys(cong_template.default_attributes).forEach(function handle_attribute(attribute) {
-            // Only join if it is of type = array
-            new_cong[attribute] = Array.isArray(cong[attribute]) ? cong[attribute].join('<br />') : cong[attribute];
-          });
-          new_cong.contact_email = (
-            new_cong.hasOwnProperty('contact_email') && 
-            typeof new_cong.contact_email !== 'undefined') ? new_cong.contact_email.replace('mailto:','') : '';
-          // cong._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
-          //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
-          new_cong.page_url = cong._pageUrl;
-          // Handle congs from OPC.org
-          if (new_cong.page_url.indexOf('opc.org') !== -1){
-            // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
-            //  character of each word.
-            // TODO: This doesn't work with names including words like 'of'. Maybe that's why they are ALLCAPS.
-            new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-          }
-          // Normalize state names
-          [
-            {long: 'ontario', short: 'on'},
-            {long: 'alberta', short: 'ab'}
-          ].forEach(function(state) {
-            ['meeting_state', 'mailing_state'].forEach(function(field) {
-              if (new_cong[field].toLowerCase() === state.long){
-                new_cong[field] = state.short.toUpperCase();
-              }
-            });
-          });
-          // Record the source of this revision of this cong
-          new_cong.source_id = directory.id;
-          // Record the denomination of which this cong is a member
-          new_cong.denomination_cgroup_id = cgroup.id;
-          new_cong.denomination_abbreviation = cgroup.abbreviation;
+        var congs = this.congs_obj.data;
 
-          // Save to database
-          // Find out whether this cong exists in the database
-          thiz.hoodie.punk.findAll('congregation')
-          .done(function(congs_found) {
+        this.hoodie.punk.findAll('congregation')
+        .done(function(congs_in_db) {
+
+          congs.forEach(function(cong) {
+            // Note: Most attributes contain lists.
+            // So if an attribute is a list longer than 1 item, join the items together with <br />
+            var new_cong = {};
+            // Create a new object which has model.congregation as its prototype
+            var cong_template = Object.create(thiz.model.congregation);
+            // Import only the fields we want in our model
+            Object.keys(cong_template.default_attributes).forEach(function handle_attribute(attribute) {
+              // Only join if it is of type = array
+              new_cong[attribute] = Array.isArray(cong[attribute]) ? cong[attribute].join('<br />') : cong[attribute];
+            });
+            new_cong.contact_email = (
+              new_cong.hasOwnProperty('contact_email') && 
+              typeof new_cong.contact_email !== 'undefined') ? new_cong.contact_email.replace('mailto:','') : '';
+            // cong._pageUrl contains the cong's unique database id in the URL.  Note that we save this attribute since
+            //  it is useful for identifying the cong and data source uniquely if we need to search for it or sync it.
+            new_cong.page_url = cong._pageUrl;
+            // Handle congs from OPC.org
+            if (typeof new_cong.page_url !== 'undefined' &&
+                new_cong.page_url.indexOf('opc.org') !== -1){
+              // Note that data[n].name is in ALLCAPS!!  So change to capitalize only the first 
+              //  character of each word.
+              // TODO: This doesn't work with names including words like 'of'. Maybe that's why they are ALLCAPS.
+              new_cong.name = new_cong.name.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+            }
+            // Normalize state names
+            [
+              {long: 'ontario', short: 'on'},
+              {long: 'alberta', short: 'ab'}
+            ].forEach(function(state) {
+              ['meeting_state', 'mailing_state'].forEach(function(field) {
+                if (new_cong[field].toLowerCase() === state.long){
+                  new_cong[field] = state.short.toUpperCase();
+                }
+              });
+            });
+            // Record the source of this revision of this cong
+            new_cong.source_id = thiz.directory.id;
+            // Record the denomination of which this cong is a member
+            new_cong.denomination_cgroup_id = thiz.cgroup.id;
+            new_cong.denomination_abbreviation = thiz.cgroup.abbreviation;
+
+            // Save to database
+            // Find out whether this cong exists in the database
             // Workaround fact hoodie.punk.findAll(function) doesn't work
-            congs_found = congs_found.filter(function(cong_found) {
+            congs_found = congs_in_db.filter(function(cong_found) {
               if (cong_found.page_url === new_cong.page_url){
                 return true;
               }
             });
+            debugger;
+            // TODO: Start here.  This breakpoint isn't hit.
             if (congs_found.length > 0){
               // Cong already exists in the database, so update with new attributes
 
               // Compare old address values with new address values.
               //  If the new_cong's values are different, then flag to geocode this cong.
+              // TODO: This function doesn't exist in this scope
               if (thiz._get_cong_address_to_geocode(new_cong) !== thiz._get_cong_address_to_geocode(congs_found[0])){
                 // Set regeocode flag
                 new_cong.regeocode = true;
@@ -297,13 +338,13 @@
                 // Workaround fact hoodie.punk.findAll(function) doesn't work
                 cgroup_congregations = cgroup_congregations.filter(function(doc) {
                   if (doc.congregation_id === congs_found[0].id && 
-                      doc.cgroup_id === cgroup.id){
+                      doc.cgroup_id === thiz.cgroup.id){
                     return true;
                   }
                 });
                 if (cgroup_congregations.length === 0){
                   thiz.hoodie.punk.add('cgroup-congregation', {
-                    cgroup_id: cgroup.id,
+                    cgroup_id: thiz.cgroup.id,
                     congregation_id: congs_found[0].id
                   })
                   .publish()
@@ -324,7 +365,7 @@
 
                 // Create a join doc for this congregation's cgroup
                 thiz.hoodie.punk.add('cgroup-congregation', {
-                  cgroup_id: cgroup.id,
+                  cgroup_id: thiz.cgroup.id,
                   congregation_id: congs_found[0].id
                 })
                 .publish()
@@ -333,12 +374,16 @@
               }).fail(thiz.fail_handler);
 
             }
-          }).fail(thiz.fail_handler);
-        });
+
+          });
+
+        }).fail(thiz.fail_handler);
+        
       },
 
+      /* Update cong in database
+       */
       update_cong: function(id, cong) {
-        // Update cong in database
         return this.hoodie.punk.update('congregation', id, cong)
         .done(function(cong) {
           return cong;
@@ -351,6 +396,24 @@
         }else{
           this.hide_continue_button = false;
         }
+      },
+
+      /* Continue button was tapped.  Associate this cgroup with its directory.
+       */
+      continue_tapped: function() {
+
+        // TODO: Start here.
+        // Get variables into this scope: directory, cgroup, congs_obj
+        var thiz = this;
+        this.cgroup = this.$.cgroup_filter.selected_cgroups[0];
+        this.$.cgroup_filter_dialog.close();
+        // Associate this cgroup with the directory
+        this.hoodie.punk.update('directory', this.directory.id, {cgroup_id: this.cgroup.id})
+        .done(function(directory) {
+          thiz.directory = directory;
+          thiz._translate_and_save_congs();
+        }).fail(this.fail_handler);
+
       }
 
     });
