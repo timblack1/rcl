@@ -416,7 +416,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
         debugger  
-        var zoomlevel = this._get_zoomlevel();   
+        var zoomlevel = this._get_zoomlevel   
       }
     },
     _get_zoomlevel: function()  {
@@ -439,8 +439,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
       //Get the map zoom level
       var zoom = this.map.getZoom();
-      //START HERE TODO: Get the ratio between the radius distance and the map's zoom level.
+      //Get the ratio between the radius distance and the map's zoom level.
+      //Store the ratio for access later.
+      var ratio = dis/zoom; 
+    },
+    calculate_zoom: function() {
+      //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
+      var zoom = dis/ratio;
     }
+//START HERE TODO  Attach this function to the radius property change observer. 
+
   });
 })();
 </script>
