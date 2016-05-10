@@ -34,7 +34,7 @@
     "request": "^2.66.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.12.5",
+    "browser-sync": "^2.12.6",
     "browserify": "~13.0.0",
     "connect-history-api-fallback": "^1.2.0",
     "del": "^2.1.0",
