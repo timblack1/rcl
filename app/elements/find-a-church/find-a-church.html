@@ -438,15 +438,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var dis = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + 
         Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
       //Get the map zoom level
-      var zoom = this.map.getZoom();
+      var current_zoom = this.map.getZoom();
       //Get the ratio between the radius distance and the map's zoom level.
       //Store the ratio for access later.
-      var ratio = dis/zoom; 
-    },
-    calculate_zoom: function() {
+      var ratio = dis/current_zoom; 
       //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
-      var zoom = dis/ratio;
-    }
+      var new_zoom = dis/ratio;
+      this.map.setZoom(new_zoom);
+    },
 //START HERE TODO  Attach this function to the radius property change observer. 
 
   });
