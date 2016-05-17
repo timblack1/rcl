@@ -1,5 +1,6 @@
 {
   "name": "reformed-churches-locator",
+  "version": "0.0.0-semantically-released",
   "type": "app",
   "license": "BSD-3-Clause-Clear",
   "description": "The most up-to-date directory of Reformed churches worldwide.",
@@ -25,12 +26,8 @@
     "hoodie": "./bower_components/hoodie-service/hoodie.js"
   },
   "dependencies": {
-    "hoodie": "latest",
-    "hoodie-plugin-appconfig": "^2.0.1",
-    "hoodie-plugin-http": "latest",
-    "hoodie-plugin-punk": "https://github.com/timblack1/hoodie-plugin-punk/tarball/patch-1",
-    "hoodie-plugin-users": "^2.2.2",
-    "hoodie-server": "^4.0.3",
+    "hapi": "^13.3.0",
+    "hoodie": "^21.0.0",
     "request": "^2.66.0"
   },
   "devDependencies": {
@@ -65,26 +62,18 @@
     "merge-stream": "^1.0.0",
     "require-dir": "^0.3.0",
     "run-sequence": "^1.1.4",
-    "semantic-release": "^4.3.5",
+    "semantic-release": "^6.0.3",
     "vulcanize": ">=1.14.8",
     "web-component-tester": "^4.0.3"
   },
   "scripts": {
     "test": "node_modules/hoodie-server/bin/start --custom-ports=3002,3003,3004 & pid=$! && wct && kill $pid",
     "start": "gulp serve",
+    "start-hoodie": "hoodie",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "start-production": "npm install -g pm2@latest && pm2 updatePM2 && pm2 restart rcl_start"
   },
   "engines": {
     "node": ">=0.12.0"
-  },
-  "hoodie": {
-    "plugins": [
-      "hoodie-plugin-appconfig",
-      "hoodie-plugin-http",
-      "hoodie-plugin-punk",
-      "hoodie-plugin-users"
-    ],
-    "hoodiejs": "node_modules/hoodie/src/hoodie.js"
   }
 }

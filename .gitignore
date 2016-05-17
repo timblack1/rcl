@@ -2,6 +2,7 @@
 *.swp
 node_modules
 data
+data.bak
 dist
 test/temp
 .sass-cache
@@ -10,3 +11,5 @@ bower_components
 test/bower_components/
 .publish/
 data_import
+.hoodierc
+.hoodie
