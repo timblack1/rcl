@@ -405,7 +405,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined'){
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
-        var zoomlevel = this._get_zoomlevel();
+        this.map.setZoom(this._get_zoomlevel());
 
       }
     },
@@ -415,8 +415,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined') {
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
-        debugger  
-        var zoomlevel = this._get_zoomlevel   
+        this.map.setZoom(this._get_zoomlevel());  
       }
     },
     _get_zoomlevel: function()  {
@@ -444,7 +443,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var ratio = dis/current_zoom; 
       //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
       var new_zoom = dis/ratio;
-      this.map.setZoom(new_zoom);
+      return new_zoom;
     },
 //START HERE TODO  Attach this function to the radius property change observer. 
 
