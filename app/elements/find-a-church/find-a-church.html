@@ -168,6 +168,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         value: {},
         notify: true
       },
+      ratio: {
+        type: Number,
+        notify: true
+      },
       search_radius: {
         type: Number,
         notify: true,
@@ -406,7 +410,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
         this.map.setZoom(this._get_zoomlevel());
-
       }
     },
      
@@ -439,14 +442,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       //Get the map zoom level
       var current_zoom = this.map.getZoom();
       //Get the ratio between the radius distance and the map's zoom level.
-      //Store the ratio for access later.
-      var ratio = dis/current_zoom; 
+      var ratio = dis/current_zoom;      
+      // Store the ratio for access later
+      this.ratio = ratio
       //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
       var new_zoom = dis/ratio;
       return new_zoom;
     },
-//START HERE TODO  Attach this function to the radius property change observer. 
-
   });
 })();
 </script>
