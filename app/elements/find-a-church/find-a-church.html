@@ -418,6 +418,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined') {
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
+          console.log(this._get_zoomlevel());
         this.map.setZoom(this._get_zoomlevel());  
       }
     },
@@ -445,8 +446,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var ratio = dis/current_zoom;      
       // Store the ratio for access later
       this.ratio = ratio
+      //START HERE: Thbe new zoom level is incorrect.
       //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
-      var new_zoom = dis/ratio;
+      var new_zoom = Math.floor(this.search_radius/ratio);
       return new_zoom;
     },
   });
