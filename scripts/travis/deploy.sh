@@ -3,6 +3,9 @@
 # Note: The output of many of the commands below is redirected to /dev/null to
 # prevent the Travis CI log from getting too long and causing the build to fail.
 
+# TODO: Get deploy working.
+exit
+
 npm i -g npm@^2.0.0 &> /dev/null
 npm install -g gulp &> /dev/null
 npm install gulp &> /dev/null
