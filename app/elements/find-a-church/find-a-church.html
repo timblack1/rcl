@@ -422,7 +422,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.map.setZoom(this._get_zoomlevel());  
       }
     },
-    _get_zoomlevel: function()  {
+    _get_zoomlevel: function() {
+
       var bounds = this.map.getBounds();
 
       var center = bounds.getCenter();
@@ -446,17 +447,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var ratio = dis/current_zoom;      
       // Store the ratio for access later
       this.ratio = ratio
+      // When the user changes the radius proximity control, use the new search_radius
+      // to calculate the new zoom level to use.
       //START HERE: The new zoom level is incorrect.
-      //  When the user changes the radius proximity control, use that ratio to calculate the new zoom level to use.
-      // var new_zoom = Math.floor(this.search_radius*ratio);
-      // (2^z) = original_radius_miles/new_radius_miles
+      // (2^new_zoom) = original_radius_miles/new_radius_miles
+      // We can factor out new_zoom using the following formula:
       // For a = b^c, c = log b of a, or c = Math.log(a) / Math.log(b)
-      var new_zoom = Math.floor(Math.log(dis/this.search_radius) / Math.log(2));
-     // var one=this.search_radius/ratio;
+      //var new_zoom = Math.round(Math.log(dis/Number(this.search_radius)) / Math.LN2);
+      //var new_zoom = Math.round(Math.log(Number(this.search_radius)) / Math.LN2);
+      // Note: this formula causes the zoom to change in the correct direction
+      var new_zoom = Math.round(Math.LN2 / Math.log(Number(this.search_radius)));
+      debugger;
+      // var one=this.search_radius/ratio;
       //var two=ratio/this.search_radius;
-     // var three=ratio*this.search_radius
-     return new_zoom;
-  },
+      // var three=ratio*this.search_radius
+      return new_zoom;
+      
+    },
   });
 })();
 </script>
