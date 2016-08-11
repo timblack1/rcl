@@ -106,9 +106,13 @@ To run tests Java 7 or higher is required. To update Java go to
 http://www.oracle.com/technetwork/java/javase/downloads/index.html and download ***JDK*** and 
 install it.
 
+### Further developer documentation
+
+Further developer documentation (currently a work in progress) is available at [docs/development.md].
+
 ## Deployment
 
-Because the application is still in development, we have not yet documented how to deploy it to a server.
+Because the application is still in development, we have not yet documented how to deploy it to a server.  Though, a beginning is made at [docs/deployment.md].
 
 ## Frequently Asked Questions
 
