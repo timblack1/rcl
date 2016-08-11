@@ -108,11 +108,11 @@ install it.
 
 ### Further developer documentation
 
-Further developer documentation (currently a work in progress) is available at [docs/development.md].
+[Further developer documentation](docs/development.md) is currently a work in progress.
 
 ## Deployment
 
-Because the application is still in development, we have not yet documented how to deploy it to a server.  Though, a beginning is made at [docs/deployment.md].
+Because the application is still in development, we have not yet documented how to deploy it to a server.  Though, the [default Hoodie deployment docs](docs/deployment.md) are a helpful beginning.
 
 ## Frequently Asked Questions
 
