@@ -17,16 +17,6 @@ Reformed Churches Locator will recreate the map & congregations components of Pr
 federated or peer-to-peer fashion in order to manage data from all Reformed churches rather 
 than from only one presbytery.
 
-## Application Architecture
-
-Please note that older Reformed Churches Locator issues which describe the overall application 
-architecture are hosted at https://blueprints.launchpad.net/reformedchurcheslocator.
-
-Reformed Churches Locator is an "Offline first" application, meaning it will run well offline, 
-then sync its data to the server when it has an internet connection.  It uses Hoodie to store
-the app's data locally using PouchDB, and syncs to CouchDB on the server through Hoodie's 
-server-side API.
-
 ## Installation
 
 The following instructions are specific to installing this application on Ubuntu Linux.  Installation
@@ -106,9 +96,13 @@ To run tests Java 7 or higher is required. To update Java go to
 http://www.oracle.com/technetwork/java/javase/downloads/index.html and download ***JDK*** and 
 install it.
 
+### Further developer documentation
+
+[Further developer documentation](docs/development.md) is currently a work in progress.
+
 ## Deployment
 
-Because the application is still in development, we have not yet documented how to deploy it to a server.
+Because the application is still in development, we have not yet documented how to deploy it to a server.  Though, the [default Hoodie deployment docs](docs/deployment.md) are a helpful beginning.
 
 ## Frequently Asked Questions
 
