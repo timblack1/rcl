@@ -48,7 +48,7 @@ case "$1" in
 
     # the command
     # sudo -u $hoodie_user \
-    COUCH_URL=http://127.0.0.1:6003 \
+    # COUCH_URL=http://127.0.0.1:6003 \
     HOODIE_ADMIN_USER=admin \
     HOODIE_ADMIN_PASS="$HOODIE_ADMIN_PASS" \
     HOME=$apphome \
