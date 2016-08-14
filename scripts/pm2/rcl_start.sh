@@ -17,6 +17,10 @@
 userhome=/home/timblack1
 apphome=$userhome/webapps/rcl
 pidfile=$apphome/data/hoodie.pid
+# Note that we put the logs here because Webfaction runs
+# logrotate on ~/logs/user/.  For this reason, we also have
+# made symbolic links from ~/webapps/rcl/data/couch.stderr
+# and ~/webapps/rcl/data/couch.stdout to ~/logs/user/.
 stdoutfile=$userhome/logs/user/rcl.stdout
 stderrfile=$userhome/logs/user/rcl.stderr
 #hoodie_user=hoodie
