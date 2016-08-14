@@ -14,11 +14,11 @@
 # kill -INT pid # so couchdb can stop gracefully
 # rm the pidfile
 
-userhome=/home/timblack1/
-apphome=$userhome/webapps/rcl/
+userhome=/home/timblack1
+apphome=$userhome/webapps/rcl
 pidfile=$apphome/data/hoodie.pid
-stdoutfile=$userhome/logs/user/hoodie.stdout
-stderrfile=$userhome/logs/user/hoodie.stderr
+stdoutfile=$userhome/logs/user/rcl.stdout
+stderrfile=$userhome/logs/user/rcl.stderr
 #hoodie_user=hoodie
 
 # mkdir -p $apphome/log
