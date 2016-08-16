@@ -32,5 +32,8 @@ HOODIE_ADMIN_PASS="$HOODIE_ADMIN_PASS" \
 HOME=$apphome \
 node node_modules/hoodie-server/bin/start --custom-ports 20188,19911,27069 -w dist \
 1>>$stdoutfile \
-2>>$stderrfile 
+2>>$stderrfile
+
+
+
 
