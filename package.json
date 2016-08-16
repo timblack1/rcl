@@ -72,7 +72,8 @@
     "test": "node_modules/hoodie-server/bin/start --custom-ports=3002,3003,3004 & pid=$! && wct && kill $pid",
     "start": "gulp serve",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post",
-    "start-production": "npm install -g pm2@latest && pm2 updatePM2 && pm2 restart rcl_start"
+    "start-production": "npm install -g pm2@latest && pm2 updatePM2 && pm2 restart rcl_start",
+    "start-production-first": "scripts/pm2/first_start.sh"
   },
   "engines": {
     "node": ">=0.12.0"
