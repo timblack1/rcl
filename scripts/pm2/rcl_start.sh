@@ -22,8 +22,6 @@ cd $apphome
 #export HOODIE_BIND_ADDRESS=0.0.0.0:11411
 #export COUCH_URL=http://127.0.0.1:11411
 # hoodie start -n --custom-ports 20188,19911,27069 -w dist
-# TODO: Decide whether the following is what we need instead of the above
-# gulp serve:dist
 # ---------------------------------------------------------------------
 
 # the command
@@ -34,5 +32,5 @@ HOODIE_ADMIN_PASS="$HOODIE_ADMIN_PASS" \
 HOME=$apphome \
 node node_modules/hoodie-server/bin/start --custom-ports 20188,19911,27069 -w dist \
 1>>$stdoutfile \
-2>>$stderrfile \
+2>>$stderrfile 
 
