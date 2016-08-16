@@ -7,8 +7,8 @@
 userhome=/home/timblack1
 apphome=$userhome/webapps/rcl
 pidfile=$apphome/data/hoodie.pid
-stdoutfile=$userhome/logs/user/rcl.stdout
-stderrfile=$userhome/logs/user/rcl.stderr
+stdoutfile=$userhome/logs/user/rcl.stdout.log
+stderrfile=$userhome/logs/user/rcl.stderr.log
 #hoodie_user=hoodie
 
 # mkdir -p $apphome/log
