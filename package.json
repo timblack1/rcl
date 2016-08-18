@@ -59,7 +59,7 @@
     "gulp-useref": "^3.1.0",
     "gulp-vulcanize": "^6.1.0",
     "http-proxy-middleware": "^0.17.0",
-    "jshint": "^2.9.2",
+    "jshint": "^2.9.3",
     "jshint-stylish": "^2.1.0",
     "merge-stream": "^1.0.0",
     "require-dir": "^0.3.0",
