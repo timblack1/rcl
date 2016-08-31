@@ -56,7 +56,7 @@
     "gulp-replace": "^0.5.4",
     "gulp-size": "^2.1.0",
     "gulp-uglify": "^2.0.0",
-    "gulp-useref": "^3.1.0",
+    "gulp-useref": "^3.1.1",
     "gulp-vulcanize": "^6.1.0",
     "http-proxy-middleware": "^0.17.0",
     "jshint": "^2.9.2",
