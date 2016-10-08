@@ -439,88 +439,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var oldSearchRadius = this.search_radius;
       }
 
-//       var bounds = this.map.getBounds();
-
-//       var center = bounds.getCenter();
-//       var ne = bounds.getNorthEast();
-
-      // r = radius of the earth in statute miles
-//       var r = 3963.0;  
-
-      // Convert lat or lng from decimal degrees into radians (divide by 57.2958)
-//       var lat1 = center.lat() / 57.2958; 
-//       var lon1 = center.lng() / 57.2958;
-//       var lat2 = ne.lat() / 57.2958;
-//       var lon2 = ne.lng() / 57.2958;
-
-      // distance = circle radius from center to Northeast corner of bounds
-      // TODO: Try getting the oldSearchRadius from the mutation event
-//       var oldSearchRadius = r * Math.acos(Math.sin(lat1) * Math.sin(lat2) + 
-//         Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1));
-      //Get the map zoom level
       var oldZoom = this.map.getZoom();
-      //Get the ratio between the radius distance and the map's zoom level.
-//       var ratio = oldSearchRadius/oldZoom;      
-      // Store the ratio for access later
-//       this.ratio = ratio
-      // When the user changes the radius proximity control, use the new search_radius
-      // to calculate the new zoom level to use.
-      
-      //START HERE: The new zoom level is incorrect.
-      // (2^newZoom) = oldSearchRadius/newSearchRadius
-      // We can factor out newZoom using the following formula:
-      // Form of example that was on StackOverflow:
-      // For a = b^c, c = log b of a, or c = Math.log(a) / Math.log(b)
-      // Example rearranged into the form we will use:
-      // b^c = a, c = log b of a, or c = Math.log(a) / Math.log(b)
-      // The example using our variables
-      // (2^newZoom) = oldSearchRadius/newSearchRadius;
-      // Our variables, refactored according to the example, using Math.LN2 as a
-      // faster way to get Math.log(2):
-      // TODO: Start here.  This formula is not right, because it's returning a negative
-      // value.  The negative value comes from the first call to Math.log, when the first
-      // division returns a value between 0 and 1.
-//       var newZoom = Math.log10(oldSearchRadius / Number(newSearchRadius)) / Math.log10(2)
-
-//       debugger;
-//       return newZoom;
-
-      /* Here is a different way to conceive of the problem.
-         
-         Start with the current radius in miles as a given.
-         Compare it logarithmicly with the new radius in miles.
-         Calculate the new zoom level logarithmicly from that comparison
-         Something like this, but this is almost certainly wrong:
-         log10(zoom) = log10(currentRadius) - log10(newRadius)
-         newZoom = oldZoom + Math.pow(10, Math.log10(oldSearchRadius) - Math.log10(newSearchRadius))
-
-      */
-      // Note:  This works correctly when you reduce the radius by half
-      // This doesn't work correctly when you double the radius; instead of subtracting 1
-      // from the zoom level, it only subtracts 0.5.
-      // TODO: Start here.  This seems like something we can figure out.
-      /* Chart of inputs & outputs
-         Oldmiles   Newmiles    Oldzoom Newzoom Shouldbe    Error
-         24         48          13.041  12.541  12.041      0.5
-         24         96          13.041  12.291  11.041      1.25
-         24         192         13.041  12.166  10.041      2.125
-         48         24          12.520  13.520  13.520      0
-         24         12          19.130  20.130  20.130      0
-         24         6           13.583  16.583  15.583      1
-         6          3           16.166  17.166  17.166      0
-         24         3           13.041  20.041  16.041      4
-
-      */
-//       var newSearchRadius = parseInt(newSearchRadius, 10);
-//       var newZoom = oldZoom - (2 * Math.pow(10, Math.log10(oldSearchRadius) - Math.log10(newSearchRadius)));
-//       // var newZoom = oldZoom - 1 + Math.pow(10, Math.log10(oldSearchRadius) / Math.log10(newSearchRadius));
-// //       var newZoom = oldZoom - (2 * Math.pow(10, Math.log10(oldSearchRadius) / Math.log10(newSearchRadius)));
-//       console.log(oldSearchRadius, newSearchRadius, oldZoom, newZoom);
-// //       debugger;
-//       return newZoom;
-
       /*
-      This is the order in which the user's interaction works.  First, the interface has a zoom level.  Then the user selects a new search radius (in miles), which moves the user's selection up or down the rows of the table below.  We need to calculate the new zoom level which results.
+      This is the order in which the user's interaction works.  First, the interface 
+      has a zoom level.  Then the user selects a new search radius (in miles), which
+      moves the user's selection up or down the rows of the table below.  We need to 
+      calculate the new zoom level which results.
+
+      Google Maps' zoom levels start at 0 for the widest view.  Each new zoom level
+      integer displays 1/2 the height and 1/2 the width of the previous zoom level,
+      so 1/4 the total area.  So if the search radius is 24000 miles for zoom level 0,
+      the search radius is 12000 miles for zoom level 1.  This relationship is described
+      in the chart below.
 
       miles    |  zoom  |  divide original miles by (shows quadratic progression)
       ----------|-----------|--------
@@ -533,7 +463,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       375      |     6      |   64   
       187.5   |     7      | 128   
 
-      When miles go down by 1/2, zoom goes up by 1.  When miles go up by 2x, zoom goes down by 1.  We need to translate this into a function which takes in a new number of miles selected by the user, and outputs a new zoom level.
+      When miles go down by 1/2, zoom goes up by 1.  When miles go up by 2x, zoom goes 
+      down by 1.  We need to translate this into a function which takes in a new number 
+      of miles selected by the user, and outputs a new zoom level.
 
       The formula to refactor:
 
@@ -553,35 +485,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       console.log('newZoom: ', newZoom);
       return newZoom;
 
-      /*
-
-      //var newZoom = Math.log(oldSearchRadius/Number(this.search_radius)) / Math.LN2;
-      //var newZoom = Math.log(Number(this.search_radius)) / Math.LN2;
-      // Note: this formula causes the zoom to change in the correct direction
-      var newZoom = Math.LN2 / Math.log(Number(this.search_radius));
-      debugger;
-      // var one=this.search_radius/ratio;
-      //var two=ratio/this.search_radius;
-      // var three=ratio*this.search_radius
-      return newZoom;
-
-      */
-
-      /*
-      // TODO: Try calculating the new zoom level with the following simpler formula:
-      // TODO: Consider just getting this "old" value from the mutation event
-      var oldSearchRadius = event.old;
-      var oldZoomLevel = this.map.getZoom();
-      // The new zoom distance comes from user input
-      var newSearchRadius = this.search_radius;
-      // Calculate the ratio between the old and new search radii
-      var ratio = newSearchRadius / oldSearchRadius;
-      // Multiply the ratio by the old zoom level
-      var newZoomLevel = Math.round(ratio * oldZoomLevel)
-      */
-
-
-      
     },
   });
 })();
