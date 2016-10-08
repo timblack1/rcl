@@ -423,9 +423,51 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     },
     
-    /* Get new zoom level using user's search radius and distance units
+    /*  Get new zoom level using user's search radius and distance units
        
-       Note:  newSearchRadius and oldSearchRadius are optional arguments
+        Note:  newSearchRadius and oldSearchRadius are optional arguments
+
+        Explanation of the algorithm:
+
+        Here is the order in which the user interacts with the zoom level:
+
+        First, the interface has an existing zoom level and search radius.  Then the
+        user selects a new search radius (in miles), which moves the user's selection 
+        up or down the rows of the table below.
+
+        We need to calculate the _new zoom level_ which results.
+
+        Google Maps' zoom levels start at 0 for the widest view.  Each new zoom level
+        integer displays 1/2 the height and 1/2 the width of the previous zoom level,
+        so 1/4 the total area.  So if the search radius is 24000 miles for zoom level 0,
+        the search radius is 12000 miles for zoom level 1.  This relationship is described
+        in the chart below.
+
+        miles    |  zoom  |  divide original miles by (shows quadratic progression)
+        ----------|-----------|--------
+        24000  |     0      |     1   
+        12000  |     1      |     2   
+        6000    |     2      |     4   
+        3000    |     3      |     8   
+        1500    |     4      |   16   
+        750      |     5      |   32   
+        375      |     6      |   64   
+        187.5   |     7      | 128   
+
+        When miles go down by 1/2, zoom goes up by 1.  When miles go up by 2x, zoom goes 
+        down by 1.  We need to translate this into a function which takes in a new number 
+        of miles selected by the user, and outputs a new zoom level.
+
+        The formula to refactor:
+
+        newMiles = oldMiles/(2^(newZoom - oldZoom))
+
+        Refactored (show your work!)
+        (2^(newZoom - oldZoom)) * newMiles = oldMiles
+        2^(newZoom - oldZoom) = oldMiles/newMiles
+        2^(newZoom - oldZoom) = oldMiles/newMiles
+        log_2(oldMiles/newMiles) = newZoom - oldZoom
+        log_2(oldMiles/newMiles) + oldZoom = newZoom
      */
     _get_zoomlevel: function(newSearchRadius, oldSearchRadius) {
 
@@ -440,44 +482,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       var oldZoom = this.map.getZoom();
-      /*
-      This is the order in which the user's interaction works.  First, the interface 
-      has a zoom level.  Then the user selects a new search radius (in miles), which
-      moves the user's selection up or down the rows of the table below.  We need to 
-      calculate the new zoom level which results.
-
-      Google Maps' zoom levels start at 0 for the widest view.  Each new zoom level
-      integer displays 1/2 the height and 1/2 the width of the previous zoom level,
-      so 1/4 the total area.  So if the search radius is 24000 miles for zoom level 0,
-      the search radius is 12000 miles for zoom level 1.  This relationship is described
-      in the chart below.
-
-      miles    |  zoom  |  divide original miles by (shows quadratic progression)
-      ----------|-----------|--------
-      24000  |     0      |     1   
-      12000  |     1      |     2   
-      6000    |     2      |     4   
-      3000    |     3      |     8   
-      1500    |     4      |   16   
-      750      |     5      |   32   
-      375      |     6      |   64   
-      187.5   |     7      | 128   
-
-      When miles go down by 1/2, zoom goes up by 1.  When miles go up by 2x, zoom goes 
-      down by 1.  We need to translate this into a function which takes in a new number 
-      of miles selected by the user, and outputs a new zoom level.
-
-      The formula to refactor:
-
-      newMiles = oldMiles/(2^(newZoom - oldZoom))
-
-      Refactored (show your work!)
-      (2^(newZoom - oldZoom)) * newMiles = oldMiles
-      2^(newZoom - oldZoom) = oldMiles/newMiles
-      2^(newZoom - oldZoom) = oldMiles/newMiles
-      log_2(oldMiles/newMiles) = newZoom - oldZoom
-      log_2(oldMiles/newMiles) + oldZoom = newZoom
-      */
   
       // TODO: Start here 2016-10-07.  This formula seems correct.  But something is wrong with the map,
       // because it won't display the map!  
