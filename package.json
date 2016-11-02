@@ -25,7 +25,7 @@
     "hoodie": "./bower_components/hoodie-service/hoodie.js"
   },
   "dependencies": {
-    "hoodie": "2.1.1",
+    "hoodie": "24.3.2",
     "hoodie-plugin-appconfig": "^2.0.1",
     "hoodie-plugin-punk": "https://github.com/timblack1/hoodie-plugin-punk/tarball/patch-1",
     "hoodie-plugin-users": "^2.2.2",
