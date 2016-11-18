@@ -71,6 +71,16 @@ then run `hoodie start` again to enter the password.
 
 After you set the password, type CTRL-C in the terminal to kill the Hoodie process.
 
+Next, record your Hoodie admin password in `scripts/pm2/hoodie_admin_password.txt`.
+`scripts/pm2/hoodie_admin_password.template.txt` already exists as a reminder, so you can copy it into
+place and put your password in it like this:
+
+```bash
+cd scripts/pm2
+cp hoodie_admin_password.template.txt hoodie_admin_password.txt
+echo "my_password" >> hoodie_admin_password.txt
+```
+
 ### Run Reformed Churches Locator
 
 Then run Reformed Churches Locator by running the following commands in your terminal:
@@ -109,6 +119,7 @@ install it.
 ## Deployment
 
 Because the application is still in development, we have not yet documented how to deploy it to a server.
+However, the general [Hoodie deployment doc](deployment.md) might provide useful pointers for now.
 
 ## Frequently Asked Questions
 
@@ -136,8 +147,8 @@ workaround or fix already posted.
 
 # Recipes for further development of this app
 
-* [Add ES2015 (formally ES6) support using Babel](add-es2015-support-babel.md)
-* [Polymer Performance Recipe](polymer-perf.md)
-* [Deploy to Github Pages](deploy-to-github-pages.md)
-* [Deploy to Firebase using Pretty URLs](deploy-to-firebase-pretty-urls.md)
-* [Use PSK for Mobile Chrome Apps](mobile-chrome-apps.md)
+* [Add ES2015 (formally ES6) support using Babel](docs/add-es2015-support-babel.md)
+* [Polymer Performance Recipe](docs/polymer-perf.md)
+* [Deploy to Github Pages](docs/deploy-to-github-pages.md)
+* [Deploy to Firebase using Pretty URLs](docs/deploy-to-firebase-pretty-urls.md)
+* [Use PSK for Mobile Chrome Apps](docs/mobile-chrome-apps.md)
