@@ -48,7 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <model-object id="model_object" model="{{model}}"></model-object>
 
-    <div id="map_overlay" class="">
+    <div id="map_overlay">
 
       <paper-input id="search_for_a_church" 
         label="Search for a church..."
@@ -88,10 +88,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         query="{{search_string}}">
       </google-map-search>
 
-      <google-map id="google_map" map="{{map}}" latitude="{{this.$.google_map_search.result.latitude}}" 
+      <google-map id="google_map" map="{{map}}"
         single-info-window
+        api-key="AIzaSyDTTnrqUH-mA-zPCFxOuRPrdxvWENG1Yx4"
+        latitude="{{this.$.google_map_search.result.latitude}}"
         longitude="{{this.$.google_map_search.result.longitude}}" 
-        zoom="13" class="fit">
+        zoom="{{zoom}}"
+        class="fit">
 
         <template is="dom-repeat" items="{{congs_displayed_on_map}}" as="cong">
           <google-map-marker latitude="{{cong.geocode.lat}}" longitude="{{cong.geocode.lng}}"
@@ -181,6 +184,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         type: String,
         notify: true,
         observer: '_distance_units_changed_handler'
+      },
+      zoom: {
+        type: Number,
+        notify: true
       }
 
     },
@@ -199,7 +206,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         this.$.google_map.addEventListener('google-map-ready', function map_ready(event) {
           thiz.$.google_map.removeEventListener(event.type, map_ready);
-          
+
           // Load congs onto map
           thiz.map.addListener('idle', function() {
             // Only plot all congs within bounds if the user has not searched for a keyword. If the user has
@@ -238,7 +245,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             thiz._plot_search_results();
           });
          
-          // This code gets the distance and radius for the map from user preferences.
+          // This code gets the distance units and radius for the map from user preferences.
           var defaults_object = {search_distance_units: '', search_radius: 25};
           thiz.hoodie.store.findOrAdd('user-preferences', 'user-preferences', defaults_object)
           .done(function(doc) {
@@ -409,7 +416,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined'){
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
-        this.map.setZoom(this._get_zoomlevel(newSearchRadius, oldSearchRadius));
+        // TODO: Start here 2016-10-28
+        // TODO: Why does this make the map go blank at the last step when we increment 
+        // the radius in the following ways:
+        //  Arrow button increment from 25 to 29
+        //  Arrow button increment from 25 to 21
+        // It looks like the problem has to do with not loading new Google Maps tiles.
+        // Solutions which haven't worked so far:
+        //  - Clearing browser cache
+        //  - this.$.google_map.resize();
+        //  - Log the new zoom level to the console to be sure it's not an invalid value
+        //  - Comment out the other use of google-maps-api
+        //  - Look through Google Maps API for a function to call to reload the tiles
+        // Solutions to try:
+        //  - Ask for help at https://github.com/GoogleWebComponents/google-map/issues/339
+        //   (we tried this, but are not finished since we're waiting for replies)
+        this.zoom = this._get_zoomlevel(newSearchRadius, oldSearchRadius);
       }
     },
      
@@ -418,8 +440,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined') {
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_distance_units: this.search_distance_units});
-          console.log(this._get_zoomlevel());
-        this.map.setZoom(this._get_zoomlevel());  
+        // TODO: Calculate newSearchRadius from oldSearchRadius by converting
+        // between miles and kilometers here, then enter those values into the
+        // _get_zoomlevel() function call below
+        this.$.google_map.zoom = this._get_zoomlevel();
       }
     },
     
@@ -483,11 +507,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       var oldZoom = this.map.getZoom();
   
-      // TODO: Start here 2016-10-07.  This formula seems correct.  But something is wrong with the map,
-      // because it won't display the map!  
+      // TODO: Document this formula in a blog post
       var newZoom = Math.log2(parseInt(oldSearchRadius, 10)/parseInt(newSearchRadius, 10)) + oldZoom;
-      console.log('newZoom: ', newZoom);
-      return newZoom;
+
+      // TODO: Try rounding zoom to 2 decimal places, since maps.google.com supports
+      // that zoom resolution
+      // So far it appears the only other option is to round to integers, because it works, and
+      // https://developers.google.com/maps/documentation/javascript/3.exp/reference says
+      // "Valid values: Integers between zero, and up to the supported maximum zoom level."
+      // TODO: So, could it be that maps.google.com preloads tiles just outside the viewport,
+      // but the <google-map> Polymer element doesn't do that?
+      // TODO: Look or ask in the element's issue tracker, and read its code to see if it says
+      // something about not preloading tiles outside the viewport
+      //  - Try using the full webcomponents.js instead of the minified version.  See
+      //    https://github.com/GoogleWebComponents/google-map/issues/218
+      //  - Start at https://github.com/GoogleWebComponents/google-map/search?p=4&q=zoom&type=Issues&utf8=%E2%9C%93
+      // TODO: Read through http://gis.stackexchange.com/questions/7430/what-ratio-scales-do-google-maps-zoom-levels-correspond-to
+      // to see whether rounding to an integer is required
+      var roundedNewZoom = Math.round(newZoom*100)/100;
+      // TODO: This next line is a fallback we could use if https://github.com/GoogleWebComponents/google-map/issues/339
+      // indicates non-integer zoom values are not possible.
+      // var roundedNewZoom = Math.round(newZoom);
+      // TODO: If non-integer zoom values are not possible, then it might be best just to remove the 
+      // search radius feature, since it's not really precise.  The alternative UI would be to just let the user
+      // zoom the map using the default zoom buttons provided with the map itself.
+      
+      console.log('newZoom: ', roundedNewZoom);
+      
+      return roundedNewZoom;
 
     },
   });
