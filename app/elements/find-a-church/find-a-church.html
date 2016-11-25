@@ -416,7 +416,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if(typeof this.hoodie !== 'undefined'){
         this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
           {search_radius: this.search_radius});
-        // TODO: Start here 2016-10-28
         // TODO: Why does this make the map go blank at the last step when we increment 
         // the radius in the following ways:
         //  Arrow button increment from 25 to 29
@@ -524,10 +523,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       //  - Start at https://github.com/GoogleWebComponents/google-map/search?p=4&q=zoom&type=Issues&utf8=%E2%9C%93
       // TODO: Read through http://gis.stackexchange.com/questions/7430/what-ratio-scales-do-google-maps-zoom-levels-correspond-to
       // to see whether rounding to an integer is required
-      var roundedNewZoom = Math.round(newZoom*100)/100;
-      // TODO: This next line is a fallback we could use if https://github.com/GoogleWebComponents/google-map/issues/339
-      // indicates non-integer zoom values are not possible.
-      // var roundedNewZoom = Math.round(newZoom);
+//       var roundedNewZoom = Math.round(newZoom*100)/100;
+      // TODO: This next line is a fallback we are using until https://github.com/GoogleWebComponents/google-map/issues/339
+      // indicates non-integer zoom values are possible.  If non-integer zoom values are possible, then we can use
+      // the other line which is commented out above.
+      var roundedNewZoom = Math.round(newZoom);
       // TODO: If non-integer zoom values are not possible, then it might be best just to remove the 
       // search radius feature, since it's not really precise.  The alternative UI would be to just let the user
       // zoom the map using the default zoom buttons provided with the map itself.
