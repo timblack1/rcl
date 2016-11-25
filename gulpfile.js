@@ -248,35 +248,27 @@ gulp.task('clean', function() {
 
 gulp.task('hoodie_start', function(done) {
   // Start Hoodie
-  spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '3002,3003,3004']);
+  var hoodie = spawn('hoodie', [
+    //'--loglevel', 'silly', 
+    '--port', '3002', 
+    '--db-port', '3003', 
+    '--admin-port', '3004'
+  ]);
+  hoodie.on('error', (err) => {
+    console.log('Failed to start child process.  Error:', err);
+  });
   done();
 });
 
 gulp.task('hoodie_start_production', function(done) {
   // Start Hoodie
-  spawn('node_modules/hoodie-server/bin/start', ['--custom-ports', '20188,19911,27069']);
+  spawn('hoodie', ['--custom-ports', '20188,19911,27069']);
   done();
 });
 
-gulp.task('hoodie', ['serve', 'hoodie_start'], function() {
-  /*
-  Copy dynamically-generated
-    /_api/_files/hoodie.js
-  to
-    bower_components/hoodie-service/hoodie.js
-  */
-  setTimeout(function() {
-    var file = fs.createWriteStream('bower_components/hoodie-service/hoodie.js');
-    // Note:  Use `var request = http.get(...)` if you need it
-    http.get('http://localhost:3002/_api/_files/hoodie.js', function(response) {
-      response.pipe(file);
-    });
-  }, 8000);
-});
-
-// Configure proxy for 'serve' and 'serve:dist' tasks
-var proxy = proxyMiddleware('/_api', {
-  // target: 'http://localhost:3002/_api'
+// Configure proxy for 'serve' and 'serve:dist' tasks to serve Hoodie's API
+var proxy = proxyMiddleware('/hoodie', {
+  // target: 'http://localhost:3002/hoodie'
   target: 'http://localhost:3002'
   // target: {
   //   port: 3002,
@@ -305,8 +297,8 @@ gulp.task('serve', ['hoodie_start', 'lint', 'styles', 'elements', 'images'], fun
     // https: true,
     server: {
       baseDir: ['.tmp', 'app'],
-      // middleware: [historyApiFallback()],
-      // Set up proxy for Hoodie's /_api
+      // Original Polymer Starter Kit line was:
+      // middleware: [historyApiFallback()]
       middleware: [proxy],
       routes: {
         '/bower_components': 'bower_components'
@@ -395,7 +387,7 @@ gulp.task('default', ['clean'], function(cb) {
   runSequence(
     ['copy', 'styles'],
     'elements',
-    //['lint', 'images', 'fonts', 'html'], // commented out 'lint' until we've fixed all the things it complains about.
+    ['lint', 'images', 'fonts', 'html'],
     ['images', 'fonts', 'html'],
     'vulcanize', 'cache-config',
     cb);
