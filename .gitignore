@@ -13,3 +13,4 @@ test/bower_components/
 data_import
 .hoodierc
 .hoodie
+hoodie_admin_password.txt

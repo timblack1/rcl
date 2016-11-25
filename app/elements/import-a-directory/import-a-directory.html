@@ -25,21 +25,30 @@
 
 <!--     <paper-button on-tap="_remove_all_imported_data" raised>Remove all imported data</paper-button> -->
     <paper-material elevation="1">
+
       <h1>Import a directory</h1>
+
       <paper-material elevation="1" hidden="{{hide_importio}}">
         <import-importio hoodie="{{hoodie}}"></import-importio>
       </paper-material>
+
       <div hidden="{{hide_or}}">- or -</div>
+
       <paper-material elevation="1" hidden="{{hide_batchgeo}}">
         <import-batchgeo hoodie="{{hoodie}}"></import-batchgeo>
       </paper-material>
+
       <div hidden="{{hide_or}}">- or -</div>
+
       <paper-material elevation="1" hidden="{{hide_url}}">
         <div>Enter the URL of the directory to import:</div>
         <paper-input id="directory_url" value="{{directory_url}}" label="URL"></paper-input>
       </paper-material>
+
     </paper-material>
+
     <geocode-congs hoodie="{{hoodie}}"></geocode-congs>
+
   </template>
 </dom-module>
 <script>

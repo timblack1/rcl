@@ -34,7 +34,7 @@
     "paper-menu": "PolymerElements/paper-menu#4fecb43601",
     "platinum-elements": "PolymerElements/platinum-elements#^1.1.0",
     "polymer": "Polymer/polymer#^1.2.0",
-    "google-map": "GoogleWebComponents/google-map#~1.1.10",
+    "google-map": "GoogleWebComponents/google-map#~1.1.13",
     "voice-elements": "~1.0.0",
     "google-apis": "GoogleWebComponents/google-apis#~1.1.0"
   },
