@@ -65,7 +65,7 @@
     "require-dir": "^0.3.0",
     "run-sequence": "^1.1.4",
     "semantic-release": "^4.3.5",
-    "vulcanize": ">=1.14.8",
+    "vulcanize": ">=1.15.0",
     "web-component-tester": "^4.0.3"
   },
   "scripts": {
