@@ -54,50 +54,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
   <template>
     
-    <p id="header" hidden="{{hide_header}}">Selected denominations:</p>
-    <div id="selected">
-      <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
-        <paper-button on-tap="_remove_cgroup">
-          <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
-          <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
-          <iron-icon icon="icons:clear"></iron-icon>
-        </paper-button>
-      </template>
-    </div>
-    <paper-input id="filter_input" 
-      label="Filter by denomination" 
-      on-input="_filter_input_changed"
-      value="{{filter_value}}">
-    </paper-input>
-    <paper-button id="add_cgroup_button"
-      hidden="{{hide_add_cgroup_button}}"
-      on-tap="_handle_add_cgroup_tapped"
-      raised>
-      Add this denomination
-    </paper-button>
-    <div id="available_filtered">
-      <template id="available_list" is="dom-repeat" items="{{available_cgroups_displayed}}">
-        <paper-button on-tap="_add_to_selected" id="{{item.abbreviation}}">
-          <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
-          <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
-        </paper-button>
-      </template>
-    </div>
-    <div>
-      <paper-checkbox id="list_all_groups" 
-        on-tap="_list_all_groups_tapped"
-        hidden="{{hide_list_all_groups}}">
-        List all groups
-      </paper-checkbox>
-      <paper-checkbox id="show_full_names"
-        on-tap="_show_full_names_tapped" 
-        hidden="{{hide_show_full_names}}">
-        Show full names
-      </paper-checkbox>
-    </div>
-    <paper-dialog id="cgroup_edit_dialog">
-      <cgroup-edit-form id="cgroup_edit_form" select_one_mode><cgroup-edit-form>
-    </paper-dialog>
+    <div id="wrapper"
+      on-mouseover="_show_list_all_groups"
+      on-mouseout="_hide_list_all_groups"
+    >
+
+      <p id="header" hidden="{{hide_header}}">Selected denominations:</p>
+      <div id="selected">
+        <template id="selected_list" is="dom-repeat" items="{{selected_cgroups}}">
+          <paper-button on-tap="_remove_cgroup">
+            <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
+            <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
+            <iron-icon icon="icons:clear"></iron-icon>
+          </paper-button>
+        </template>
+      </div>
+      <paper-input id="filter_input" 
+        label="Filter by denomination" 
+        on-input="_filter_input_changed"
+        value="{{filter_value}}">
+      </paper-input>
+      <paper-button id="add_cgroup_button"
+        hidden="{{hide_add_cgroup_button}}"
+        on-tap="_handle_add_cgroup_tapped"
+        raised>
+        Add this denomination
+      </paper-button>
+      <div id="available_filtered">
+        <template id="available_list" is="dom-repeat" items="{{available_cgroups_displayed}}">
+          <paper-button on-tap="_add_to_selected" id="{{item.abbreviation}}">
+            <span hidden="{{hide_abbreviation}}" class="abbreviation">{{item.abbreviation}}</span>
+            <span hidden="{{hide_name}}" class="name">{{item.name}}</span>
+          </paper-button>
+        </template>
+      </div>
+      <div>
+        <paper-checkbox id="list_all_groups" 
+          on-tap="_list_all_groups_tapped"
+          hidden="{{hide_list_all_groups}}">
+          List all groups
+        </paper-checkbox>
+        <paper-checkbox id="show_full_names"
+          on-tap="_show_full_names_tapped" 
+          hidden="{{hide_show_full_names}}">
+          Show full names
+        </paper-checkbox>
+      </div>
+      <paper-dialog id="cgroup_edit_dialog">
+        <cgroup-edit-form id="cgroup_edit_form" select_one_mode><cgroup-edit-form>
+      </paper-dialog>
+
+    </wrapper>
     
   </template>
 </dom-module>
@@ -167,7 +174,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     observers: [
       '_show_hide_header(selected_cgroups.splices)',
       '_handle_acd_changed(available_cgroups_displayed.splices)',
-      '_handle_selected_cgroups_changed(selected_cgroups.splices)'
+      '_handle_selected_cgroups_changed(selected_cgroups.splices)',
+      '_handle_showing_list_all_groups(filter_input_focused,add_cgroup_button_focused,list_all_groups_focused,show_full_names_focused)'
     ],
     ready: function() {
       this._show_hide_header();
@@ -211,6 +219,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.hide_abbreviation = !this.hide_abbreviation;
       this.hide_name = !this.hide_name;
     },
+    
     /* Displays the list of available cgroups which match the search term, and in select_one_mode,
      * permits a user to add a new cgroup to the available cgroups in the database.
      */
@@ -315,6 +324,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer.dom.flush(function() {
         thiz.$.cgroup_edit_form.$.name.$.input.focus();
       });
+    },
+
+    /*  Show the "List all groups" checkbox when user focuses the 
+        "Filter by denomination" input
+     */
+    _show_list_all_groups: function () {
+      this.hide_list_all_groups = false;
+    },
+
+    /*  Hide the "List all groups" checkbox when user blurs the 
+        "Filter by denomination" input
+     */
+    _hide_list_all_groups: function () {
+      this.hide_list_all_groups = true;
     }
 
   });
