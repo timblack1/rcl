@@ -262,7 +262,11 @@ gulp.task('hoodie_start', function(done) {
 
 gulp.task('hoodie_start_production', function(done) {
   // Start Hoodie
-  spawn('hoodie', ['--custom-ports', '20188,19911,27069']);
+  spawn('hoodie', [
+    '--port', '20188',
+    '--db-port', '19911',
+    '--admin-port', '27069'
+  ]);
   done();
 });
 
