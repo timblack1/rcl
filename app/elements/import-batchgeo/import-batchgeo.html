@@ -100,15 +100,16 @@
           // TODO: Determine this by the URL of the batchgeo JSON file like we do with the importio_guid.
 
           // Create this directory
-          thiz.hoodie.punk.add('directory', {
-            directory_type: 'batchgeo'
+          hoodie.add({
+            directory_type: 'batchgeo',
+            type: 'directory'
           })
 
           // Associate one cgroup with this directory
           .done(function(directory) {
 
             // Display <cgroup-filter> to permit user to select or create the related cgroup
-            thiz.hoodie.punk.findAll('cgroup')
+            hoodie.findAll(function(doc){ return doc.type === 'cgroup'; })
             .done(function(available_cgroups) {
               thiz.$.cgroup_filter.available_cgroups = available_cgroups;
               thiz.hide_cgroup_filter = false;
@@ -122,10 +123,11 @@
                 thiz.$.cgroup_filter.removeEventListener(event.type, handle_cgroup_edit_form_submit);
                 thiz.$.cgroup_filter.$.cgroup_edit_dialog.close();
                 thiz.hide_cgroup_filter = true;
-                thiz.hoodie.punk.add('cgroup', thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
+                // TODO: Do we need to add the type: 'cgroup' here?
+                hoodie.add(thiz.$.cgroup_filter.$.cgroup_edit_form.cgroup)
                 .done(function(cgroup) {
                   // Associate this new cgroup with the directory
-                  thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
+                  hoodie.update(directory.id, {cgroup_id: cgroup.id})
                   .done(function(directory) {
                     thiz._save_batchgeo_congs(congs_array, directory, cgroup);
                   }).fail(thiz.fail_handler);
@@ -137,7 +139,7 @@
                 var cgroup = thiz.$.cgroup_filter.selected_cgroups[0];
                 thiz.hide_cgroup_filter = true;
                 // Associate this cgroup with the directory
-                thiz.hoodie.punk.update('directory', directory.id, {cgroup_id: cgroup.id})
+                hoodie.update(directory.id, {cgroup_id: cgroup.id})
                 .done(function(directory) {
                   thiz._save_batchgeo_congs(congs_array, directory, cgroup);
                 }).fail(thiz.fail_handler);
@@ -161,12 +163,14 @@
           // Record the denomination of which this cong is a member
           cong.denomination_cgroup_id = cgroup.id;
           cong.denomination_abbreviation = cgroup.abbreviation;
+          cong.type = 'congregation';
           
-          thiz.hoodie.punk.add('congregation', cong)
+          hoodie.add(cong)
           .done(function(cong) {
-            thiz.hoodie.punk.add('cgroup-congregation', {
+            hoodie.add({
               cgroup_id: cgroup.id,
-              congregation_id: cong.id
+              congregation_id: cong.id,
+              type: 'cgroup-congregation'
             })
             .done(function() {}).fail(thiz.fail_handler);
           }).fail(thiz.fail_handler);

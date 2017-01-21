@@ -228,58 +228,71 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.voice_recognition_state = 'OFF';
       this.model = this.$.model_object.properties.model.value;
     },
+
     attached: function() {
-      this.async(function() {
-        this.hoodie = document.querySelector('hoodie-accountbar').hoodie;
-        var thiz = this;
+      
+      hoodie.ready.then((function () {
 
-        this.$.google_map.addEventListener('google-map-ready', function map_ready(event) {
-          thiz.$.google_map.removeEventListener(event.type, map_ready);
+        this.async(function() {
           
-          // Load congs onto map
-          thiz.map.addListener('idle', thiz._load_congs_on_map.bind(thiz));
+          var thiz = this;
 
-          // Listen for results returned after users enter search terms
-          thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results.bind(thiz));
-         
-          // This code gets the distance and radius for the map from user preferences.
-          var defaults_object = {search_distance_units: '', search_radius: 25};
-          thiz.hoodie.store.findOrAdd('user-preferences', 'user-preferences', defaults_object)
-          .done(function(doc) {
-            thiz.search_distance_units = doc.search_distance_units;
-            thiz.search_radius = doc.search_radius;
-          })
-          .fail(function(error) { console.log(error); }); 
-                 
-          // Get selected_cgroups from a user preference
-          thiz.hoodie.store.find('selected-cgroups', 'selected-cgroups')
-          .then(function(selected_cgroups) {
-            thiz.selected_cgroups = selected_cgroups.cgroups;
-          });
-          // this.hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'RPCNA', 
-          //    name:'Reformed Presbyterian Church in North America'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
-          // this.hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
-        
-          // TODO: Connect cgroup-filter attributes to database
-          thiz.hoodie.punk.findAll('cgroup')
-          .then(function(cgroups) {
-            thiz.available_cgroups = cgroups;
-          });
+          this.$.google_map.addEventListener('google-map-ready', function map_ready(event) {
+            thiz.$.google_map.removeEventListener(event.type, map_ready);
 
-          // Create handler to update available_cgroups
-          thiz.hoodie.punk('cgroup').on('add update remove change clear', function() {
-            thiz.hoodie.punk.findAll('cgroup')
+            // Load congs onto map.)
+            thiz.map.addListener('idle', thiz._load_congs_on_map.bind(thiz));
+
+            // Listen for results returned after users enter search terms
+            thiz.$.google_map_search.addEventListener('google-map-search-results', thiz._plot_search_results.bind(thiz));
+
+            // This code gets the distance and radius for the map from user preferences.
+            var defaults_object = {search_distance_units: '', search_radius: 25};
+            hoodie.store.findOrAdd('user-preferences', defaults_object)
+            .then(function(doc) {
+              thiz.search_distance_units = doc.search_distance_units;
+              thiz.search_radius = doc.search_radius;
+            })
+            .catch(function(error) { console.log(error); }); 
+
+            // Get selected_cgroups from a user preference
+            hoodie.store.find('selected-cgroups')
+            .then(function(selected_cgroups) {
+              thiz.selected_cgroups = selected_cgroups.cgroups;
+            });
+            // hoodie.store.add('cgroup', {abbreviation:'OPC', name:'Orthodox Presbyterian Church'});
+            // hoodie.store.add('cgroup', {abbreviation:'URC', name:'United Reformed Churches in North America'});
+            // hoodie.store.add('cgroup', {abbreviation:'PCA', name:'Presbyterian Church in America'});
+            // hoodie.store.add('cgroup', {abbreviation:'RPCNA', 
+            //    name:'Reformed Presbyterian Church in North America'});
+            // hoodie.store.add('cgroup', {abbreviation:'RCUS', name:'Reformed Church of the United States'});
+            // hoodie.store.add('cgroup', {abbreviation:'KAPC', name:'Korean-American Presbyterian Church'});
+
+            // TODO: Connect cgroup-filter attributes to database
+            hoodie.store.findAll(function(doc){ return doc.type === 'cgroup'; })
             .then(function(cgroups) {
               thiz.available_cgroups = cgroups;
             });
+
+            // Create handler to update available_cgroups
+            hoodie.store.on('add update remove change', function(doc, options) {
+              if (
+                (typeof doc.type !== 'undefined' && doc.type === 'cgroup') || 
+                // Handle the case of a 'change' event
+                options.type === 'cgroup'
+              ){
+                hoodie.store.findAll(function(doc){ return doc.type === 'cgroup'; })
+                .then(function(cgroups) {
+                  thiz.available_cgroups = cgroups;
+                });
+              }
+            });
           });
         });
-      });
+
+      }).bind(this));
     },
+
     fail_handler: function(error) {
       console.log(error);
     },
@@ -309,8 +322,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var lng_west =  b.getSouthWest().lng();
 
         Promise.all([
-          this.hoodie.punk.findAll('congregation'),
-          this.hoodie.punk.findAll('cgroup_congregation')
+          hoodie.store.findAll(function(doc){ return doc.type === 'congregation'; }),
+          hoodie.store.findAll(function(doc){ return doc.type === 'cgroup_congregation'; })
         ]).then(function(values) {
 
           var congs = values[0];
@@ -408,16 +421,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var thiz = this;
       // We have to wait until all properties have been initialized
       Polymer.Base.async(function() {
-        // Record user's preference in the db
-        thiz.hoodie.store.updateOrAdd('selected-cgroups', 'selected-cgroups', {cgroups: thiz.selected_cgroups});
-        // Filter the list of displayed congregations to only include those in the selected cgroups
-        if (thiz.search_string.trim() === ''){
-          // Handle case where the user changed the selected_cgroups, but has not searched
-          //  for a string.
-          thiz._load_congs_on_map();
-        }else{
-          thiz._search_for_query();
-        }
+        hoodie.ready.then(function(){
+
+          // Record user's preference in the db
+          hoodie.store.updateOrAdd('selected-cgroups', {cgroups: thiz.selected_cgroups});
+          // Filter the list of displayed congregations to only include those in the selected cgroups
+          if (thiz.search_string.trim() === ''){
+            // Handle case where the user changed the selected_cgroups, but has not searched
+            //  for a string.
+            thiz._load_congs_on_map();
+          }else{
+            thiz._search_for_query();
+          }
+
+        });
       }, 300);
     },
     // Fix format of email addresses
@@ -457,8 +474,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       var q = thiz.search_string;
       var fields = Object.getOwnPropertyNames(thiz.model.congregation.default_attributes);
       Promise.all([
-        thiz.hoodie.punk.findAll('cgroup_congregation'),
-        thiz.hoodie.punk.findAll('congregation')
+        hoodie.store.findAll(function(doc){ return doc.type === 'cgroup_congregation'; }),
+        hoodie.store.findAll(function(doc){ return doc.type === 'congregation'; })
       ]).then(function(values) {
         var cg_congs = values[0];
         var congs = values[1];
@@ -548,17 +565,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /* When the radius value changes, update the user's preferences. */
     _radius_changed_handler: function() {
-      if(typeof this.hoodie !== 'undefined'){
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
-          {search_radius: this.search_radius});
-        // TODO: Update the map's bounds
+      if(typeof hoodie !== 'undefined'){
+        hoodie.ready.then((function(){
+
+          hoodie.store.updateOrAdd('user-preferences', 
+            {search_radius: this.search_radius});
+          // TODO: Update the map's bounds
+
+        }).bind(this));
       }
     },
      
     /* When the distance value changes, update the user's preferences. */
     _distance_units_changed_handler: function() {
-      if(typeof this.hoodie !== 'undefined') {
-        this.hoodie.store.updateOrAdd('user-preferences', 'user-preferences', 
+      if(typeof hoodie !== 'undefined') {
+        hoodie.store.updateOrAdd('user-preferences',
           {search_distance_units: this.search_distance_units});
         // TODO: Update the map's bounds
       }

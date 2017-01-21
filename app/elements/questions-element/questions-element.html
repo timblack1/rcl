@@ -120,7 +120,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                   // Generate the list of cong names and url lengths
                   // Note this returns a promise! So call list().done(function(result){});
-                  return thiz.hoodie.punk.findAll('congregation')
+                  return thiz.hoodie.findAll(function(doc){ return doc.type === 'congregation'; })
                   .then(function(congs) {
 
                     return congs.map(function(cong) {
@@ -383,7 +383,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       get_words_and_frequencies: function(hoodie, segment) {
 
-        return hoodie.punk.findAll('congregation')
+        return hoodie.findAll(function(doc){ return doc.type === 'congregation'; })
         .then(function(congs) {
 
           var word_list = [];
@@ -454,7 +454,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       get_segments: function(hoodie, segment_by) {
                   
-        return hoodie.punk.findAll('congregation')
+        return hoodie.findAll(function(doc){ return doc.type === 'congregation'; })
         .then(function(congs) {
 
           // Get list of distinct segments.

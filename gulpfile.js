@@ -249,10 +249,8 @@ gulp.task('clean', function() {
 gulp.task('hoodie_start', function(done) {
   // Start Hoodie
   var hoodie = spawn('hoodie', [
-    //'--loglevel', 'silly', 
-    '--port', '3002', 
-    '--db-port', '3003', 
-    '--admin-port', '3004'
+    '--loglevel', 'silly', 
+    '--adminPassword', 'rcl'
   ]);
   hoodie.on('error', (err) => {
     console.log('Failed to start child process.  Error:', err);
@@ -273,7 +271,7 @@ gulp.task('hoodie_start_production', function(done) {
 // Configure proxy for 'serve' and 'serve:dist' tasks to serve Hoodie's API
 var proxy = proxyMiddleware('/hoodie', {
   // target: 'http://localhost:3002/hoodie'
-  target: 'http://localhost:3002'
+  target: 'http://localhost:8080'
   // target: {
   //   port: 3002,
   //   host: 'localhost'
