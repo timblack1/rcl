@@ -108,9 +108,9 @@
           thiz.async(function() {
 
             // Configure listener to congregation:change events
-            thiz.hoodie.punk.on('congregation:change', function(eventName, cong) {
+            hoodie.store.on('change', function(eventName, cong) {
               // Handle congs with regeocode === true
-              if (eventName !== 'remove' && cong.regeocode === true){
+              if (cong.type === 'congregation' && eventName !== 'remove' && cong.regeocode === true){
                 // Add this cong to the queue to enable throttling to work
                 thiz.push('congs_to_geocode',cong);
               }
@@ -118,8 +118,8 @@
 
             // Trigger regeocoding on page load, after a 5 second delay
             thiz.async(function() {
-              thiz.hoodie.punk.findAll('congregation')
-              .done(function(congs) {
+              hoodie.store.findAll(function(doc){ return doc.type === 'congregation'; })
+              .then(function(congs) {
                 congs = congs.filter(function(cong) {
                   if (cong.regeocode === true){
                     return true;
@@ -132,7 +132,7 @@
                     thiz.push('congs_to_geocode', cong);
                   });
                 }
-              }).fail(thiz.fail_handler);
+              }).catch(thiz.fail_handler);
             }, 5000);
 
           });
@@ -223,7 +223,7 @@
             cong.geocode = {lat: loc.lat(), lng: loc.lng()};
             cong.regeocode = false;
             // Save cong with updated geocode
-            thiz.hoodie.punk.update('congregation', cong.id, cong)
+            hoodie.store.update(cong.id, cong)
             .done(function() {
 
               // Remove this cong from the thiz.congs_to_geocode

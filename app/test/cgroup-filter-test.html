@@ -110,7 +110,24 @@
         cf.push('available_cgroups_displayed', {abbreviation:"OPC"});
         assert.equal(length + 1, cf.available_cgroups_displayed.length);
         flush(function(){
-          assert.include(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC");
+          // TODO: Start here 2017-01-20.  This throws the following error:
+          // Cannot read property 'textContent' of null
+
+          // TODO: This outputs "    OPC     " like it should.
+//           console.log(cf.$.available_filtered.querySelector('paper-button').textContent);
+          // TODO: This doesn't find the content "OPC"!  Why?
+
+          // FINDING:  This test only fails when the next test is run after it.
+
+          // Is this what's going on?  The next line of code causes the next test to generate an error?
+          // NOTE: The error is intermittent.
+          
+          // TODO: Consider upgrading to the migration version of Polymer so we can use
+          // current docs.
+          // Start here 2017-01-27.  The above is what I've decided to do for now, in a different
+          // feature branch.
+          assert.include(Polymer.dom(cf.$.available_filtered).querySelector('paper-button').textContent,"OPC");
+//           assert.include(cf.$.available_filtered.querySelector('paper-button').textContent,"OPC");
           // Cleanup
           cf.pop('available_cgroups_displayed');
           done();
