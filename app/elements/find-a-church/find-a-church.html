@@ -571,29 +571,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /* When the radius value changes, update the user's preferences. */
     _radius_changed_handler: function(newSearchRadius, oldSearchRadius) {
+
       if(typeof this.hoodie !== 'undefined'){
 
-	hoodie.ready.then((function(){
+        hoodie.ready.then((function(){
 
-		hoodie.store.updateOrAdd('user-preferences',
-		  {search_radius: this.search_radius});
-		// TODO: Why does this make the map go blank at the last step when we increment 
-		// the radius in the following ways:
-		//  Arrow button increment from 25 to 29
-		//  Arrow button increment from 25 to 21
-		// It looks like the problem has to do with not loading new Google Maps tiles.
-		// Solutions which haven't worked so far:
-		//  - Clearing browser cache
-		//  - this.$.google_map.resize();
-		//  - Log the new zoom level to the console to be sure it's not an invalid value
-		//  - Comment out the other use of google-maps-api
-		//  - Look through Google Maps API for a function to call to reload the tiles
-		// Solutions to try:
-		//  - Ask for help at https://github.com/GoogleWebComponents/google-map/issues/339
-		//   (we tried this, but are not finished since we're waiting for replies)
-		this.zoom = this._get_zoomlevel(newSearchRadius, oldSearchRadius);
-        }).bind(this);
+          hoodie.store.updateOrAdd('user-preferences',
+            {search_radius: this.search_radius});
+          // TODO: Why does this make the map go blank at the last step when we increment 
+          // the radius in the following ways:
+          //  Arrow button increment from 25 to 29
+          //  Arrow button increment from 25 to 21
+          // It looks like the problem has to do with not loading new Google Maps tiles.
+          // Solutions which haven't worked so far:
+          //  - Clearing browser cache
+          //  - this.$.google_map.resize();
+          //  - Log the new zoom level to the console to be sure it's not an invalid value
+          //  - Comment out the other use of google-maps-api
+          //  - Look through Google Maps API for a function to call to reload the tiles
+          // Solutions to try:
+          //  - Ask for help at https://github.com/GoogleWebComponents/google-map/issues/339
+          //   (we tried this, but are not finished since we're waiting for replies)
+          this.zoom = this._get_zoomlevel(newSearchRadius, oldSearchRadius);
+        }).bind(this));
+      
       }
+
     },
      
     /* When the distance value changes, update the user's preferences. */
