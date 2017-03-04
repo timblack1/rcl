@@ -30,7 +30,7 @@
     "hoodie-plugin-punk": "https://github.com/timblack1/hoodie-plugin-punk/tarball/patch-1",
     "hoodie-plugin-users": "^2.2.2",
     "hoodie-server": "^4.0.3",
-    "request": "^2.66.0"
+    "request": "^2.80.0"
   },
   "devDependencies": {
     "browser-sync": "^2.12.5",
